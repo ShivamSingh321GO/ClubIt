@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct ClubItApp: App {
+    @State private var appSession = AppSession()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environment(appSession)
         }
     }
 }
