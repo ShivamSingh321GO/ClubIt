@@ -35,23 +35,23 @@ struct LeadHomeView: View {
                         }
 
                         
-                        HStack {
-                            Text("Upcoming events")
-                            
-                            NavigationLink(destination: ExploreView(selectedTab: .events)) {
-                                Image(systemName: "chevron.right")
-                            }
-                            
-                            Spacer()
-                            
-                            NavigationLink(destination: CalendarView()) {
-                                Image(systemName: "calendar")
-                            }
-                        }
-                        .font(.title2)
-                        .bold()
-                        
-                        UpcomingEventsModule(user: user)
+//                        HStack {
+//                            Text("Upcoming events")
+//                            
+//                            NavigationLink(destination: ExploreView(selectedTab: .events)) {
+//                                Image(systemName: "chevron.right")
+//                            }
+//                            
+//                            Spacer()
+//                            
+//                            NavigationLink(destination: CalendarView()) {
+//                                Image(systemName: "calendar")
+//                            }
+//                        }
+//                        .font(.title2)
+//                        .bold()
+//                        
+//                        UpcomingEventsModule(user: user)
                     }
                     .padding(.horizontal)
                     .navigationTitle("Home")
@@ -99,7 +99,15 @@ struct HomeApprovalsModule: View {
                 Text("No recent approval requests")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+//                    .background(.ultraThinMaterial)
+//                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .glassEffect(in: .rect(cornerRadius: 20))
+//                    .overlay(
+//                        RoundedRectangle(cornerRadius: 16)
+//                            .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+//                    )
             } else {
                 VStack(spacing: 16) {
                     ForEach(sentApprovals.prefix(2), id: \.id) { approval in
