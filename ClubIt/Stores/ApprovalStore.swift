@@ -18,6 +18,7 @@ final class ApprovalStore {
         // Initialize with some mock data for consistency
         self.approvals = MockData.sampleApprovals
         self.resources = MockData.sampleResources
+        self.budgets = MockData.sampleBudgets
     }
     
     func addApproval(_ approval: Approval) {
@@ -49,6 +50,14 @@ final class ApprovalStore {
             resources[index].status = status
             resources[index].remark = remark
             resources[index].approvedAt = status == .approved ? Date() : nil
+        }
+    }
+
+    func updateBudgetStatus(id: UUID, status: ApprovalStatus, remark: String? = nil) {
+        if let index = budgets.firstIndex(where: { $0.id == id }) {
+            budgets[index].status = status
+            budgets[index].remark = remark
+            budgets[index].approvedAt = status == .approved ? Date() : nil
         }
     }
 }

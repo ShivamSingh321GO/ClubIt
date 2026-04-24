@@ -23,6 +23,7 @@ struct MockData {
             logo: "technojam_logo",
             clubLeadId: leadId,
             facultyId: facultyId,
+            vicePresidentId: nil,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -62,6 +63,7 @@ struct MockData {
             logo: "literary_logo",
             clubLeadId: leadId,
             facultyId: facultyId,
+            vicePresidentId: nil,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -95,6 +97,7 @@ struct MockData {
             logo: "ecell_logo",
             clubLeadId: leadId,
             facultyId: UUID(),
+            vicePresidentId: nil,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -127,6 +130,7 @@ struct MockData {
             logo: "quizzards_logo",
             clubLeadId: leadId,
             facultyId: UUID(),
+            vicePresidentId: nil,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -154,8 +158,8 @@ struct MockData {
         // Add President & Vice President
         let presidentId = UUID()
         let vicePresidentId = UUID()
-        users.append(User(id: presidentId, email: "president", password: "pass123", name: "Dr. Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22233", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
-        users.append(User(id: vicePresidentId, email: "vicepresident", password: "pass123", name: "Dr. Sunil Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22244", course: "Administration", year: "N/A", bio: "University Vice President", createdAt: Date(), status: .active))
+        users.append(User(id: presidentId, email: "president", password: "pass123", name: "Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22233", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
+        users.append(User(id: vicePresidentId, email: "vicepresident", password: "pass123", name: "Sunil Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22244", course: "Administration", year: "N/A", bio: "University Vice President", createdAt: Date(), status: .active))
         
         // Add general student
         users.append(User(id: UUID(), email: "student", password: "pass123", name: "Kamakshi", instituteId: instituteId, role: .student, clubId: nil, profileImg: "", phoneNumber: "+91 12345 67890", course: "B.Tech CSE", year: "3rd Year", bio: "Passionate builder.", createdAt: Date(), status: .active))
@@ -217,6 +221,18 @@ struct MockData {
             
             // E-Cell University Resources
             Resource(id: UUID(), eventId: startupPitchId, name: "Movable Whiteboards", quantity: 4, type: .university, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-72000))
+        ]
+    }()
+
+    static let sampleBudgets: [Budget] = {
+        let techSummitId = sampleEvents.first { $0.title.contains("Annual Tech Summit") }?.id ?? UUID()
+        let musicNightId = sampleEvents.first { $0.title.contains("Euphoria") }?.id ?? UUID()
+        let leadId = clubLeadUser.id
+        
+        return [
+            Budget(id: UUID(), eventId: techSummitId, itemName: "Swags & T-shirts", unitPrice: 500, quantity: 100, totalAmount: 50000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
+            Budget(id: UUID(), eventId: techSummitId, itemName: "Food & Refreshments", unitPrice: 200, quantity: 150, totalAmount: 30000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
+            Budget(id: UUID(), eventId: musicNightId, itemName: "Artist Fee", unitPrice: 100000, quantity: 1, totalAmount: 100000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-172800))
         ]
     }()
 

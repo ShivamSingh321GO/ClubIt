@@ -66,34 +66,7 @@ struct FacultyManagementView: View {
                                         .padding()
                                 } else {
                                     ForEach(assignedClubs) { club in
-                                        HStack(spacing: 16) {
-                                            Circle()
-                                                .fill(Color.gray.opacity(0.1))
-                                                .frame(width: 44, height: 44)
-                                                .overlay(
-                                                    Text(String(club.name.prefix(1)))
-                                                        .font(.headline)
-                                                )
-                                            
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text(club.name)
-                                                    .font(.body)
-                                                    .bold()
-                                                Text(club.category.rawValue)
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            
-                                            Spacer()
-                                            
-                                            Button(action: {}) {
-                                                Image(systemName: "info.circle")
-                                                    .font(.body)
-                                                    .foregroundColor(.secondary)
-                                                    .padding(8)
-                                                    .glassEffect(in: .circle)
-                                            }
-                                        }
+                                        FacultyExpandableClubRow(club: club)
                                     }
                                 }
                             }
@@ -105,6 +78,166 @@ struct FacultyManagementView: View {
             }
             .navigationTitle("Manage")
             .toolbarTitleDisplayMode(.inlineLarge)
+        }
+    }
+}
+
+
+
+struct FacultyExpandableClubRow: View {
+    @Environment(AppSession.self) var appSession
+    let club: Club
+    @State private var isExpanded = false
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            Button(action: {
+                withAnimation(.spring()) {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack(spacing: 16) {
+                    Circle()
+                        .fill(Color.orange.opacity(0.1))
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            Text(String(club.name.prefix(1)))
+                                .font(.headline)
+                                .foregroundColor(.orange)
+                        )
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(club.name)
+                            .font(.body)
+                            .bold()
+                        Text(club.category.rawValue)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption.bold())
+                        .foregroundColor(.secondary)
+                        .padding(8)
+                        .glassEffect(in: .circle)
+                }
+                .padding()
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 16) {
+                    Divider().padding(.horizontal)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("About the Club")
+                            .font(.headline)
+                            .bold()
+                        Text(club.description)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .lineSpacing(4)
+                    }
+                    .padding(.horizontal)
+                    
+                    HStack(spacing: 12) {
+                        FacultyStatBadge(icon: "person.2.fill", count: "\(club.memberCount)", label: "Members", color: .green)
+                        FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == club.id }.count)", label: "Achievements", color: .orange)
+                    }
+                    .padding(.horizontal)
+                    
+                    if !club.socials.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Socials")
+                                .font(.headline)
+                                .bold()
+                            HStack(spacing: 12) {
+                                ForEach(club.socials.sorted(by: { $0.key < $1.key }), id: \.key) { platform, urlString in
+                                    if let url = URL(string: urlString) {
+                                        Link(destination: url) {
+                                            FacultySocialCircle(platform: platform)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+                .padding(.bottom, 20)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .background(Color.secondary.opacity(0.05))
+        .cornerRadius(20)
+    }
+}
+
+struct FacultyStatBadge: View {
+    let icon: String
+    let count: String
+    let label: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundColor(color)
+            
+            VStack(alignment: .leading, spacing: 0) {
+                Text(count)
+                    .font(.subheadline.bold())
+                    .foregroundColor(.primary)
+                Text(label)
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(color.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+struct FacultySocialCircle: View {
+    let platform: String
+    
+    var iconName: String {
+        switch platform.lowercased() {
+        case "instagram": return "camera.fill"
+        case "facebook": return "f.square.fill"
+        case "linkedin": return "l.square.fill"
+        case "whatsapp": return "message.fill"
+        case "discord": return "bubble.left.and.bubble.right.fill"
+        default: return "globe"
+        }
+    }
+    
+    var color: Color {
+        switch platform.lowercased() {
+        case "instagram": return .pink
+        case "facebook": return .blue
+        case "linkedin": return .blue
+        case "whatsapp": return .green
+        case "discord": return .indigo
+        default: return .gray
+        }
+    }
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color.opacity(0.1))
+                .frame(width: 36, height: 36)
+            Image(systemName: iconName)
+                .font(.caption)
+                .foregroundColor(color)
         }
     }
 }
