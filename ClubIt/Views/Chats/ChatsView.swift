@@ -20,12 +20,13 @@ struct ChatsView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
+                        // Pinned Chats
+                        pinnedChatsSection
+                        
                         // Filter Categories
                         filterBar(selectedCategory: $chatStore.selectedCategory)
                             .padding(.horizontal, 16)
-                        
-                        // Pinned Chats
-                        pinnedChatsSection
+
                         
                         // Chat List
                         chatListSection

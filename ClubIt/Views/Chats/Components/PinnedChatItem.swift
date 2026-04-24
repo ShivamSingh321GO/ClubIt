@@ -45,9 +45,20 @@ struct PinnedChatItem: View {
                         .frame(width: 22, height: 22)
                         .background(Color.goldenBrown)
                         .clipShape(Circle())
-                        .overlay(Circle().stroke(.white, lineWidth: 2))
+                        .overlay(Circle().stroke(.black, lineWidth: 2))
                         .offset(x: -2, y: 2)
                 }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                // Pin Badge
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 8))
+                    .foregroundStyle(.white)
+                    .frame(width: 16, height: 16)
+                    .background(Color.goldenBrown)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(.black, lineWidth: 1.5))
+                    .offset(x: -2, y: -2)
             }
             
             // Name label below
