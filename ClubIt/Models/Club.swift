@@ -36,7 +36,11 @@ struct Club: Identifiable, Hashable ,Codable {
     var logo: String
     var clubLeadId: UUID
     var facultyId: UUID
+
     var vicePresidentId: UUID
+
+//    var vicePresidentId: UUID?
+
     var instituteId: UUID
     var status: ClubStatus
     var createdAt: Date

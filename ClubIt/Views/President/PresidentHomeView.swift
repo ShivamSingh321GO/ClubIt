@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PresidentHomeView: View {
     @Environment(AppSession.self) var appSession
-    @State private var selectedEventId: UUID? = nil
     
     var body: some View {
         NavigationStack {
@@ -13,7 +12,7 @@ struct PresidentHomeView: View {
                         // Today's Tasks Section
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
-                                Text("Today's Task")
+                                Text("All Tasks")
                                 NavigationLink(destination: TasksListView(user: user)) {
                                     Image(systemName: "chevron.right")
                                 }
@@ -24,22 +23,21 @@ struct PresidentHomeView: View {
                             HomeTasksModule(user: user)
                         }
                         
-                        // Approval Request Section
+                        // Approval Management Section
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
-                                Text("Approval Request")
-                                NavigationLink(destination: ApprovalsListView(user: user)) {
+                                Text("Approval Management")
+                                NavigationLink(destination: PresidentBudgetClubsView()) {
                                     Image(systemName: "chevron.right")
                                 }
                             }
                             .font(.title2)
                             .bold()
                             
-                            PresidentApprovalsModule(user: user) { id in
-                                selectedEventId = id
-                            }
+                            PresidentApprovalsModule(user: user)
                         }
                         
+                        /*
                         // Upcoming Events Section
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
@@ -53,14 +51,12 @@ struct PresidentHomeView: View {
                             
                             UpcomingEventsModule(user: user)
                         }
+                        */
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 24)
                     .navigationTitle("Home")
                     .toolbarTitleDisplayMode(.inlineLarge)
-                    .navigationDestination(item: $selectedEventId) { id in
-                        EventApprovalsDetailView(eventId: id)
-                    }
                     .toolbar {
                         ToolbarItemGroup(placement: .topBarTrailing) {
                             NavigationLink {

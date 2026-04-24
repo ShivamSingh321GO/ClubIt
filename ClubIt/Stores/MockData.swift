@@ -8,6 +8,8 @@ struct MockData {
     static let vpTechId = UUID()
     static let vpLitId = UUID()
     static let vpBizId = UUID()
+    static let unassignedVPId = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+
 
     struct MockClubBundle {
         let club: Club
@@ -29,7 +31,11 @@ struct MockData {
             logo: "technojam_logo",
             clubLeadId: leadId,
             facultyId: facultyId,
+
             vicePresidentId: vpTechId,
+
+//            vicePresidentId: nil,
+
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -69,7 +75,11 @@ struct MockData {
             logo: "literary_logo",
             clubLeadId: leadId,
             facultyId: facultyId,
+
             vicePresidentId: vpLitId,
+
+//            vicePresidentId: nil,
+
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -104,6 +114,7 @@ struct MockData {
             clubLeadId: leadId,
             facultyId: UUID(),
             vicePresidentId: vpBizId,
+//            vicePresidentId: nil,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -136,7 +147,10 @@ struct MockData {
             logo: "quizzards_logo",
             clubLeadId: leadId,
             facultyId: UUID(),
+
             vicePresidentId: vpTechId,
+
+//            vicePresidentId: nil,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -161,6 +175,7 @@ struct MockData {
     static let allMockUsers: [User] = {
         var users = allBundles.flatMap { $0.users }
         
+
         // Add President
         users.append(User(id: presidentId, email: "president", password: "pass123", name: "Dr. Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22233", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
         
@@ -168,9 +183,9 @@ struct MockData {
         users.append(User(id: vpTechId, email: "vpTech", password: "pass123", name: "Rahul Sharma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22244", course: "Council", year: "4th Year", bio: "VP Technical", createdAt: Date(), status: .active))
         users.append(User(id: vpLitId, email: "vpLit", password: "pass123", name: "Kavya Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22255", course: "Council", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
         users.append(User(id: vpBizId, email: "vpBiz", password: "pass123", name: "Ishaan Verma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22266", course: "Council", year: "4th Year", bio: "VP Professional", createdAt: Date(), status: .active))
+
+     
         
-        // Add general student
-        users.append(User(id: UUID(), email: "student", password: "pass123", name: "Kamakshi", instituteId: instituteId, role: .student, clubId: nil, profileImg: "", phoneNumber: "+91 12345 67890", course: "B.Tech CSE", year: "3rd Year", bio: "Passionate builder.", createdAt: Date(), status: .active))
         return users
     }()
 
@@ -229,6 +244,18 @@ struct MockData {
             
             // E-Cell University Resources
             Resource(id: UUID(), eventId: startupPitchId, name: "Movable Whiteboards", quantity: 4, type: .university, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-72000))
+        ]
+    }()
+
+    static let sampleBudgets: [Budget] = {
+        let techSummitId = sampleEvents.first { $0.title.contains("Annual Tech Summit") }?.id ?? UUID()
+        let musicNightId = sampleEvents.first { $0.title.contains("Euphoria") }?.id ?? UUID()
+        let leadId = clubLeadUser.id
+        
+        return [
+            Budget(id: UUID(), eventId: techSummitId, itemName: "Swags & T-shirts", unitPrice: 500, quantity: 100, totalAmount: 50000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
+            Budget(id: UUID(), eventId: techSummitId, itemName: "Food & Refreshments", unitPrice: 200, quantity: 150, totalAmount: 30000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
+            Budget(id: UUID(), eventId: musicNightId, itemName: "Artist Fee", unitPrice: 100000, quantity: 1, totalAmount: 100000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-172800))
         ]
     }()
 

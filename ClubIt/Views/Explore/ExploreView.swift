@@ -73,16 +73,18 @@ struct ExploreView: View {
                             }
                         }
                         
-                        Menu {
-                            Button("My Events") {
-                                scope = .myEvents
+                        if appSession.currentRole != .president && appSession.currentRole != .faculty {
+                            Menu {
+                                Button("My Events") {
+                                    scope = .myEvents
+                                }
+                                
+                                Button("All Events") {
+                                    scope = .allEvents
+                                }
+                            } label: {
+                                Image(systemName: "line.3.horizontal.decrease")
                             }
-                            
-                            Button("All Events") {
-                                scope = .allEvents
-                            }
-                        } label: {
-                            Image(systemName: "line.3.horizontal.decrease")
                         }
                     }
                 }

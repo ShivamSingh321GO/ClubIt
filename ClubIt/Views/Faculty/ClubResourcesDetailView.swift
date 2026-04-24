@@ -36,6 +36,28 @@ struct ClubResourcesDetailView: View {
                 
                 // MARK: - Content List
                 if selectedTab == "Resources" {
+                    let totalApprovedBudget = allClubResources
+                        .filter { $0.status == .approved && $0.type == .external }
+                        .reduce(0) { $0 + ($1.cost ?? 0) }
+                    
+                    if totalApprovedBudget > 0 {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Total Approved Rental")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .textCase(.uppercase)
+                            
+                            Text("₹\(String(format: "%.0f", totalApprovedBudget))")
+                                .font(.title2.bold())
+                                .foregroundColor(.green)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.green.opacity(0.05))
+                        .cornerRadius(16)
+                        .padding(.horizontal)
+                    }
+                    
                     ResourceListView(
                         resources: allClubResources,
                         onReject: { resource in
@@ -121,12 +143,12 @@ struct ClubHeaderView: View {
             NavigationLink(destination: EventDetailView(event: event, isMyEvent: false)) {
                 HStack(spacing: 16) {
                     Circle()
-                        .fill(Color.blue.opacity(0.1))
+                        .fill(Color.orange.opacity(0.1))
                         .frame(width: 50, height: 50)
                         .overlay(
                             Text(String(club.name.prefix(1)))
                                 .font(.title3.bold())
-                                .foregroundColor(.blue)
+                                .foregroundColor(.orange)
                         )
                     
                     VStack(alignment: .leading, spacing: 4) {
@@ -154,12 +176,12 @@ struct ClubHeaderView: View {
         } else {
             HStack(spacing: 16) {
                 Circle()
-                    .fill(Color.blue.opacity(0.1))
+                    .fill(Color.orange.opacity(0.1))
                     .frame(width: 50, height: 50)
                     .overlay(
                         Text(String(club.name.prefix(1)))
                             .font(.title3.bold())
-                            .foregroundColor(.blue)
+                            .foregroundColor(.orange)
                     )
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -285,7 +307,7 @@ struct FacultyResourceRequestCard: View {
             HStack(alignment: .top) {
                 HStack(spacing: 10) {
                     Image(systemName: "cube.box.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.orange)
                         .font(.title3)
                     
                     Text(resource.name)
@@ -362,7 +384,7 @@ struct FacultyResourceRequestCard: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.blue)
+                            .background(Color.green)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .buttonStyle(.plain)
@@ -470,7 +492,7 @@ struct FacultyVenueApprovalCard: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.blue)
+                            .background(Color.green)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .buttonStyle(.plain)
@@ -519,14 +541,14 @@ struct TabButton: View {
                         .font(.caption2.bold())
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(isSelected ? Color.blue.opacity(0.2) : Color.secondary.opacity(0.1))
+                        .background(isSelected ? Color.orange.opacity(0.2) : Color.secondary.opacity(0.1))
                         .clipShape(Capsule())
                 }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(isSelected ? Color.white : Color.clear)
-            .foregroundColor(isSelected ? .blue : .secondary)
+            .foregroundColor(isSelected ? .orange : .secondary)
             .clipShape(Capsule())
             .shadow(color: isSelected ? .black.opacity(0.05) : .clear, radius: 4, x: 0, y: 2)
         }
@@ -661,7 +683,7 @@ struct FacultyDetailItem: View {
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: icon)
-                .foregroundColor(.blue)
+                .foregroundColor(.orange)
                 .font(.system(size: 14))
                 .padding(.top, 2)
             

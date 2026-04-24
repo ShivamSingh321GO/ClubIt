@@ -13,7 +13,7 @@ struct FacultyHomeView: View {
                         // Today's Tasks Section
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
-                                Text("Today's Task")
+                                Text("All Tasks")
                                 NavigationLink(destination: TasksListView(user: user)) {
                                     Image(systemName: "chevron.right")
                                 }
@@ -27,7 +27,7 @@ struct FacultyHomeView: View {
                         // Approval Request Section
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
-                                Text("Approval Request")
+                                Text("Approval Management")
                                 NavigationLink(destination: FacultyResourceClubsView()) {
                                     Image(systemName: "chevron.right")
                                 }
