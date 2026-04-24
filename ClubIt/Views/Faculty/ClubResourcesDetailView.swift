@@ -61,7 +61,6 @@ struct ClubResourcesDetailView: View {
             }
             .padding(.vertical)
         }
-        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle(club.name)
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $selectedResourceForRemark) { resource in

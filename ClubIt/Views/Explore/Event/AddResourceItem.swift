@@ -120,7 +120,6 @@ struct AddResourceItemView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 17, weight: .medium))
                 }
             }
             
@@ -130,7 +129,6 @@ struct AddResourceItemView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 17, weight: .bold))
                 }
             }
         }

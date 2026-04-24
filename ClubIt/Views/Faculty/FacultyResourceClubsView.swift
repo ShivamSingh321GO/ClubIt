@@ -28,7 +28,6 @@ struct FacultyResourceClubsView: View {
             }
             .padding(.vertical)
         }
-        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle("Approval Management")
         .navigationBarTitleDisplayMode(.inline)
     }
