@@ -11,6 +11,14 @@ struct VicePresidentDashboardView: View {
    
     var body: some View {
         TabView {
+            Tab("Home", systemImage: "house") {
+                VicePresidentHomeView()
+            }
+            
+            Tab("Manage", systemImage: "person.3") {
+                VicePresidentManageView()
+            }
+            
             Tab("Explore", systemImage: "calendar") {
                 ExploreView()
             }
