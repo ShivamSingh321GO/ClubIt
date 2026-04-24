@@ -106,6 +106,7 @@ struct ClubCard: View {
         logo: "quizzards_logo",
         clubLeadId: UUID(),
         facultyId: UUID(),
+        vicePresidentId: UUID(),
         instituteId: UUID(),
         status: .active,
         createdAt: Date(),

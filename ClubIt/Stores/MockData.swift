@@ -2,6 +2,12 @@ import Foundation
 
 struct MockData {
     static let instituteId = UUID()
+    
+    // Static IDs for Council
+    static let presidentId = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+    static let vpTechId = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+    static let vpLitId = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
+    static let vpBizId = UUID(uuidString: "00000000-0000-0000-0000-000000000004")!
 
     struct MockClubBundle {
         let club: Club
@@ -23,6 +29,7 @@ struct MockData {
             logo: "technojam_logo",
             clubLeadId: leadId,
             facultyId: facultyId,
+            vicePresidentId: vpTechId,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -62,6 +69,7 @@ struct MockData {
             logo: "literary_logo",
             clubLeadId: leadId,
             facultyId: facultyId,
+            vicePresidentId: vpLitId,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -95,6 +103,7 @@ struct MockData {
             logo: "ecell_logo",
             clubLeadId: leadId,
             facultyId: UUID(),
+            vicePresidentId: vpBizId,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -127,6 +136,7 @@ struct MockData {
             logo: "quizzards_logo",
             clubLeadId: leadId,
             facultyId: UUID(),
+            vicePresidentId: vpTechId,
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
@@ -151,11 +161,13 @@ struct MockData {
     static let allMockUsers: [User] = {
         var users = allBundles.flatMap { $0.users }
         
-        // Add President & Vice President
-        let presidentId = UUID()
-        let vicePresidentId = UUID()
-        users.append(User(id: presidentId, email: "president", password: "pass123", name: "Dr. Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22233", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
-        users.append(User(id: vicePresidentId, email: "vicepresident", password: "pass123", name: "Dr. Sunil Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22244", course: "Administration", year: "N/A", bio: "University Vice President", createdAt: Date(), status: .active))
+        // Add President
+        users.append(User(id: presidentId, email: "president@uni.com", password: "pass123", name: "Dr. Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22233", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
+        
+        // Add Vice Presidents
+        users.append(User(id: vpTechId, email: "vp.tech@uni.com", password: "pass123", name: "Rahul Sharma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22244", course: "Council", year: "4th Year", bio: "VP Technical", createdAt: Date(), status: .active))
+        users.append(User(id: vpLitId, email: "vp.lit@uni.com", password: "pass123", name: "Kavya Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22255", course: "Council", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
+        users.append(User(id: vpBizId, email: "vp.biz@uni.com", password: "pass123", name: "Ishaan Verma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22266", course: "Council", year: "4th Year", bio: "VP Professional", createdAt: Date(), status: .active))
         
         // Add general student
         users.append(User(id: UUID(), email: "student", password: "pass123", name: "Kamakshi", instituteId: instituteId, role: .student, clubId: nil, profileImg: "", phoneNumber: "+91 12345 67890", course: "B.Tech CSE", year: "3rd Year", bio: "Passionate builder.", createdAt: Date(), status: .active))
@@ -190,7 +202,7 @@ struct MockData {
         
         return [
             Approval(id: UUID(), type: .resource, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-7200), updatedAt: Date()),
-            Approval(id: UUID(), type: .budget, senderId: leadId, receiverId: facultyResource.id, eventId: musicNightId, approvalRelatedId: UUID(), status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-3600), updatedAt: Date()),
+            Approval(id: UUID(), type: .budget, senderId: leadId, receiverId: presidentId, eventId: musicNightId, approvalRelatedId: UUID(), status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-3600), updatedAt: Date()),
             Approval(id: UUID(), type: .venue, senderId: leadId, receiverId: facultyVenue.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-86400), updatedAt: Date())
         ]
     }()
