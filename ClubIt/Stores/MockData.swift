@@ -13,7 +13,7 @@ struct MockData {
     static let technoJamBundle: MockClubBundle = {
         let clubId = UUID()
         let leadId = UUID()
-        let facultyId = UUID(uuidString: "FAC11111-1111-1111-1111-111111111111")!
+        let facultyId = UUID()
         let club = Club(
             id: clubId,
             name: "Technojam",
@@ -43,7 +43,7 @@ struct MockData {
         ]
         
         let announcements = [
-            Announcement(clubId: clubId, date: Date(), title: "Tech Summit 2024 - Registration Open!", content: "Registration for our annual Tech Summit is now open.", url: "https://technojam.com/summit", postedBy: leadId, target: .club, createdAt: Date().addingTimeInterval(-7200))
+            Announcement(clubId: clubId, date: Date(), title: "Tech Summit 2024", content: "Registration for our annual Tech Summit is now open.", url: "https://technojam.com/summit", postedBy: leadId, target: .club, createdAt: Date().addingTimeInterval(-7200))
         ]
         
         return MockClubBundle(club: club, users: users, events: events, announcements: announcements)
@@ -52,7 +52,7 @@ struct MockData {
     static let lingoFreaksBundle: MockClubBundle = {
         let clubId = UUID()
         let leadId = UUID()
-        let facultyId = UUID(uuidString: "FAC22222-2222-2222-2222-222222222222")!
+        let facultyId = UUID()
         let club = Club(
             id: clubId,
             name: "Lingo Freaks",

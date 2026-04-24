@@ -108,18 +108,6 @@ struct HomeApprovalsModule: View {
 //                        RoundedRectangle(cornerRadius: 16)
 //                            .stroke(Color.primary.opacity(0.1), lineWidth: 1)
 //                    )
-            } else {
-                VStack(spacing: 16) {
-                    ForEach(sentApprovals.prefix(2), id: \.id) { approval in
-                        if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
-                            ApprovalSummaryCard(
-                                title: event.name,
-                                subtitle: "Created by you • \(formatDate(event.createdAt))",
-                                action: { onSelect(approval.eventId) }
-                            )
-                        }
-                    }
-                }
             }
         }
     }

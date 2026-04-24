@@ -21,7 +21,7 @@ struct ApprovalsListView: View {
                 return approval.type == .budget && approval.status == .pending
             } else {
                 // Leads see their sent approvals
-                return approval.senderId == user.id
+                return approval.senderId == user.id && approval.type == .event
             }
         }
         
@@ -50,7 +50,7 @@ struct ApprovalsListView: View {
             }
             //.padding(16)
         }
-        .navigationTitle(appSession.currentRole == .president ? "Budget Requests" : "Sent Approvals")
+        .navigationTitle(appSession.currentRole == .president ? "Budget Requests" : "Approval Requests")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedEventId) { id in
             EventApprovalsDetailView(eventId: id)
