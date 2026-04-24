@@ -11,7 +11,12 @@ struct AddBudgetItemView: View {
     
     @Environment(\.dismiss) private var dismiss
     let onSave: ([DraftBudgetItem]) -> Void
-    @State private var items: [DraftBudgetItem] = [DraftBudgetItem()]
+    @State private var items: [DraftBudgetItem]
+
+    init(initialItems: [DraftBudgetItem] = [], onSave: @escaping ([DraftBudgetItem]) -> Void) {
+        self.onSave = onSave
+        _items = State(initialValue: initialItems.isEmpty ? [DraftBudgetItem()] : initialItems)
+    }
 
     
     var body: some View {

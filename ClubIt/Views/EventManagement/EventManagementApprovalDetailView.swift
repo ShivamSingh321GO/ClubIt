@@ -1,8 +1,10 @@
 import SwiftUI
 
+
 struct EventManagementApprovalDetailView: View {
     @Environment(AppSession.self) var appSession
     let club: Club
+    let event: Event
     
     @State private var selectedTab: String = "Resource"
     
@@ -19,21 +21,26 @@ struct EventManagementApprovalDetailView: View {
     @State private var showingBudgetApprovalAlert = false
     @State private var budgetToApprove: Budget?
     
+    // Event states
+    @State private var selectedEventApprovalForRemark: Approval?
+    @State private var showingEventApprovalAlert = false
+    @State private var eventToApprove: Approval?
+    
     var body: some View {
-        let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
-        let clubEventIds = Set(clubEvents.map { $0.id })
-        
-        let allClubResources = appSession.approvalStore.resources.filter { clubEventIds.contains($0.eventId) }
+        let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
         let allClubVenueApprovals = appSession.approvalStore.approvals.filter { 
-            clubEventIds.contains($0.eventId) && $0.type == .venue 
+            $0.eventId == event.id && $0.type == .venue 
         }
-        let allClubBudgets = appSession.approvalStore.budgets.filter { clubEventIds.contains($0.eventId) }
+        let allClubBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
+        let allClubEventApprovals = appSession.approvalStore.approvals.filter { 
+            $0.eventId == event.id && $0.type == .event 
+        }
         
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 
                 // MARK: - Club Header
-                ClubHeaderView(club: club, pendingResources: allClubResources)
+                ClubHeaderView(club: club, event: event)
                 
                 // MARK: - Segmented Filter (3 Segments)
                 Picker("Select Category", selection: $selectedTab) {
@@ -45,7 +52,7 @@ struct EventManagementApprovalDetailView: View {
                 .padding(.horizontal)
                 
                 // MARK: - Global Timestamp
-                let allRequests = allClubResources.map { $0.createdAt } + allClubVenueApprovals.map { $0.createdAt } + allClubBudgets.map { $0.createdAt }
+                let allRequests = allClubResources.map { $0.createdAt } + allClubVenueApprovals.map { $0.createdAt } + allClubBudgets.map { $0.createdAt } + allClubEventApprovals.map { $0.createdAt }
                 if let latestRequest = allRequests.sorted(by: { $0 > $1 }).first {
                     HStack {
                         Image(systemName: "clock.fill")
@@ -121,6 +128,7 @@ struct EventManagementApprovalDetailView: View {
                 if let budget = budgetToApprove {
                     withAnimation {
                         appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
+                        appSession.checkAndAutoApproveEvent(eventId: event.id)
                     }
                 }
             }
@@ -128,6 +136,63 @@ struct EventManagementApprovalDetailView: View {
             if let budget = budgetToApprove {
                 Text("Are you sure you want to approve the budget for '\(budget.itemName)'?")
             }
+        }
+        // Event Alert
+        .alert("Confirm Approval", isPresented: $showingEventApprovalAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Approve") {
+                if let approval = eventToApprove {
+                    withAnimation {
+                        appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                        // Sync event status
+                        appSession.eventStore.updateEventStatus(id: approval.eventId, status: .upcoming)
+                    }
+                }
+            }
+        } message: {
+            if let approval = eventToApprove,
+               let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
+                Text("Are you sure you want to approve the creation of event '\(event.name)'?")
+            }
+        }
+        .sheet(item: $selectedEventApprovalForRemark) { approval in
+            FacultyVenueRemarkSheet(approval: approval, onReject: { remark in
+                appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: remark)
+                appSession.eventStore.updateEventStatus(id: approval.eventId, status: .cancelled)
+            })
+        }
+    }
+    
+    @ViewBuilder
+    private func eventSection(_ approvals: [Approval]) -> some View {
+        if approvals.isEmpty {
+            VStack(spacing: 20) {
+                Image(systemName: "calendar.badge.plus")
+                    .font(.system(size: 48))
+                    .foregroundColor(.secondary.opacity(0.5))
+                Text("No event creation requests")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 60)
+        } else {
+            VStack(spacing: 16) {
+                ForEach(approvals.sorted(by: { $0.createdAt > $1.createdAt })) { approval in
+                    if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
+                        EventApprovalRequestCard(
+                            event: event,
+                            approval: approval,
+                            onReject: { selectedEventApprovalForRemark = approval },
+                            onApprove: {
+                                eventToApprove = approval
+                                showingEventApprovalAlert = true
+                            }
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal)
         }
     }
     
@@ -213,6 +278,7 @@ struct EventManagementApprovalDetailView: View {
                 onApprove: { resource in
                     resourceToApprove = resource
                     showingResourceApprovalAlert = true
+                    appSession.checkAndAutoApproveEvent(eventId: event.id)
                 }
             )
         }
@@ -228,6 +294,7 @@ struct EventManagementApprovalDetailView: View {
             onApprove: { approval in
                 venueToApprove = approval
                 showingVenueApprovalAlert = true
+                appSession.checkAndAutoApproveEvent(eventId: event.id)
             }
         )
     }
@@ -345,7 +412,92 @@ struct EventManagementApprovalDetailView: View {
 
 #Preview {
     NavigationStack {
-        EventManagementApprovalDetailView(club: MockData.technoJamClub)
+        EventManagementApprovalDetailView(club: MockData.technoJamClub, event: MockData.sampleEvents[0])
             .environment(MockData.session(for: .faculty))
+    }
+}
+
+struct EventApprovalRequestCard: View {
+    @Environment(AppSession.self) var appSession
+    let event: Event
+    let approval: Approval
+    let onReject: () -> Void
+    let onApprove: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(event.name)
+                        .font(.headline)
+                    Text(event.category.rawValue)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                ApprovalStatusBadge(status: approval.status)
+            }
+            
+            Divider()
+                .opacity(0.5)
+            
+            HStack {
+                Label(event.startDate.formatted(date: .abbreviated, time: .shortened), systemImage: "calendar")
+                    .font(.caption)
+                Spacer()
+                Label(event.location, systemImage: "mappin.and.ellipse")
+                    .font(.caption)
+            }
+            .foregroundColor(.secondary)
+            
+            if approval.status == .pending {
+                HStack(spacing: 12) {
+                    Button(action: onReject) {
+                        Text("Reject")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(Color.red.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    
+                    Button(action: onApprove) {
+                        Text("Approve")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(Color.blue)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(.top, 4)
+            }
+        }
+        .padding(16)
+        .glassEffect(in: .rect(cornerRadius: 24))
+    }
+}
+
+struct ApprovalStatusBadge: View {
+    let status: ApprovalStatus
+    
+    var body: some View {
+        Text(status.rawValue.capitalized)
+            .font(.caption2.bold())
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.1))
+            .foregroundColor(color)
+            .clipShape(Capsule())
+    }
+    
+    var color: Color {
+        switch status {
+        case .pending: return .orange
+        case .approved: return .green
+        case .rejected: return .red
+        }
     }
 }

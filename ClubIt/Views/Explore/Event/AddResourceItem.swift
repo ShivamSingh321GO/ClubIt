@@ -5,6 +5,7 @@ struct DraftResourceItem: Identifiable {
     var name: String = ""
     var price: String = ""
     var quantity: Int = 1
+    var vendorName: String = ""
 }
 
 struct AddResourceItemView: View {
@@ -13,8 +14,14 @@ struct AddResourceItemView: View {
     let onSave: ([DraftResourceItem], [DraftResourceItem]) -> Void
     
     @State private var selectedTab = 0
-    @State private var universityItems: [DraftResourceItem] = [DraftResourceItem()]
-    @State private var rentalItems: [DraftResourceItem] = [DraftResourceItem()]
+    @State private var universityItems: [DraftResourceItem]
+    @State private var rentalItems: [DraftResourceItem]
+
+    init(initialUniversityItems: [DraftResourceItem] = [], initialRentalItems: [DraftResourceItem] = [], onSave: @escaping ([DraftResourceItem], [DraftResourceItem]) -> Void) {
+        self.onSave = onSave
+        _universityItems = State(initialValue: initialUniversityItems.isEmpty ? [DraftResourceItem()] : initialUniversityItems)
+        _rentalItems = State(initialValue: initialRentalItems.isEmpty ? [DraftResourceItem()] : initialRentalItems)
+    }
 
     
     var body: some View {
@@ -84,6 +91,9 @@ struct AddResourceItemView: View {
                             
                             TextField("Price", text: $item.price)
                                 .keyboardType(.decimalPad)
+                                .padding(.vertical, 4)
+                            
+                            TextField("Vendor Name", text: $item.vendorName)
                                 .padding(.vertical, 4)
                         }
                     }

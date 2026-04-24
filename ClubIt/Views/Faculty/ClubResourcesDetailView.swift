@@ -3,6 +3,7 @@ import SwiftUI
 struct ClubResourcesDetailView: View {
     @Environment(AppSession.self) var appSession
     let club: Club
+    let event: Event
     
     @State private var selectedTab: String = "Resources"
     @State private var selectedResourceForRemark: Resource?
@@ -15,18 +16,16 @@ struct ClubResourcesDetailView: View {
     @State private var venueToApprove: Approval?
     
     var body: some View {
-        let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
-        let clubEventIds = Set(clubEvents.map { $0.id })
-        let allClubResources = appSession.approvalStore.resources.filter { clubEventIds.contains($0.eventId) }
+        let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
         let allClubVenueApprovals = appSession.approvalStore.approvals.filter { 
-            clubEventIds.contains($0.eventId) && $0.type == .venue 
+            $0.eventId == event.id && $0.type == .venue 
         }
         
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 
                 // MARK: - Club Header
-                ClubHeaderView(club: club, pendingResources: allClubResources)
+                ClubHeaderView(club: club, event: event)
                 
                 // Global Requested At
                 GlobalTimestampView(resources: allClubResources)
@@ -130,76 +129,6 @@ struct ClubResourcesDetailView: View {
     }
 }
 
-// MARK: - Helper Subviews
-struct ClubHeaderView: View {
-    @Environment(AppSession.self) var appSession
-    let club: Club
-    let pendingResources: [Resource]
-    
-    var body: some View {
-        let pendingItems = pendingResources.filter { $0.status == .pending }
-        if let firstEventId = pendingItems.first?.eventId,
-           let event = appSession.eventStore.events.first(where: { $0.id == firstEventId }) {
-            NavigationLink(destination: EventDetailView(event: event, isMyEvent: false)) {
-                HStack(spacing: 16) {
-                    Circle()
-                        .fill(Color.orange.opacity(0.1))
-                        .frame(width: 50, height: 50)
-                        .overlay(
-                            Text(String(club.name.prefix(1)))
-                                .font(.title3.bold())
-                                .foregroundColor(.orange)
-                        )
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(event.name)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        Text(club.name)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.caption.bold())
-                        .foregroundColor(.secondary.opacity(0.3))
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(20)
-                .padding(.horizontal)
-            }
-            .buttonStyle(.plain)
-        } else {
-            HStack(spacing: 16) {
-                Circle()
-                    .fill(Color.orange.opacity(0.1))
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Text(String(club.name.prefix(1)))
-                            .font(.title3.bold())
-                            .foregroundColor(.orange)
-                    )
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(club.name)
-                        .font(.title3.bold())
-                    Text("Manage resource requests")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-            }
-            .padding()
-            .background(.ultraThinMaterial)
-            .cornerRadius(20)
-            .padding(.horizontal)
-        }
-    }
-}
 
 struct GlobalTimestampView: View {
     let resources: [Resource]
@@ -600,12 +529,13 @@ struct FacultyVenueRemarkSheet: View {
     @Environment(AppSession.self) var appSession
     @Environment(\.dismiss) var dismiss
     let approval: Approval
+    var onReject: ((String) -> Void)? = nil
     @State private var remark: String = ""
     
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
-                Text("Add a remark for Venue rejection")
+                Text("Add a remark for rejection")
                     .font(.headline)
                 
                 TextEditor(text: $remark)
@@ -617,7 +547,11 @@ struct FacultyVenueRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: remark)
+                    if let onReject = onReject {
+                        onReject(remark)
+                    } else {
+                        appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: remark)
+                    }
                     dismiss()
                 }) {
                     Text("Reject with Remark")
@@ -760,7 +694,7 @@ struct FacultyRemarkSheet: View {
 
 #Preview {
     NavigationStack {
-        ClubResourcesDetailView(club: MockData.technoJamClub)
+        ClubResourcesDetailView(club: MockData.technoJamClub, event: MockData.sampleEvents[0])
             .environment(MockData.session(for: .faculty))
     }
 }

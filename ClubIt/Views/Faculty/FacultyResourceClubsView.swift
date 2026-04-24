@@ -10,16 +10,26 @@ struct FacultyResourceClubsView: View {
                 
                 if let facultyId = appSession.currentUser?.id {
                     let assignedClubs = appSession.clubStore.allClubs.filter { $0.facultyId == facultyId }
+                    let clubIds = Set(assignedClubs.map { $0.id })
                     
-                    if assignedClubs.isEmpty {
-                        FacultyEmptyStateView(icon: "person.crop.circle.badge.exclamationmark", title: "No Assigned Clubs", message: "You are not assigned to any clubs as a faculty member.")
+                    let eventsWithPending = appSession.eventStore.events.filter { event in
+                        clubIds.contains(event.clubId) && (
+                            appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .pending } ||
+                            appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .venue && $0.status == .pending }
+                        )
+                    }.sorted(by: { $0.startDate > $1.startDate })
+                    
+                    if eventsWithPending.isEmpty {
+                        FacultyEmptyStateView(icon: "calendar.badge.exclamationmark", title: "No Pending Requests", message: "There are no resource or venue requests currently requiring your approval.")
                     } else {
                         LazyVStack(spacing: 16) {
-                            ForEach(assignedClubs) { club in
-                                NavigationLink(destination: ClubResourcesDetailView(club: club)) {
-                                    FacultyClubResourceCard(club: club)
+                            ForEach(eventsWithPending) { event in
+                                if let club = assignedClubs.first(where: { $0.id == event.clubId }) {
+                                    NavigationLink(destination: ClubResourcesDetailView(club: club, event: event)) {
+                                        FacultyEventResourceCard(event: event, club: club)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                         .padding(.horizontal)
@@ -33,16 +43,20 @@ struct FacultyResourceClubsView: View {
     }
 }
 
-struct FacultyClubResourceCard: View {
+struct FacultyEventResourceCard: View {
     @Environment(AppSession.self) var appSession
+    let event: Event
     let club: Club
     
     var body: some View {
-        let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
-        let clubEventIds = Set(clubEvents.map { $0.id })
-        let pendingCount = appSession.approvalStore.resources.filter { 
-            clubEventIds.contains($0.eventId) && $0.status == .pending 
-        }.count
+        let pendingResources = appSession.approvalStore.resources.filter { 
+            $0.eventId == event.id && $0.status == .pending 
+        }
+        let pendingVenues = appSession.approvalStore.approvals.filter { 
+            $0.eventId == event.id && $0.type == .venue && $0.status == .pending 
+        }
+        
+        let pendingCount = pendingResources.count + pendingVenues.count
         
         HStack(spacing: 16) {
             // Club Logo/Initials
@@ -57,28 +71,14 @@ struct FacultyClubResourceCard: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                let pendingResources = appSession.approvalStore.resources.filter { 
-                    clubEventIds.contains($0.eventId) && $0.status == .pending 
-                }
+                Text(event.name)
+                    .font(.headline)
+                    .lineLimit(1)
                 
-                if let firstPendingEventId = pendingResources.first?.eventId,
-                   let event = appSession.eventStore.events.first(where: { $0.id == firstPendingEventId }) {
-                    Text(event.name)
-                        .font(.headline)
-                        .lineLimit(1)
-                    
-                    Text(club.name)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text(club.name)
-                        .font(.headline)
-                        .lineLimit(1)
-                    
-                    Text(club.category.rawValue)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text(club.name)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
             
             Spacer()

@@ -8,6 +8,8 @@ struct EventDetailView: View {
     let event: Event
     let isMyEvent: Bool
     
+    @State private var isShowingRegistrationForm = false
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
@@ -110,7 +112,11 @@ struct EventDetailView: View {
                         
                         Button {
                             if !isMyEvent {
-                                appSession.registerForEvent(id: event.id)
+                                if let form = event.registrationForm, !form.isEmpty {
+                                    isShowingRegistrationForm = true
+                                } else {
+                                    appSession.registerForEvent(id: event.id)
+                                }
                             }
                         } label: {
                             Text(isMyEvent ? "View Participants" : (appSession.registeredEventIds.contains(event.id) ? "Registered" : "Register"))
@@ -131,6 +137,9 @@ struct EventDetailView: View {
         }
         .navigationTitle(event.title)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isShowingRegistrationForm) {
+            DynamicRegistrationFormView(event: event)
+        }
     }
     
     @ViewBuilder

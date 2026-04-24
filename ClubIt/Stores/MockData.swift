@@ -52,7 +52,17 @@ struct MockData {
         ]
         
         let events = [
-            Event(id: UUID(), name: "Tech Summit", title: "Annual Tech Summit 2025", description: "A grand gathering of technology enthusiasts.", startDate: Date().addingTimeInterval(3600 * 24 * 3), endDate: Date().addingTimeInterval(3600 * 24 * 3 + 3600 * 8), startTime: Date(), endTime: Date(), numberOfVolunteers: 10, numberOfRegistrations: 50, maxParticipants: 100, registrationType: .individual, location: "New Auditorium", clubId: clubId, createdBy: leadId, category: .technical, status: .pending, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 2), bannerImage: "banner1", agenda: "Opening keynote, Workshops", createdAt: Date())
+            Event(id: UUID(), name: "Tech Summit", title: "Annual Tech Summit 2025", description: "A grand gathering of technology enthusiasts.", startDate: Date().addingTimeInterval(3600 * 24 * 3), endDate: Date().addingTimeInterval(3600 * 24 * 3 + 3600 * 8), startTime: Date(), endTime: Date(), numberOfVolunteers: 10, numberOfRegistrations: 50, maxParticipants: 100, registrationType: .individual, location: "New Auditorium", clubId: clubId, createdBy: leadId, category: .technical, status: .pending, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 2), bannerImage: "banner1", agenda: "Opening keynote, Workshops", createdAt: Date()),
+            
+            Event(id: UUID(), name: "Web Dev Workshop", title: "Modern Web Development", description: "Learn React and Tailwind in this hands-on workshop.", startDate: Date().addingTimeInterval(3600 * 24 * 5), endDate: Date().addingTimeInterval(3600 * 24 * 5 + 3600 * 3), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 10, maxParticipants: 30, registrationType: .team, location: "Lab 3", clubId: clubId, createdBy: leadId, category: .technical, status: .upcoming, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 4), bannerImage: "banner1", agenda: "Intro, React Basics, Deployment", 
+                registrationForm: [
+                    RegistrationFormField(label: "Full Name", type: .text),
+                    RegistrationFormField(label: "Student ID", type: .text),
+                    RegistrationFormField(label: "Proficiency in JavaScript", type: .multipleChoice, options: ["None", "Beginner", "Advanced"]),
+                    RegistrationFormField(label: "Why do you want to join?", type: .paragraph),
+                    RegistrationFormField(label: "Dietary Preferences", type: .checkbox, options: ["Veg", "Non-Veg", "Vegan"])
+                ],
+                createdAt: Date())
         ]
         
         let announcements = [
@@ -214,6 +224,7 @@ struct MockData {
         let leadId = clubLeadUser.id
         
         return [
+            Approval(id: UUID(), type: .event, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: "Event creation approval requested", createdAt: Date().addingTimeInterval(-172800), updatedAt: Date()),
             Approval(id: UUID(), type: .resource, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-7200), updatedAt: Date()),
             Approval(id: UUID(), type: .budget, senderId: leadId, receiverId: presidentId, eventId: musicNightId, approvalRelatedId: UUID(), status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-3600), updatedAt: Date()),
             Approval(id: UUID(), type: .venue, senderId: leadId, receiverId: facultyVenue.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-86400), updatedAt: Date())

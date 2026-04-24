@@ -19,4 +19,10 @@ final class EventStore {
     func addEvent(_ event: Event) {
         events.insert(event, at: 0)
     }
+    
+    func updateEventStatus(id: UUID, status: EventStatus) {
+        if let index = events.firstIndex(where: { $0.id == id }) {
+            events[index].status = status
+        }
+    }
 }

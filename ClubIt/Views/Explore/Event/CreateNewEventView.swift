@@ -40,8 +40,10 @@ struct CreateNewEventView: View {
     @State private var isShowingAddBudgetItems = false
     @State private var isShowingAddResourcesItems = false
     @State private var isShowingBudgetSummary = false
+    @State private var isShowingResourceSummary = false
     
     @State private var errorMessage: String?
+    @State private var customFormFields: [RegistrationFormField] = []
 
 
     
@@ -63,7 +65,7 @@ struct CreateNewEventView: View {
                         Text(category.rawValue).tag(category)
                     }
                 }
-                .pickerStyle(.navigationLink)
+                .pickerStyle(.menu)
             } header: {
                 Text("Basic Info")
             }
@@ -127,7 +129,7 @@ struct CreateNewEventView: View {
                 
                 if registrationType == .team {
                     NavigationLink {
-                        TeamRegistrationFormView()
+                        TeamRegistrationFormView(fields: $customFormFields)
                     } label: {
                         HStack {
                             Image(systemName: "doc.text.fill")
@@ -167,7 +169,7 @@ struct CreateNewEventView: View {
                         Text(v).tag(v)
                     }
                 }
-                .pickerStyle(.navigationLink)
+                .pickerStyle(.menu)
             } header: {
                 Text("Venue")
             }
@@ -217,6 +219,23 @@ struct CreateNewEventView: View {
                     }
                 }
                 .foregroundStyle(.primary)
+                
+                if !universityResources.isEmpty || !rentalResources.isEmpty {
+                    Button {
+                        isShowingResourceSummary = true
+                    } label: {
+                        HStack {
+                            Text("\(universityResources.count + rentalResources.count) \( (universityResources.count + rentalResources.count) == 1 ? "item" : "items") added")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
             } header: {
                 Text("Resources")
             }
@@ -258,14 +277,14 @@ struct CreateNewEventView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $isShowingAddBudgetItems) {
             NavigationStack {
-                AddBudgetItemView { items in
+                AddBudgetItemView(initialItems: budgetItems) { items in
                     self.budgetItems = items
                 }
             }
         }
         .sheet(isPresented: $isShowingAddResourcesItems) {
             NavigationStack {
-                AddResourceItemView { uni, rent in
+                AddResourceItemView(initialUniversityItems: universityResources, initialRentalItems: rentalResources) { uni, rent in
                     self.universityResources = uni
                     self.rentalResources = rent
                 }
@@ -273,6 +292,9 @@ struct CreateNewEventView: View {
         }
         .sheet(isPresented: $isShowingBudgetSummary) {
             BudgetSummarySheet(items: budgetItems)
+        }
+        .sheet(isPresented: $isShowingResourceSummary) {
+            ResourceSummarySheet(universityItems: universityResources, rentalItems: rentalResources)
         }
 
     }
@@ -322,15 +344,65 @@ struct CreateNewEventView: View {
             bannerImage: nil,
             imageData: imageData,
             agenda: agenda,
+            registrationForm: customFormFields,
             createdAt: Date()
         )
 
+        let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
+        let facultyId = club?.facultyId ?? UUID()
+
         
-        // Generate Approvals
+        // Save Budget Items
+        for item in budgetItems {
+            let price = Double(item.price) ?? 0
+            let budget = Budget(
+                eventId: newEvent.id,
+                itemName: item.name,
+                unitPrice: price,
+                quantity: item.quantity,
+                totalAmount: price * Double(item.quantity),
+                status: .pending,
+                addedBy: currentUser.id,
+                createdAt: Date()
+            )
+            appSession.approvalStore.addBudget(budget)
+        }
+        
+        // Save Resource Items
+        for item in universityResources {
+            let resource = Resource(
+                eventId: newEvent.id,
+                name: item.name,
+                quantity: item.quantity,
+                type: .university,
+                status: .pending,
+                addedBy: currentUser.id,
+                createdAt: Date()
+            )
+            appSession.approvalStore.addResource(resource)
+        }
+        
+        for item in rentalResources {
+            let price = Double(item.price) ?? 0
+            let resource = Resource(
+                eventId: newEvent.id,
+                name: item.name,
+                quantity: item.quantity,
+                type: .external,
+                status: .pending,
+                cost: price * Double(item.quantity),
+                vendorName: item.vendorName,
+                addedBy: currentUser.id,
+                createdAt: Date()
+            )
+            appSession.approvalStore.addResource(resource)
+        }
+
+        // Generate Approval Summaries for Faculty
         let eventApproval = Approval(
             type: .event,
             senderId: currentUser.id,
-            receiverId: UUID(), // Faculty ID
+            receiverId: facultyId,
             eventId: newEvent.id,
             approvalRelatedId: newEvent.id,
             status: .pending,
@@ -343,9 +415,9 @@ struct CreateNewEventView: View {
             let budgetApproval = Approval(
                 type: .budget,
                 senderId: currentUser.id,
-                receiverId: UUID(), // Finance/Faculty ID
+                receiverId: facultyId,
                 eventId: newEvent.id,
-                approvalRelatedId: UUID(),
+                approvalRelatedId: UUID(), // Reference for the collection
                 status: .pending,
                 remark: "Budget approval requested for \(budgetItems.count) items",
                 createdAt: Date()
@@ -357,9 +429,9 @@ struct CreateNewEventView: View {
             let resourceApproval = Approval(
                 type: .resource,
                 senderId: currentUser.id,
-                receiverId: UUID(), // Resource Manager ID
+                receiverId: facultyId,
                 eventId: newEvent.id,
-                approvalRelatedId: UUID(),
+                approvalRelatedId: UUID(), // Reference for the collection
                 status: .pending,
                 remark: "Resource approval requested for \(universityResources.count + rentalResources.count) items",
                 createdAt: Date()
@@ -371,7 +443,7 @@ struct CreateNewEventView: View {
         let venueApproval = Approval(
             type: .venue,
             senderId: currentUser.id,
-            receiverId: UUID(), // Admin/Venue Manager ID
+            receiverId: facultyId,
             eventId: newEvent.id,
             approvalRelatedId: UUID(),
             status: .pending,
@@ -437,6 +509,101 @@ struct BudgetSummarySheet: View {
                 }
             }
             .navigationTitle("Budget Summary")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+
+struct ResourceSummarySheet: View {
+    let universityItems: [DraftResourceItem]
+    let rentalItems: [DraftResourceItem]
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                if !universityItems.isEmpty {
+                    Section {
+                        ForEach(universityItems) { item in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.name)
+                                        .font(.headline)
+                                    Text("Quantity: \(item.quantity)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Text("University")
+                                    .font(.caption)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.1))
+                                    .foregroundStyle(.blue)
+                                    .clipShape(Capsule())
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    } header: {
+                        Text("University Resources")
+                    }
+                }
+                
+                if !rentalItems.isEmpty {
+                    Section {
+                        ForEach(rentalItems) { item in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.name)
+                                        .font(.headline)
+                                    Text("Quantity: \(item.quantity)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                VStack(alignment: .trailing, spacing: 4) {
+                                    let price = Double(item.price) ?? 0
+                                    Text("₹\(Int(price * Double(item.quantity)))")
+                                        .font(.headline)
+                                    Text("₹\(Int(price)) per unit")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    } header: {
+                        Text("External Rentals")
+                    }
+                }
+                
+                if !rentalItems.isEmpty {
+                    Section {
+                        let total = rentalItems.reduce(0) { $0 + (Double($1.price) ?? 0) * Double($1.quantity) }
+                        HStack {
+                            Text("Total Rental Cost")
+                                .font(.headline)
+                            Spacer()
+                            Text("₹\(Int(total))")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.blue)
+                        }
+                        .padding(.vertical, 8)
+                    }
+                }
+            }
+            .navigationTitle("Resource Summary")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

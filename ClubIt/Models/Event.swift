@@ -34,6 +34,33 @@ enum EventCategory: String, CaseIterable, Codable {
 
 
 
+enum FormFieldType: String, Codable, CaseIterable {
+    case text = "Short Answer"
+    case paragraph = "Paragraph"
+    case multipleChoice = "Multiple Choice"
+    case checkbox = "Checkbox"
+    case dropdown = "Dropdown"
+    
+    var icon: String {
+        switch self {
+        case .text: return "text.alignleft"
+        case .paragraph: return "text.justify.left"
+        case .multipleChoice: return "list.bullet.circle"
+        case .checkbox: return "checkmark.square"
+        case .dropdown: return "chevron.down.circle"
+        }
+    }
+}
+
+struct RegistrationFormField: Identifiable, Hashable, Codable {
+    var id: UUID = UUID()
+    var label: String = ""
+    var type: FormFieldType = .text
+    var options: [String]? // For multiple choice, checkbox, dropdown
+    var isRequired: Bool = true
+    var placeholder: String = ""
+}
+
 struct Event: Identifiable, Hashable, Codable {
     var id: UUID = UUID()
     
@@ -64,6 +91,8 @@ struct Event: Identifiable, Hashable, Codable {
     var bannerImage: String?
     var imageData: Data?
     var agenda: String?
+    
+    var registrationForm: [RegistrationFormField]? = nil
     
     var createdAt: Date
 }
