@@ -4,10 +4,10 @@ struct MockData {
     static let instituteId = UUID()
     
     // Static IDs for Council
-    static let presidentId = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
-    static let vpTechId = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
-    static let vpLitId = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
-    static let vpBizId = UUID(uuidString: "00000000-0000-0000-0000-000000000004")!
+    static let presidentId = UUID()
+    static let vpTechId = UUID()
+    static let vpLitId = UUID()
+    static let vpBizId = UUID()
 
     struct MockClubBundle {
         let club: Club
@@ -162,12 +162,12 @@ struct MockData {
         var users = allBundles.flatMap { $0.users }
         
         // Add President
-        users.append(User(id: presidentId, email: "president@uni.com", password: "pass123", name: "Dr. Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22233", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
+        users.append(User(id: presidentId, email: "president", password: "pass123", name: "Dr. Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22233", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
         
         // Add Vice Presidents
-        users.append(User(id: vpTechId, email: "vp.tech@uni.com", password: "pass123", name: "Rahul Sharma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22244", course: "Council", year: "4th Year", bio: "VP Technical", createdAt: Date(), status: .active))
-        users.append(User(id: vpLitId, email: "vp.lit@uni.com", password: "pass123", name: "Kavya Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22255", course: "Council", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
-        users.append(User(id: vpBizId, email: "vp.biz@uni.com", password: "pass123", name: "Ishaan Verma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22266", course: "Council", year: "4th Year", bio: "VP Professional", createdAt: Date(), status: .active))
+        users.append(User(id: vpTechId, email: "vpTech", password: "pass123", name: "Rahul Sharma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22244", course: "Council", year: "4th Year", bio: "VP Technical", createdAt: Date(), status: .active))
+        users.append(User(id: vpLitId, email: "vpLit", password: "pass123", name: "Kavya Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22255", course: "Council", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
+        users.append(User(id: vpBizId, email: "vpBiz", password: "pass123", name: "Ishaan Verma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "", phoneNumber: "+91 99911 22266", course: "Council", year: "4th Year", bio: "VP Professional", createdAt: Date(), status: .active))
         
         // Add general student
         users.append(User(id: UUID(), email: "student", password: "pass123", name: "Kamakshi", instituteId: instituteId, role: .student, clubId: nil, profileImg: "", phoneNumber: "+91 12345 67890", course: "B.Tech CSE", year: "3rd Year", bio: "Passionate builder.", createdAt: Date(), status: .active))
