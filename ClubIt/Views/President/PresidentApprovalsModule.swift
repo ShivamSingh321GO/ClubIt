@@ -10,9 +10,17 @@ struct PresidentApprovalsModule: View {
             let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
             let clubEventIds = Set(clubEvents.map { $0.id })
             
-            return appSession.approvalStore.budgets.contains { 
+            let hasPendingBudgets = appSession.approvalStore.budgets.contains { 
                 clubEventIds.contains($0.eventId) && $0.status == .pending 
             }
+            let hasPendingResources = appSession.approvalStore.resources.contains {
+                clubEventIds.contains($0.eventId) && $0.status == .pending
+            }
+            let hasPendingVenues = appSession.approvalStore.approvals.contains {
+                clubEventIds.contains($0.eventId) && $0.type == .venue && $0.status == .pending
+            }
+            
+            return hasPendingBudgets || hasPendingResources || hasPendingVenues
         }
         
         VStack(alignment: .leading, spacing: 16) {
@@ -26,8 +34,8 @@ struct PresidentApprovalsModule: View {
             } else {
                 VStack(spacing: 16) {
                     ForEach(clubsWithPending.prefix(2)) { club in
-                        NavigationLink(destination: PresidentClubBudgetDetailView(club: club)) {
-                            PresidentClubBudgetCard(club: club)
+                        NavigationLink(destination: EventManagementApprovalDetailView(club: club)) {
+                            EventManagementClubApprovalCard(club: club)
                         }
                         .buttonStyle(.plain)
                     }

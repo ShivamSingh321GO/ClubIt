@@ -37,12 +37,30 @@ struct ExploreView: View {
                 }
                 .pickerStyle(.segmented)
                 
-                Group {
-                    switch selectedTab {
-                    case .announcement:
-                        AnnouncementView(announcements: appSession.globalAnnouncementStore.announcements)
-                    case .events:
-                        EventView(scope: $scope, eventStore: appSession.eventStore)
+                ZStack(alignment: .bottomTrailing) {
+                    Group {
+                        switch selectedTab {
+                        case .announcement:
+                            AnnouncementView(announcements: appSession.globalAnnouncementStore.announcements)
+                        case .events:
+                            EventView(scope: $scope, eventStore: appSession.eventStore)
+                        }
+                    }
+                    
+                    if canCreateAnnouncement && selectedTab == .announcement {
+                        Button {
+                            showCreateAnnouncementSheet = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title.bold())
+                                .foregroundColor(.white)
+                                .frame(width: 56, height: 56)
+                                .background(Color.orange.gradient)
+                                .clipShape(Circle())
+                                .shadow(color: .orange.opacity(0.3), radius: 10, x: 0, y: 5)
+                        }
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 16)
                     }
                 }
             }
@@ -51,16 +69,6 @@ struct ExploreView: View {
             .navigationTitle("Explore")
             .toolbarTitleDisplayMode(.inlineLarge)
             .toolbar {
-                if canCreateAnnouncement && selectedTab == .announcement {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showCreateAnnouncementSheet = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                    }
-                }
-                
                 if selectedTab == .events {
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         if canCreateEvent {
@@ -109,7 +117,7 @@ struct ExploreView: View {
         }
         
         switch role {
-        case .clubLead, .president, .vicePresident:
+        case .clubLead, .president, .vicePresident, .faculty:
             return true
         default:
             return false

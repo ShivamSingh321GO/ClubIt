@@ -306,7 +306,7 @@ struct FacultyResourceRequestCard: View {
             // MARK: - Title and Status
             HStack(alignment: .top) {
                 HStack(spacing: 10) {
-                    Image(systemName: "cube.box.fill")
+                    Image(systemName: "cart.fill")
                         .foregroundColor(.orange)
                         .font(.title3)
                     

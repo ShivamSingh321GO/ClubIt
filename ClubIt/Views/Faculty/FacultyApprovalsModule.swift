@@ -16,8 +16,11 @@ struct FacultyApprovalsModule: View {
             let hasPendingVenues = appSession.approvalStore.approvals.contains {
                 clubEventIds.contains($0.eventId) && $0.type == .venue && $0.status == .pending
             }
+            let hasPendingBudgets = appSession.approvalStore.budgets.contains {
+                clubEventIds.contains($0.eventId) && $0.status == .pending
+            }
             
-            return hasPendingResources || hasPendingVenues
+            return hasPendingResources || hasPendingVenues || hasPendingBudgets
         }
         
         VStack(alignment: .leading, spacing: 16) {
@@ -31,8 +34,8 @@ struct FacultyApprovalsModule: View {
             } else {
                 VStack(spacing: 16) {
                     ForEach(clubsWithPending.prefix(2)) { club in
-                        NavigationLink(destination: ClubResourcesDetailView(club: club)) {
-                            FacultyClubResourceCard(club: club)
+                        NavigationLink(destination: EventManagementApprovalDetailView(club: club)) {
+                            EventManagementClubApprovalCard(club: club)
                         }
                         .buttonStyle(.plain)
                     }
