@@ -284,12 +284,6 @@ struct EditEventView: View {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") { dismiss() }
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Send") {
-                    updateEvent()
-                }
-                .fontWeight(.bold)
-            }
         }
         .sheet(isPresented: $isShowingAddBudgetItems) {
             NavigationStack {

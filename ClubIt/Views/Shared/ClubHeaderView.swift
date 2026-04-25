@@ -10,7 +10,7 @@ struct ClubHeaderView: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.orange.gradient.opacity(0.1))
                         .frame(width: 60, height: 60)
                     
                     Text(String(club.name.prefix(1)))
@@ -20,7 +20,7 @@ struct ClubHeaderView: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(event.name)
-                        .font(.title3.bold())
+                        .font(.headline)
                         .foregroundColor(.primary)
                     
                     Text(club.name)
@@ -35,14 +35,7 @@ struct ClubHeaderView: View {
                     .foregroundColor(.secondary.opacity(0.3))
             }
             .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
-                    )
-            )
+            .glassEffect(in: .rect(cornerRadius: 24))
             .padding(.horizontal)
         }
         .buttonStyle(.plain)

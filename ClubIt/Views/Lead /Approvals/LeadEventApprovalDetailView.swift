@@ -31,6 +31,7 @@ struct LeadEventApprovalDetailView: View {
                     
                     // Club Header
                     LeadDetailClubHeaderView(club: club, event: event)
+                        .padding(.horizontal)
                     
                     // Overall Status Banner
                     let mainApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event })
@@ -305,27 +306,22 @@ struct LeadDetailClubHeaderView: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.name)
-                    .font(.title3.bold())
+                    .font(.headline)
                 Text(club.name)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             Spacer()
             
-            Button(action: {
+            Button("Edit") {
                 isShowingEditEvent = true
-            }) {
-                Text("Edit")
-                    .font(.subheadline.bold())
-                    .foregroundColor(.blue)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .glassEffect(in: .rect(cornerRadius: 12))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
-        .padding(.horizontal)
+        .padding(16)
+        .glassEffect(in: .rect(cornerRadius: 24))
         .sheet(isPresented: $isShowingEditEvent) {
             NavigationStack {
                 EditEventView(event: event) { updatedEvent in
