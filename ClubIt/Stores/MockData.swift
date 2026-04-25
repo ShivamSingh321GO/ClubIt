@@ -9,7 +9,7 @@ struct MockData {
     static let vpLitId = UUID()
     static let vpBizId = UUID()
     static let eventManagementFacultyId = UUID()
-    static let unassignedVPId = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+    static let unassignedVPId = UUID()
 
 
     struct MockClubBundle {
@@ -158,9 +158,9 @@ struct MockData {
         
         let users = [
             User(id: leadId, email: "eclead", password: "pass123", name: "Ishaan", instituteId: instituteId, role: .clubLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
-            User(id: leadId, email: "ecm1", password: "pass123", name: "Saanvi", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
-            User(id: leadId, email: "ecm2", password: "pass123", name: "Siddharth", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
-            User(id: leadId, email: "ecm3", password: "pass123", name: "Vihaan", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active)
+            User(id: UUID(), email: "ecm1", password: "pass123", name: "Saanvi", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "ecm2", password: "pass123", name: "Siddharth", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "ecm3", password: "pass123", name: "Vihaan", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active)
         ]
         
         let events = [
@@ -202,9 +202,9 @@ struct MockData {
         
         let users = [
             User(id: leadId, email: "qzlead", password: "pass123", name: "Aditi", instituteId: instituteId, role: .clubLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
-            User(id: leadId, email: "qzm1", password: "pass123", name: "Om", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
-            User(id: leadId, email: "qzm2", password: "pass123", name: "Om", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
-            User(id: leadId, email: "qzm3", password: "pass123", name: "Om", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active)
+            User(id: UUID(), email: "qzm1", password: "pass123", name: "Rahul", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "qzm2", password: "pass123", name: "Shivam", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "qzm3", password: "pass123", name: "Harshit", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active)
         ]
         
         return MockClubBundle(club: club, users: users, events: [], announcements: [])
