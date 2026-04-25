@@ -62,6 +62,27 @@ struct EventDetailView: View {
         }
         .padding(.horizontal, 16)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if isMyEvent && event.status == .pending {
+                    Button {
+                        withAnimation(.spring()) {
+                            appSession.eventStore.updateEventStatus(id: event.id, status: .upcoming)
+                        }
+                    } label: {
+                        Text("Publish")
+                            .font(.subheadline)
+                            .bold()
+                            .frame(width: 55)
+                            .foregroundColor(.white)
+                           
+                        
+                    }
+                    .buttonStyle(.borderedProminent)
+                    
+                }
+            }
+        }
         .sheet(isPresented: $isShowingRegistrationForm) {
             DynamicRegistrationFormView(event: event)
         }
@@ -90,6 +111,7 @@ struct EventDetailView: View {
             VStack {
                 HStack {
                     Spacer()
+                    
                     HStack(spacing: 6) {
                         Image(systemName: categoryIcon)
                             .font(.system(size: 10, weight: .bold))
@@ -107,12 +129,16 @@ struct EventDetailView: View {
                 
                 Spacer()
                 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(event.title)
-                        .font(.title2.bold())
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-                        .lineLimit(2)
+                HStack(alignment: .bottom) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(event.title)
+                            .font(.title2.bold())
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                            .lineLimit(2)
+                    }
+                    
+                    Spacer()
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -133,11 +159,12 @@ struct EventDetailView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.blue.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "calendar")
                         .font(.title3)
-                        .foregroundColor(.orange)
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundColor(.blue)
                 }
                 .frame(width: 40)
                 
@@ -164,11 +191,12 @@ struct EventDetailView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.red.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "mappin.and.ellipse")
                         .font(.title3)
-                        .foregroundColor(.orange)
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundColor(.red)
                 }
                 .frame(width: 40)
                 
@@ -248,10 +276,11 @@ struct EventDetailView: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.teal.opacity(0.1))
                     .frame(width: 40, height: 40)
                 Image(systemName: "info.circle.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.teal)
+                    .symbolRenderingMode(.hierarchical)
                     .font(.title3)
             }
             .frame(width: 40)
@@ -274,10 +303,11 @@ struct EventDetailView: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.purple.opacity(0.1))
                     .frame(width: 40, height: 40)
                 Image(systemName: "list.bullet.indent")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.purple)
+                    .symbolRenderingMode(.hierarchical)
                     .font(.title3)
             }
             .frame(width: 40)
@@ -306,10 +336,11 @@ struct EventDetailView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.indigo.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "person.2.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.indigo)
+                        .symbolRenderingMode(.hierarchical)
                         .font(.title3)
                 }
                 .frame(width: 40)
