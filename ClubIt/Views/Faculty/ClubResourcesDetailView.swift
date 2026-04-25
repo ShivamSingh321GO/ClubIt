@@ -5,7 +5,7 @@ struct ClubResourcesDetailView: View {
     let club: Club
     let event: Event
     
-    @State private var selectedTab: String = "Resources"
+    @State private var selectedTab: String = "Venue"
     @State private var selectedResourceForRemark: Resource?
     @State private var selectedVenueApprovalForRemark: Approval?
     
@@ -34,7 +34,18 @@ struct ClubResourcesDetailView: View {
                 SegmentedTabView(selectedTab: $selectedTab, resourceCount: allClubResources.count, venueCount: allClubVenueApprovals.count)
                 
                 // MARK: - Content List
-                if selectedTab == "Resources" {
+                if selectedTab == "Venue" {
+                    VenueListView(
+                        approvals: allClubVenueApprovals,
+                        onReject: { approval in
+                            selectedVenueApprovalForRemark = approval
+                        },
+                        onApprove: { approval in
+                            venueToApprove = approval
+                            showingVenueApprovalAlert = true
+                        }
+                    )
+                } else {
                     let totalApprovedBudget = allClubResources
                         .filter { $0.status == .approved && $0.type == .external }
                         .reduce(0) { $0 + ($1.cost ?? 0) }
@@ -65,17 +76,6 @@ struct ClubResourcesDetailView: View {
                         onApprove: { resource in
                             resourceToApprove = resource
                             showingResourceApprovalAlert = true
-                        }
-                    )
-                } else {
-                    VenueListView(
-                        approvals: allClubVenueApprovals,
-                        onReject: { approval in
-                            selectedVenueApprovalForRemark = approval
-                        },
-                        onApprove: { approval in
-                            venueToApprove = approval
-                            showingVenueApprovalAlert = true
                         }
                     )
                 }
@@ -161,8 +161,8 @@ struct SegmentedTabView: View {
     
     var body: some View {
         Picker("Select Category", selection: $selectedTab) {
-            Text("Resources (\(resourceCount))").tag("Resources")
             Text("Venue (\(venueCount))").tag("Venue")
+            Text("Resources (\(resourceCount))").tag("Resources")
         }
         .pickerStyle(.segmented)
         .padding(.horizontal)

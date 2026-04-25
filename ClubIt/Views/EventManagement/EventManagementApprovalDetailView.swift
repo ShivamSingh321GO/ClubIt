@@ -6,7 +6,7 @@ struct EventManagementApprovalDetailView: View {
     let club: Club
     let event: Event
     
-    @State private var selectedTab: String = "Resource"
+    @State private var selectedTab: String = "Venue"
     
     // Resource/Venue states
     @State private var selectedResourceForRemark: Resource?
@@ -44,9 +44,9 @@ struct EventManagementApprovalDetailView: View {
                 
                 // MARK: - Segmented Filter (3 Segments)
                 Picker("Select Category", selection: $selectedTab) {
-                    Text("Resource (\(allClubResources.count))").tag("Resource")
                     Text("Venue (\(allClubVenueApprovals.count))").tag("Venue")
                     Text("Budget (\(allClubBudgets.count))").tag("Budget")
+                    Text("Resource (\(allClubResources.count))").tag("Resource")
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
@@ -66,12 +66,12 @@ struct EventManagementApprovalDetailView: View {
                 
                 // MARK: - Content List
                 switch selectedTab {
-                case "Resource":
-                    resourceSection(allClubResources)
                 case "Venue":
                     venueSection(allClubVenueApprovals)
                 case "Budget":
                     budgetSection(allClubBudgets)
+                case "Resource":
+                    resourceSection(allClubResources)
                 default:
                     EmptyView()
                 }
