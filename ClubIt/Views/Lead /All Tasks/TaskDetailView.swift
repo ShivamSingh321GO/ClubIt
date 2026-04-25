@@ -8,6 +8,7 @@ struct TaskDetailView: View {
     @State private var showingEditTask = false
     @State private var showingDelegateSheet = false
     @State private var selectedEvent: Event? = nil
+    @State private var showDeleteAlert = false
     
     private var assignerName: String {
         MockData.allMockUsers.first(where: { $0.id == task.assignedBy })?.name ?? "Unknown"
@@ -79,30 +80,57 @@ struct TaskDetailView: View {
                             .foregroundStyle(.secondary)
                         
                         VStack(alignment: .leading, spacing: 0) {
-                            historyRow(name: assignerName, role: task.assignedByRole.rawValue, icon: "person.circle.fill", isSource: true)
-                            
-                            lineConnector()
-                            
-                            HStack {
-                                historyRow(name: assigneeName, role: task.assignedToRole.rawValue, icon: "person.circle.fill", isCurrent: delegatedName == nil)
-                                
-                                if canDelegate {
-                                    Spacer()
-                                    Button("Delegate") {
-                                        showingDelegateSheet = true
+                            if task.assignedBy == task.assignedTo {
+                                // Self Assigned Flow
+                                HStack {
+                                    let displayName = task.assignedBy == appSession.currentUser?.id ? "\(assignerName) (You)" : assignerName
+                                    historyRow(name: displayName, role: task.assignedToRole.rawValue, icon: "person.circle.fill", isSource: true, isCurrent: delegatedName == nil)
+                                    
+                                    if canDelegate {
+                                        Spacer()
+                                        Button("Delegate") {
+                                            showingDelegateSheet = true
+                                        }
+                                        .font(.caption.bold())
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(.blue.opacity(0.1))
+                                        .foregroundStyle(.blue)
+                                        .clipShape(Capsule())
                                     }
-                                    .font(.caption.bold())
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(.blue.opacity(0.1))
-                                    .foregroundStyle(.blue)
-                                    .clipShape(Capsule())
                                 }
-                            }
-                            
-                            if let delegated = delegatedName {
+                                
+                                if let delegated = delegatedName {
+                                    lineConnector()
+                                    historyRow(name: delegated, role: "Club Member", icon: "person.circle.fill", isCurrent: true, isDelegated: true)
+                                }
+                            } else {
+                                // Standard Assignment Flow
+                                historyRow(name: assignerName, role: task.assignedByRole.rawValue, icon: "person.circle.fill", isSource: true)
+                                
                                 lineConnector()
-                                historyRow(name: delegated, role: "Club Member", icon: "person.circle.fill", isCurrent: true, isDelegated: true)
+                                
+                                HStack {
+                                    historyRow(name: assigneeName, role: task.assignedToRole.rawValue, icon: "person.circle.fill", isCurrent: delegatedName == nil)
+                                    
+                                    if canDelegate {
+                                        Spacer()
+                                        Button("Delegate") {
+                                            showingDelegateSheet = true
+                                        }
+                                        .font(.caption.bold())
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(.blue.opacity(0.1))
+                                        .foregroundStyle(.blue)
+                                        .clipShape(Capsule())
+                                    }
+                                }
+                                
+                                if let delegated = delegatedName {
+                                    lineConnector()
+                                    historyRow(name: delegated, role: "Club Member", icon: "person.circle.fill", isCurrent: true, isDelegated: true)
+                                }
                             }
                         }
                         .padding(20)
@@ -170,33 +198,43 @@ struct TaskDetailView: View {
                 .padding(.horizontal)
                 
             }
+            .alert("Delete Task", isPresented: $showDeleteAlert, actions: {
+                Button("Cancel", role: .cancel) {
+                    dismiss()
+                }
+                Button("Delete", role: .destructive) {
+                    appSession.taskStore.deleteTask(id: task.id)
+                    dismiss()
+                }
+            }, message: {
+                Text("Are you sure you want to delete this task? This action cannot be undone.")
+            })
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     if task.assignedBy == appSession.currentUser?.id {
                         Button {
-                            appSession.taskStore.deleteTask(id: task.id)
-                            dismiss()
+                            showDeleteAlert = true
+//                            appSession.taskStore.deleteTask(id: task.id)
+//                            dismiss()
                         } label: {
                             Text("Delete")
                                 .foregroundStyle(.red)
                         }
+                        
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     if task.assignedBy == appSession.currentUser?.id {
                         Button("Edit") {
                             showingEditTask = true
                         }
-                        .foregroundStyle(.blue)
                     } else {
                         Button {
                             dismiss()
                         } label: {
                             Image(systemName: "checkmark")
-                                .fontWeight(.bold)
-                                .foregroundStyle(.blue)
                         }
                     }
                 }

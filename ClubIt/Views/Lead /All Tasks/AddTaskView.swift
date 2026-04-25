@@ -9,8 +9,6 @@ struct AddTaskView: View {
         case myself = "Myself"
         case clubMember = "Club Member"
         case club = "Club"
-        case president = "President"
-        case vicePresident = "Vice President"
         var id: String { self.rawValue }
     }
     
@@ -48,11 +46,7 @@ struct AddTaskView: View {
             _selectedEventId = State(initialValue: task.eventId)
             
             // Map back assignment type
-            if task.assignedToRole == .president {
-                _assignmentType = State(initialValue: .president)
-            } else if task.assignedToRole == .vicePresident {
-                _assignmentType = State(initialValue: .vicePresident)
-            } else if let targetId = task.targetClubId {
+            if let targetId = task.targetClubId {
                 _assignmentType = State(initialValue: .club)
                 _selectedOtherClubId = State(initialValue: targetId)
                 _selectedClubLeadId = State(initialValue: task.assignedTo)
@@ -100,17 +94,7 @@ struct AddTaskView: View {
                 Section("Assignment") {
                     Picker("Assign To", selection: $assignmentType) {
                         ForEach(AssignmentType.allCases) { type in
-                            if appSession.currentUser?.role == .clubLead {
-                                // Leads can assign to self, members, or other clubs
-                                if type == .myself || type == .clubMember || type == .club {
-                                    Text(type.rawValue).tag(type)
-                                }
-                            } else if appSession.currentUser?.role == .president || appSession.currentUser?.role == .vicePresident {
-                                // President/VP can assign to self or clubs
-                                if type == .myself || type == .club {
-                                    Text(type.rawValue).tag(type)
-                                }
-                            }
+                            Text(type.rawValue).tag(type)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -151,18 +135,6 @@ struct AddTaskView: View {
                             }
                         }
                     }
-                    
-                    if assignmentType == .president {
-                        Text("Assigning to University President")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    if assignmentType == .vicePresident {
-                        Text("Assigning to University Vice President")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
                 }
                 
                 Section("Priority & Schedule") {
@@ -179,25 +151,20 @@ struct AddTaskView: View {
             .navigationTitle(initialTask == nil ? "Add Task" : "Edit Task")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.headline)
-                            .foregroundColor(.primary)
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         saveTask()
                     } label: {
                         Image(systemName: "checkmark")
-                            .font(.headline)
-                            .foregroundColor(.blue)
                     }
-                    .buttonStyle(.plain)
                     .disabled(title.isEmpty || (assignmentType == .club && (selectedOtherClubId == nil || selectedClubLeadId == nil)) || (assignmentType == .clubMember && selectedMemberId == nil))
                 }
             }
@@ -226,16 +193,6 @@ struct AddTaskView: View {
                 assignedToId = leadId
                 assignedToRole = .clubLead
                 targetClubId = clubId
-            }
-        case .president:
-            if let president = MockData.allMockUsers.first(where: { $0.role == .president }) {
-                assignedToId = president.id
-                assignedToRole = .president
-            }
-        case .vicePresident:
-            if let vicePresident = MockData.allMockUsers.first(where: { $0.role == .vicePresident }) {
-                assignedToId = vicePresident.id
-                assignedToRole = .vicePresident
             }
         }
         

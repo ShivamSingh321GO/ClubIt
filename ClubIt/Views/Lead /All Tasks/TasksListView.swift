@@ -104,7 +104,7 @@ struct TasksListView: View {
             .sheet(item: $taskToEdit) { task in
                 AddTaskView(initialTask: task)
             }
-            .navigationTitle("All Tasks")
+            .navigationTitle("Tasks")
             .navigationBarTitleDisplayMode(.inline)
         }
     

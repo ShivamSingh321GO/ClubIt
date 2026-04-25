@@ -11,7 +11,7 @@ struct LeadHomeView: View {
                 if let user = appSession.currentUser {
                     VStack(alignment: .leading, spacing: 24) {
                         HStack {
-                            Text("All Tasks")
+                            Text("Tasks")
                             NavigationLink(destination: TasksListView(user: user)) {
                                 Image(systemName: "chevron.right")
                             }

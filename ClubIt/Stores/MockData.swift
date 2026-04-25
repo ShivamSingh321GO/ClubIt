@@ -111,7 +111,8 @@ struct MockData {
         )
         
         let users = [
-            User(id: leadId, email: "lflead", password: "pass123", name: "Kavya", instituteId: instituteId, role: .clubLead, clubId: clubId, profileImg: "", phoneNumber: "0000000000", course: "B.A. English", year: "3rd Year", bio: "Literature lover.", createdAt: Date(), status: .active)
+            User(id: leadId, email: "lflead", password: "pass123", name: "Kavya", instituteId: instituteId, role: .clubLead, clubId: clubId, profileImg: "", phoneNumber: "0000000000", course: "B.A. English", year: "3rd Year", bio: "Literature lover.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "lfm1", password: "pass123", name: "Rohan", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
         ]
         
         let events = [
