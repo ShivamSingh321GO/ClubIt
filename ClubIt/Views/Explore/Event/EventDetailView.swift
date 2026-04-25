@@ -8,6 +8,9 @@ struct EventDetailView: View {
     let isMyEvent: Bool
     
     @State private var isShowingRegistrationForm = false
+    @State private var isShowingPublishAlert = false
+    @State private var isShowingRegisterConfirmAlert = false
+    @State private var isShowingWithdrawConfirmAlert = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -64,24 +67,50 @@ struct EventDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if isMyEvent && event.status == .pending {
+                if isMyEvent && event.status == .upcoming {
                     Button {
-                        withAnimation(.spring()) {
-                            appSession.eventStore.updateEventStatus(id: event.id, status: .upcoming)
-                        }
+                        isShowingPublishAlert = true
                     } label: {
                         Text("Publish")
                             .font(.subheadline)
                             .bold()
                             .frame(width: 55)
                             .foregroundColor(.white)
-                           
-                        
                     }
                     .buttonStyle(.borderedProminent)
-                    
+                    .tint(.orange)
                 }
             }
+        }
+        .alert("Ready to Go Live?", isPresented: $isShowingPublishAlert) {
+            Button("Publish Now", role: .none) {
+                withAnimation(.spring()) {
+                    appSession.eventStore.updateEventStatus(id: event.id, status: .published)
+                }
+            }
+            Button("Not Yet", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to publish this event? It will become visible to all students.")
+        }
+        .alert("Confirm Registration", isPresented: $isShowingRegisterConfirmAlert) {
+            Button("Register", role: .none) {
+                withAnimation {
+                    appSession.registerForEvent(id: event.id)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to register for this event?")
+        }
+        .alert("Withdraw Registration", isPresented: $isShowingWithdrawConfirmAlert) {
+            Button("Withdraw", role: .destructive) {
+                withAnimation {
+                    appSession.registerForEvent(id: event.id)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to withdraw your registration?")
         }
         .sheet(isPresented: $isShowingRegistrationForm) {
             DynamicRegistrationFormView(event: event)
@@ -454,23 +483,38 @@ struct EventDetailView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .tint(.blue)
+            } else if appSession.currentRole == .faculty {
+                Button(action: {}) {
+                    Text("No Registration Required")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .disabled(true)
             } else {
+                let isRegistered = appSession.registeredEventIds.contains(event.id)
+                let isFull = appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants
+                
                 Button {
-                    guard !appSession.registeredEventIds.contains(event.id) else { return }
-                    
-                    if let form = event.registrationForm, !form.isEmpty {
-                        isShowingRegistrationForm = true
-                    } else {
-                        appSession.registerForEvent(id: event.id)
+                    if isRegistered {
+                        isShowingWithdrawConfirmAlert = true
+                    } else if !isFull {
+                        if let form = event.registrationForm, !form.isEmpty {
+                            isShowingRegistrationForm = true
+                        } else {
+                            isShowingRegisterConfirmAlert = true
+                        }
                     }
                 } label: {
-                    Text(appSession.registeredEventIds.contains(event.id) ? "Successfully Enrolled" : "Register Now")
+                    Text(isRegistered ? "Withdraw Registration" : (isFull ? "Event Full" : "Register Now"))
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .tint(buttonColor)
+                .tint(isRegistered ? .red : (isFull ? .secondary : .orange))
+                .disabled(!isRegistered && isFull)
             }
         }
     }
