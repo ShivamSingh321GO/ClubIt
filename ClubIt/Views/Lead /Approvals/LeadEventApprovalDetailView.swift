@@ -4,7 +4,7 @@ struct LeadEventApprovalDetailView: View {
     @Environment(AppSession.self) var appSession
     let eventId: UUID
     
-    @State private var selectedTab: String = "Resource"
+    @State private var selectedTab: String = "Venue"
     @State private var replyText: String = ""
     @State private var replyingToItemId: UUID? = nil
     @State private var replyingToType: ApprovalType? = nil
@@ -77,9 +77,9 @@ struct LeadEventApprovalDetailView: View {
                     
                     // Segmented Filter
                     Picker("Select Category", selection: $selectedTab) {
-                        Text("Resource (\(allClubResources.count))").tag("Resource")
                         Text("Venue (\(allClubVenueApprovals.count))").tag("Venue")
                         Text("Budget (\(allClubBudgets.count))").tag("Budget")
+                        Text("Resource (\(allClubResources.count))").tag("Resource")
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
@@ -98,12 +98,12 @@ struct LeadEventApprovalDetailView: View {
                     
                     // Content List
                     switch selectedTab {
-                    case "Resource":
-                        resourceSection(allClubResources)
                     case "Venue":
                         venueSection(allClubVenueApprovals)
                     case "Budget":
                         budgetSection(allClubBudgets)
+                    case "Resource":
+                        resourceSection(allClubResources)
                     default:
                         EmptyView()
                     }

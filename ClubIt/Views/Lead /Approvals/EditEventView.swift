@@ -260,20 +260,7 @@ struct EditEventView: View {
                 }
             }
             
-            Section {
-                Button {
-                    updateEvent()
-                } label: {
-                    Text("Update Event & Resubmit")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(.borderedProminent)
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-            }
+
         }
         .onAppear {
             loadExistingItems()
@@ -283,6 +270,12 @@ struct EditEventView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") { dismiss() }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Update") {
+                    updateEvent()
+                }
+                .fontWeight(.bold)
             }
         }
         .sheet(isPresented: $isShowingAddBudgetItems) {
