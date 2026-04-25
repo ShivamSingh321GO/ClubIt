@@ -19,7 +19,6 @@ enum EventStatus: String, Codable {
     case cancelled
     case pending
     case pastEvent
-    case published
 }
 
 enum EventCategory: String, CaseIterable, Codable {

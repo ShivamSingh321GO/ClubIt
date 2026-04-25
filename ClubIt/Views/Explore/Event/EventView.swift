@@ -9,7 +9,7 @@ import SwiftUI
 
 enum EventScope {
     case allEvents
-    case followedClubs
+    case myEvents
 }
 
 enum EventFilterCategory: String, CaseIterable, Identifiable {
@@ -89,27 +89,27 @@ struct EventView: View {
                     )
                 )
                 
-                VStack(spacing: 2) {
-                    Text(appSession.currentRole == .student ? "CLUBS FOLLOWED" : "MY EVENTS")
+                VStack(spacing: -3) {
+                    Text("MY EVENTS")
                         .multilineTextAlignment(.center)
-                        .font(.system(size: 8, weight: .black))
+                        .font(.system(size: 9, weight: .black))
                         .lineLimit(2)
-                        .foregroundStyle(scope == .followedClubs ? .orange : .secondary)
+                        .foregroundStyle(scope == .myEvents ? .orange : .secondary)
                     
                     Toggle("", isOn: Binding(
-                        get: { scope == .followedClubs },
+                        get: { scope == .myEvents },
                         set: { newValue in
                             triggerRefresh {
-                                scope = newValue ? .followedClubs : .allEvents
+                                scope = newValue ? .myEvents : .allEvents
                             }
                         }
                     ))
                     .toggleStyle(SwitchToggleStyle(tint: .orange))
                     .labelsHidden()
-                    .scaleEffect(0.65)
-                    .frame(width: 40, height: 20)
+                    .scaleEffect(0.72)
                 }
-                .padding(.leading, 10)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 10)
                 .background(
                     LinearGradient(
                         stops: [
@@ -182,12 +182,8 @@ struct EventView: View {
             switch scope {
             case .allEvents:
                 matchesScope = true
-            case .followedClubs:
-                if appSession.currentRole == .student {
-                    matchesScope = appSession.clubStore.followedClubIds.contains(event.clubId)
-                } else {
-                    matchesScope = isMyEvent(event)
-                }
+            case .myEvents:
+                matchesScope = isMyEvent(event)
             }
             
             let matchesCategory: Bool
@@ -208,15 +204,7 @@ struct EventView: View {
                 matchesCategory = event.category == .sports
             }
             
-            let matchesStatus: Bool
-            if event.status == .published {
-                matchesStatus = true
-            } else {
-                // If not published, only visible to creator (Lead) or Faculty (Event Management Team)
-                matchesStatus = (appSession.currentRole == .faculty) || (event.createdBy == appSession.currentUser?.id)
-            }
-            
-            return matchesScope && matchesCategory && matchesStatus
+            return matchesScope && matchesCategory
         }
     }
     
