@@ -16,15 +16,18 @@ struct MemberProfileView: View {
                 // MARK: - Profile Header
                 Section {
                     HStack(spacing: 16) {
-                        if !user.profileImg.isEmpty {
-                            AsyncImage(url: URL(string: user.profileImg)) { image in
-                                image.resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            } placeholder: {
-                                Color.gray.opacity(0.2)
-                            }
-                            .frame(width: 70, height: 70)
-                            .clipShape(Circle())
+                        if let imageData = user.imageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 70, height: 70)
+                                .clipShape(Circle())
+                        } else if !user.profileImg.isEmpty {
+                            Image(user.profileImg)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 70, height: 70)
+                                .clipShape(Circle())
                         } else {
                             Image(systemName: "person.circle.fill")
                                 .resizable()
@@ -107,6 +110,15 @@ struct MemberProfileView: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        EditProfileView(user: user)
+                    } label: {
+                        Text("Edit")
+                    }
+                }
+            }
         } else {
             ContentUnavailableView(
                 "Please login to view profile",

@@ -4,9 +4,9 @@ struct ClubMemberListView: View {
     @Environment(AppSession.self) var appSession
     let club: Club
     
-    // Filter members from mock data based on clubId
+    // Filter members from live store data based on clubId
     var members: [User] {
-        MockData.allMockUsers.filter { $0.clubId == club.id }
+        appSession.clubStore.allUsers.filter { $0.clubId == club.id }
     }
     
     var body: some View {
@@ -15,7 +15,13 @@ struct ClubMemberListView: View {
                 ForEach(members) { member in
                     NavigationLink(destination: LeadProfileView(user: member)) {
                         HStack(spacing: 16) {
-                            if !member.profileImg.isEmpty {
+                            if let imageData = member.imageData, let uiImage = UIImage(data: imageData) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                            } else if !member.profileImg.isEmpty {
                                 Image(member.profileImg)
                                     .resizable()
                                     .scaledToFill()

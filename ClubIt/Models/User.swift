@@ -22,6 +22,7 @@ struct User: Identifiable, Codable {
     var role: AppRole
     var clubId: UUID?
     var profileImg: String
+    var imageData: Data? = nil
     var phoneNumber: String
     var course: String
     var year: String

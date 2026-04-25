@@ -86,7 +86,7 @@ struct LeadMyClubView: View {
                                 
                                 HStack(spacing: 20) {
                                     NavigationLink(destination: ClubMemberListView(club: appSession.clubStore.club)) {
-                                        StatBadge(icon: "person.2.fill", count: "\(MockData.allMockUsers.filter { $0.clubId == appSession.clubStore.club.id }.count)", label: "Members", color: Color(red: 0.2, green: 0.8, blue: 0.5))
+                                        StatBadge(icon: "person.2.fill", count: "\(appSession.clubStore.allUsers.filter { $0.clubId == appSession.clubStore.club.id }.count)", label: "Members", color: Color(red: 0.2, green: 0.8, blue: 0.5))
                                     }
                                     .buttonStyle(.plain)
                                     Spacer()

@@ -42,6 +42,17 @@ struct StudentProfileView: View {
         }
         .navigationTitle(isCurrentUser ? "Profile" : (displayUser?.name ?? "Profile"))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if isCurrentUser, let user = displayUser {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        EditProfileView(user: user)
+                    } label: {
+                        Text("Edit")
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - Sections
@@ -49,14 +60,20 @@ struct StudentProfileView: View {
     private var profileInfoCard: some View {
         HStack(spacing: 20) {
             // Profile Image
-            AsyncImage(url: URL(string: displayUser?.profileImg ?? "")) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Image(systemName: "person.circle.fill")
-                    .resizable()
-                    .foregroundStyle(.secondary)
+            Group {
+                if let imageData = displayUser?.imageData, let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else if let profileImg = displayUser?.profileImg, !profileImg.isEmpty {
+                    Image(profileImg)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                        .foregroundStyle(.secondary)
+                }
             }
             .frame(width: 80, height: 80)
             .clipShape(Circle())

@@ -34,4 +34,10 @@ final class ClubStore {
             followedClubIds.insert(clubId)
         }
     }
+    
+    func updateMember(updatedUser: User) {
+        if let index = allUsers.firstIndex(where: { $0.id == updatedUser.id }) {
+            allUsers[index] = updatedUser
+        }
+    }
 }

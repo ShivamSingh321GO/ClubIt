@@ -86,6 +86,20 @@ final class AppSession {
         isLoggedIn = false
     }
     
+    func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, imageData: Data?) {
+        guard var user = currentUser else { return }
+        user.name = name
+        user.bio = bio
+        user.phoneNumber = phoneNumber
+        user.course = course
+        user.year = year
+        user.imageData = imageData
+        currentUser = user
+        
+        // Sync with global users list
+        clubStore.updateMember(updatedUser: user)
+    }
+    
     func registerForEvent(id: UUID) {
         if registeredEventIds.contains(id) {
             registeredEventIds.remove(id)

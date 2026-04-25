@@ -20,7 +20,13 @@ struct LeadProfileView: View {
                 // MARK: - Profile Header
                 Section {
                     HStack(spacing: 16) {
-                        if !user.profileImg.isEmpty {
+                        if let imageData = user.imageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 70, height: 70)
+                                .clipShape(Circle())
+                        } else if !user.profileImg.isEmpty {
                             Image(user.profileImg)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -113,6 +119,17 @@ struct LeadProfileView: View {
             .listStyle(.insetGrouped)
             .navigationTitle(isCurrentUser ? "My Profile" : user.name)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if isCurrentUser {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink {
+                            EditProfileView(user: user)
+                        } label: {
+                            Text("Edit")
+                        }
+                    }
+                }
+            }
         } else {
             ContentUnavailableView(
                 "Please login to view profile",
