@@ -6,18 +6,32 @@ final class RegistrationStore {
     var registrations: [IndividualRegistration] = []
     
     init() {
-        // Mock registrations for Technojam's Tech Summit
-        let techSummitId = MockData.technoJamBundle.events[0].id
-        let sampleUsers = MockData.allMockUsers.filter { $0.role == .clubMember || $0.role == .student }.prefix(5)
+        // Create mock registrations for all sample events
+        let allEvents = MockData.sampleEvents
+        let sampleUsers = MockData.allMockUsers.filter { $0.role == .clubMember || $0.role == .student || $0.role == .clubLead }
         
-        for user in sampleUsers {
-            registrations.append(IndividualRegistration(
-                eventId: techSummitId,
-                userId: user.id,
-                status: .confirmed,
-                registeredAt: Date().addingTimeInterval(-Double.random(in: 3600...86400))
-            ))
+        for event in allEvents {
+            // Pick a random subset of users for each event
+            let participants = sampleUsers.shuffled().prefix(Int.random(in: 3...allRegistrationsCount(for: event)))
+            
+            for user in participants {
+                registrations.append(IndividualRegistration(
+                    eventId: event.id,
+                    userId: user.id,
+                    status: .confirmed,
+                    registeredAt: Date().addingTimeInterval(-Double.random(in: 3600...172800))
+                ))
+            }
         }
+    }
+    
+    private func allRegistrationsCount(for event: Event) -> Int {
+        // Just a helper to limit mock data
+        return min(sampleUsersCount, 8)
+    }
+    
+    private var sampleUsersCount: Int {
+        MockData.allMockUsers.count
     }
     
     func getRegistrations(for eventId: UUID) -> [IndividualRegistration] {

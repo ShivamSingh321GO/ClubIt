@@ -62,6 +62,27 @@ struct EventDetailView: View {
         }
         .padding(.horizontal, 16)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if isMyEvent && event.status == .pending {
+                    Button {
+                        withAnimation(.spring()) {
+                            appSession.eventStore.updateEventStatus(id: event.id, status: .upcoming)
+                        }
+                    } label: {
+                        Text("Publish")
+                            .font(.subheadline)
+                            .bold()
+                            .frame(width: 55)
+                            .foregroundColor(.white)
+                           
+                        
+                    }
+                    .buttonStyle(.borderedProminent)
+                    
+                }
+            }
+        }
         .sheet(isPresented: $isShowingRegistrationForm) {
             DynamicRegistrationFormView(event: event)
         }
@@ -87,32 +108,45 @@ struct EventDetailView: View {
             .frame(height: 220)
             .clipShape(RoundedRectangle(cornerRadius: 24))
             
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 6) {
-                    Image(systemName: categoryIcon)
-                        .font(.system(size: 10, weight: .bold))
-                    Text(event.category.rawValue)
-                        .font(.caption.bold())
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(.ultraThinMaterial)
-                .foregroundColor(.white)
-                .clipShape(Capsule())
-                .shadow(color: .black.opacity(0.3), radius: 4)
-                
-                Text(event.title)
-                    .font(.title2.bold())
+            VStack {
+                HStack {
+                    Spacer()
+                    
+                    HStack(spacing: 6) {
+                        Image(systemName: categoryIcon)
+                            .font(.system(size: 10, weight: .bold))
+                        Text(event.category.rawValue)
+                            .font(.caption.bold())
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial)
                     .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-                    .lineLimit(2)
+                    .clipShape(Capsule())
+                    .shadow(color: .black.opacity(0.3), radius: 4)
+                }
+                .padding(20)
+                
+                Spacer()
+                
+                HStack(alignment: .bottom) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(event.title)
+                            .font(.title2.bold())
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                            .lineLimit(2)
+                    }
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
+                )
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
-            )
             .clipShape(RoundedRectangle(cornerRadius: 24))
         }
     }
@@ -125,11 +159,12 @@ struct EventDetailView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.blue.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "calendar")
                         .font(.title3)
-                        .foregroundColor(.orange)
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundColor(.blue)
                 }
                 .frame(width: 40)
                 
@@ -156,11 +191,12 @@ struct EventDetailView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.red.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "mappin.and.ellipse")
                         .font(.title3)
-                        .foregroundColor(.orange)
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundColor(.red)
                 }
                 .frame(width: 40)
                 
@@ -240,10 +276,11 @@ struct EventDetailView: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.teal.opacity(0.1))
                     .frame(width: 40, height: 40)
                 Image(systemName: "info.circle.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.teal)
+                    .symbolRenderingMode(.hierarchical)
                     .font(.title3)
             }
             .frame(width: 40)
@@ -266,10 +303,11 @@ struct EventDetailView: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.purple.opacity(0.1))
                     .frame(width: 40, height: 40)
                 Image(systemName: "list.bullet.indent")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.purple)
+                    .symbolRenderingMode(.hierarchical)
                     .font(.title3)
             }
             .frame(width: 40)
@@ -298,10 +336,11 @@ struct EventDetailView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.indigo.opacity(0.1))
                         .frame(width: 40, height: 40)
                     Image(systemName: "person.2.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.indigo)
+                        .symbolRenderingMode(.hierarchical)
                         .font(.title3)
                 }
                 .frame(width: 40)
@@ -310,7 +349,7 @@ struct EventDetailView: View {
                     Text("Registrations")
                         .font(.headline)
                     
-                    Text("\(event.numberOfRegistrations) joined / \(event.maxParticipants) total")
+                    Text("\(event.numberOfRegistrations) Registered / \(event.maxParticipants) total")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -328,16 +367,17 @@ struct EventDetailView: View {
                 } else {
                     HStack(spacing: 4) {
                         Circle()
-                            .fill(Color.orange)
-                            .frame(width: 6, height: 6)
-                        Text("\(event.maxParticipants - event.numberOfRegistrations) left")
+                            .fill(.orange)
+                            .frame(width: 4, height: 4)
+                        Text("\(event.maxParticipants - event.numberOfRegistrations) slots left")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.orange)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.orange.opacity(0.1))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.orange.opacity(0.12))
                     .clipShape(Capsule())
+                    .overlay(Capsule().stroke(Color.orange.opacity(0.2), lineWidth: 0.5))
                 }
             }
             
@@ -407,7 +447,7 @@ struct EventDetailView: View {
                 .disabled(true)
             } else if isMyEvent {
                 NavigationLink(destination: ManageParticipantsView(event: event)) {
-                    Text("Manage Participants")
+                    Text("View Participants")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }

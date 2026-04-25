@@ -68,7 +68,9 @@ struct MockData {
                     RegistrationFormField(label: "Why do you want to join?", type: .paragraph),
                     RegistrationFormField(label: "Dietary Preferences", type: .checkbox, options: ["Veg", "Non-Veg", "Vegan"])
                 ],
-                createdAt: Date())
+                createdAt: Date()),
+            
+            Event(id: UUID(), name: "AI Workshop 2025", title: "AI Workshop 2025", description: "Hands-on workshop on generative AI.", startDate: Date().addingTimeInterval(3600 * 24 * 7), endDate: Date().addingTimeInterval(3600 * 24 * 7 + 3600 * 4), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 25, maxParticipants: 50, registrationType: .individual, location: "Lab 5", clubId: clubId, createdBy: leadId, category: .ai, status: .upcoming, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 6), bannerImage: "banner1", agenda: "Intro, GenAI, Practical Lab", createdAt: Date())
         ]
         
         let announcements = [
@@ -116,8 +118,8 @@ struct MockData {
         ]
         
         let events = [
-            Event(id: UUID(), name: "Music Night", title: "Euphoria 2025", description: "Cultural event.", startDate: Date().addingTimeInterval(3600 * 24 * 7), endDate: Date().addingTimeInterval(3600 * 24 * 7 + 3600 * 4), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 150, maxParticipants: 300, registrationType: .individual, location: "New Auditorium", clubId: clubId, createdBy: leadId, category: .entertainment, status: .upcoming, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 6), bannerImage: "banner2", agenda: "Performances", createdAt: Date()),
-            Event(id: UUID(), name: "Debate Night", title: "Speak Up 2025", description: "Literary debate competition.", startDate: Date().addingTimeInterval(3600 * 24 * 10), endDate: Date().addingTimeInterval(3600 * 24 * 10 + 3600 * 3), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 40, maxParticipants: 100, registrationType: .individual, location: "A101", clubId: clubId, createdBy: leadId, category: .literary, status: .upcoming, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 9), bannerImage: "banner1", agenda: "Debate rounds", createdAt: Date())
+            Event(id: UUID(), name: "Music Night", title: "Euphoria 2025", description: "Cultural event.", startDate: Date().addingTimeInterval(3600 * 24 * 7), endDate: Date().addingTimeInterval(3600 * 24 * 7 + 3600 * 4), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 120, maxParticipants: 300, registrationType: .individual, location: "New Auditorium", clubId: clubId, createdBy: leadId, category: .entertainment, status: .upcoming, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 6), bannerImage: "banner2", agenda: "Performances", createdAt: Date()),
+            Event(id: UUID(), name: "Debate Night", title: "Speak Up 2025", description: "Literary debate competition.", startDate: Date().addingTimeInterval(3600 * 24 * 10), endDate: Date().addingTimeInterval(3600 * 24 * 10 + 3600 * 3), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 45, maxParticipants: 100, registrationType: .individual, location: "A101", clubId: clubId, createdBy: leadId, category: .literary, status: .upcoming, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 9), bannerImage: "banner1", agenda: "Debate rounds", createdAt: Date())
         ]
         
         return MockClubBundle(club: club, users: users, events: events, announcements: [])
@@ -218,6 +220,15 @@ struct MockData {
 
         // Add Event Management Team
         users.append(User(id: eventManagementFacultyId, email: "emt", password: "pass123", name: "Event Management Team", instituteId: instituteId, role: .faculty, clubId: nil, profileImg: "", phoneNumber: "+91 00000 00000", course: "Administration", year: "N/A", bio: "Centralized Event Management Team Hub", createdAt: Date(), status: .active))
+        
+        // Add more members for TechJam
+        users.append(User(id: UUID(), email: "tjm3", password: "pass123", name: "Ananya", instituteId: instituteId, role: .clubMember, clubId: technoJamBundle.club.id, profileImg: "", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "AI enthusiast.", createdAt: Date(), status: .active))
+        users.append(User(id: UUID(), email: "tjm4", password: "pass123", name: "Rohan", instituteId: instituteId, role: .clubMember, clubId: technoJamBundle.club.id, profileImg: "", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3rd Year", bio: "Designer", createdAt: Date(), status: .active))
+        
+        // Add more students
+        users.append(User(id: UUID(), email: "s1", password: "pass123", name: "Priya", instituteId: instituteId, role: .student, clubId: nil, profileImg: "", phoneNumber: "0000000000", course: "B.Sc Physics", year: "1st Year", bio: "", createdAt: Date(), status: .active))
+        users.append(User(id: UUID(), email: "s2", password: "pass123", name: "Amit", instituteId: instituteId, role: .student, clubId: nil, profileImg: "", phoneNumber: "0000000000", course: "B.Com", year: "2nd Year", bio: "", createdAt: Date(), status: .active))
+        users.append(User(id: UUID(), email: "s3", password: "pass123", name: "Sneha", instituteId: instituteId, role: .student, clubId: nil, profileImg: "", phoneNumber: "0000000000", course: "B.Tech ME", year: "4th Year", bio: "", createdAt: Date(), status: .active))
         
         return users
     }()
