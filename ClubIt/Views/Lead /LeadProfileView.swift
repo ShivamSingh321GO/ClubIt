@@ -89,11 +89,11 @@ struct LeadProfileView: View {
                 // MARK: - Settings (Only for current user)
                 if isCurrentUser {
                     Section("Settings") {
-                        NavigationLink {
-                            Text("Notifications Screen")
-                        } label: {
-                            Label("Notifications", systemImage: "bell")
-                        }
+//                        NavigationLink {
+//                            Text("Notifications Screen")
+//                        } label: {
+//                            Label("Notifications", systemImage: "bell")
+//                        }
                         
                         NavigationLink {
                             Text("Change Password Screen")

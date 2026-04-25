@@ -105,11 +105,6 @@ struct AddTaskView: View {
                                 if type == .myself || type == .clubMember || type == .club {
                                     Text(type.rawValue).tag(type)
                                 }
-                            } else if appSession.currentUser?.role == .faculty {
-                                // Faculty can assign to self, clubs, President, or Vice President
-                                if type == .myself || type == .club || type == .president || type == .vicePresident {
-                                    Text(type.rawValue).tag(type)
-                                }
                             } else if appSession.currentUser?.role == .president || appSession.currentUser?.role == .vicePresident {
                                 // President/VP can assign to self or clubs
                                 if type == .myself || type == .club {

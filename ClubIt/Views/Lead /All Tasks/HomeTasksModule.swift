@@ -14,21 +14,6 @@ struct HomeTasksModule: View {
         VStack(alignment: .leading, spacing: 10) {
             ForEach(Array(recentTasks.enumerated()), id: \.element.id) { index, task in
                 TaskRowView(task: task, now: appSession.currentTime)
-                    .contextMenu {
-                        Button {
-                            appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
-                        } label: {
-                            Label("Mark as Complete", systemImage: "checkmark.circle")
-                        }
-                        
-                        if appSession.currentRole == .clubLead {
-                            Button {
-                                taskToEdit = task
-                            } label: {
-                                Label("Edit Task", systemImage: "pencil")
-                            }
-                        }
-                    }
             }
         }
         .sheet(item: $taskToEdit) { task in

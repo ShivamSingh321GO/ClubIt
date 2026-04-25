@@ -80,16 +80,7 @@ struct TasksListView: View {
                         VStack(alignment: .leading) {
                             ForEach(Array(filteredTasks.enumerated()), id: \.element.id) { (index, task) in
                                 TaskRowView(task: task, now: appSession.currentTime)
-                                .contextMenu {
-                                    Button("Mark as complete") {
-                                        appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
-                                    }
-                                    if task.assignedBy == appSession.currentUser?.id {
-                                        Button("Edit Task") {
-                                            taskToEdit = task
-                                        }
-                                    }
-                                }
+                            }
                             }
                         }
                         .padding(.horizontal)
@@ -97,7 +88,7 @@ struct TasksListView: View {
                 }
             }
             .toolbar {
-                if appSession.currentRole == .clubLead || appSession.currentRole == .faculty {
+                if appSession.currentRole == .clubLead {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             showingAddTaskForm = true
@@ -116,7 +107,7 @@ struct TasksListView: View {
             .navigationTitle("All Tasks")
             .navigationBarTitleDisplayMode(.inline)
         }
-    }
+    
 }
 
 // MARK: - Subcomponents

@@ -35,8 +35,8 @@ final class TaskStore {
                 eventId: eventId,
                 title: "Speaker Invitation List",
                 description: "Review and short-list speakers for the upcoming summit.",
-                assignedBy: facultyId,
-                assignedByRole: .faculty,
+                assignedBy: presidentId,
+                assignedByRole: .president,
                 assignedTo: leadId,
                 assignedToRole: .clubLead,
                 delegatedToId: nil,
@@ -103,6 +103,10 @@ final class TaskStore {
             tasks[index].deadline = deadline
             tasks[index].priority = priority
         }
+    }
+    
+    func deleteTask(id: UUID) {
+        tasks.removeAll(where: { $0.id == id })
     }
     
     func delegateTask(taskId: UUID, memberId: UUID, memberName: String) {

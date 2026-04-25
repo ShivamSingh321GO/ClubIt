@@ -124,7 +124,7 @@ struct TaskRowView: View {
         .sheet(isPresented: $showingTaskDetail) {
             TaskDetailView(task: task)
                 .presentationDragIndicator(.visible)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
     }
     

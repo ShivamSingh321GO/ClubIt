@@ -35,9 +35,9 @@ struct TaskDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Header Card
-                    VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header Card (Title and Badges)
+                    VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             priorityBadge
                             Spacer()
@@ -45,13 +45,35 @@ struct TaskDetailView: View {
                         }
                         
                         Text(task.title)
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .font(.title2)
+                            .bold()
+                            .foregroundStyle(.primary)
                     }
                     .padding(20)
                     .glassEffect(in: .rect(cornerRadius: 24))
                     
+                    // Description Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Description", systemImage: "doc.text.fill")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                        
+                        Text(task.description)
+                            .font(.body)
+                            .lineSpacing(4)
+                            .padding(20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .glassEffect(in: .rect(cornerRadius: 24))
+                        
+                        // Dates immediately under description
+                        HStack(spacing: 16) {
+                            attributeCard(title: "Deadline", value: formattedDate(task.deadline), icon: "calendar")
+                            attributeCard(title: "Created", value: formattedDate(task.createdAt), icon: "plus.circle")
+                        }
+                    }
+                    
                     // Assignment Section
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Label("Assignment History", systemImage: "clock.arrow.2.circlepath")
                             .font(.headline)
                             .foregroundStyle(.secondary)
@@ -61,7 +83,22 @@ struct TaskDetailView: View {
                             
                             lineConnector()
                             
-                            historyRow(name: assigneeName, role: task.assignedToRole.rawValue, icon: "person.circle.fill", isCurrent: delegatedName == nil)
+                            HStack {
+                                historyRow(name: assigneeName, role: task.assignedToRole.rawValue, icon: "person.circle.fill", isCurrent: delegatedName == nil)
+                                
+                                if canDelegate {
+                                    Spacer()
+                                    Button("Delegate") {
+                                        showingDelegateSheet = true
+                                    }
+                                    .font(.caption.bold())
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(.blue.opacity(0.1))
+                                    .foregroundStyle(.blue)
+                                    .clipShape(Capsule())
+                                }
+                            }
                             
                             if let delegated = delegatedName {
                                 lineConnector()
@@ -74,7 +111,7 @@ struct TaskDetailView: View {
                     
                     // Event Context
                     if let event = associatedEvent {
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Label("Related Event", systemImage: "calendar")
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
@@ -111,28 +148,24 @@ struct TaskDetailView: View {
                         }
                     }
                     
-                    // Description
-                    VStack(alignment: .leading) {
-                        Label("Description", systemImage: "doc.text.fill")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                        
-                        Text(task.description)
-                            .font(.body)
-                            .lineSpacing(4)
-                            .padding(20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .glassEffect(in: .rect(cornerRadius: 24))
-                    }
-                    
-                    // Attributes
-                    VStack(alignment: .leading) {
-                        HStack(spacing: 16) {
-                            attributeCard(title: "Deadline", value: formattedDate(task.deadline), icon: "calendar")
-                            attributeCard(title: "Created", value: formattedDate(task.createdAt), icon: "plus.circle")
+                    // Mark as Complete Button
+                    if (task.assignedTo == appSession.currentUser?.id || task.delegatedToId == appSession.currentUser?.id) && task.status != .completed {
+                        Button {
+                            appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
+                            dismiss()
+                        } label: {
+                            Text("Mark as Complete")
+                                .font(.headline)
+                                .bold()
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
+                        .padding(.top, 10)
+                        .padding(.bottom, 20)
                     }
-                    
                 }
                 .padding(.horizontal)
                 
@@ -140,32 +173,35 @@ struct TaskDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    
-                        if task.assignedBy == appSession.currentUser?.id {
-                            Button("Edit") {
-                                showingEditTask = true
-                            }
+                    if task.assignedBy == appSession.currentUser?.id {
+                        Button {
+                            appSession.taskStore.deleteTask(id: task.id)
+                            dismiss()
+                        } label: {
+                            Text("Delete")
+                                .foregroundStyle(.red)
                         }
-                        
-                        if canDelegate {
-                            Button("Delegate") {
-                                showingDelegateSheet = true
-                            }
-                            .foregroundStyle(.blue)
-                        }
-                    
+                    }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .fontWeight(.bold)
-                            .foregroundStyle(.blue)
+                    if task.assignedBy == appSession.currentUser?.id {
+                        Button("Edit") {
+                            showingEditTask = true
+                        }
+                        .foregroundStyle(.blue)
+                    } else {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .fontWeight(.bold)
+                                .foregroundStyle(.blue)
+                        }
                     }
                 }
             }
+//            .padding(.top, 20)
             .sheet(isPresented: $showingEditTask) {
                 AddTaskView(initialTask: task)
             }
@@ -197,15 +233,6 @@ struct TaskDetailView: View {
             
             Spacer()
             
-            if isCurrent {
-                Text("CURRENT")
-                    .font(.system(size: 8, weight: .bold))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.green.opacity(0.2))
-                    .foregroundStyle(.green)
-                    .clipShape(Capsule())
-            }
         }
     }
     
