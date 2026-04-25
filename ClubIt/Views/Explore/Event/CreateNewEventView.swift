@@ -363,6 +363,7 @@ struct CreateNewEventView: View {
                 totalAmount: price * Double(item.quantity),
                 status: .pending,
                 addedBy: currentUser.id,
+                remarks: [],
                 createdAt: Date()
             )
             appSession.approvalStore.addBudget(budget)
@@ -377,6 +378,7 @@ struct CreateNewEventView: View {
                 type: .university,
                 status: .pending,
                 addedBy: currentUser.id,
+                remarks: [],
                 createdAt: Date()
             )
             appSession.approvalStore.addResource(resource)
@@ -393,6 +395,7 @@ struct CreateNewEventView: View {
                 cost: price * Double(item.quantity),
                 vendorName: item.vendorName,
                 addedBy: currentUser.id,
+                remarks: [],
                 createdAt: Date()
             )
             appSession.approvalStore.addResource(resource)
@@ -400,55 +403,63 @@ struct CreateNewEventView: View {
 
         // Generate Approval Summaries for Faculty
         let eventApproval = Approval(
+            id: UUID(),
             type: .event,
             senderId: currentUser.id,
             receiverId: facultyId,
             eventId: newEvent.id,
             approvalRelatedId: newEvent.id,
             status: .pending,
-            remark: "Event creation approval requested",
-            createdAt: Date()
+            remarks: [Remark(text: "Event creation approval requested", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+            createdAt: Date(),
+            updatedAt: nil
         )
         appSession.approvalStore.addApproval(eventApproval)
         
         if !budgetItems.isEmpty {
             let budgetApproval = Approval(
+                id: UUID(),
                 type: .budget,
                 senderId: currentUser.id,
                 receiverId: facultyId,
                 eventId: newEvent.id,
                 approvalRelatedId: UUID(), // Reference for the collection
                 status: .pending,
-                remark: "Budget approval requested for \(budgetItems.count) items",
-                createdAt: Date()
+                remarks: [Remark(text: "Budget approval requested for \(budgetItems.count) items", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+                createdAt: Date(),
+                updatedAt: nil
             )
             appSession.approvalStore.addApproval(budgetApproval)
         }
         
         if !universityResources.isEmpty || !rentalResources.isEmpty {
             let resourceApproval = Approval(
+                id: UUID(),
                 type: .resource,
                 senderId: currentUser.id,
                 receiverId: facultyId,
                 eventId: newEvent.id,
                 approvalRelatedId: UUID(), // Reference for the collection
                 status: .pending,
-                remark: "Resource approval requested for \(universityResources.count + rentalResources.count) items",
-                createdAt: Date()
+                remarks: [Remark(text: "Resource approval requested for \(universityResources.count + rentalResources.count) items", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+                createdAt: Date(),
+                updatedAt: nil
             )
             appSession.approvalStore.addApproval(resourceApproval)
         }
         
         // Venue Approval
         let venueApproval = Approval(
+            id: UUID(),
             type: .venue,
             senderId: currentUser.id,
             receiverId: facultyId,
             eventId: newEvent.id,
             approvalRelatedId: UUID(),
             status: .pending,
-            remark: "Venue booking approval requested for \(venue)",
-            createdAt: Date()
+            remarks: [Remark(text: "Venue booking approval requested for \(venue)", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+            createdAt: Date(),
+            updatedAt: nil
         )
         appSession.approvalStore.addApproval(venueApproval)
         

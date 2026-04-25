@@ -37,27 +37,71 @@ final class ApprovalStore {
         approvals.filter { $0.eventId == eventId }
     }
     
-    func updateApproval(id: UUID, status: ApprovalStatus, remark: String? = nil) {
+    func updateApproval(id: UUID, status: ApprovalStatus, remark: Remark? = nil) {
         if let index = approvals.firstIndex(where: { $0.id == id }) {
             approvals[index].status = status
-            approvals[index].remark = remark
+            if let remark = remark {
+                approvals[index].remarks.append(remark)
+            }
             approvals[index].updatedAt = Date()
         }
     }
     
-    func updateResourceStatus(id: UUID, status: ResourceStatus, remark: String? = nil) {
+    func updateResourceStatus(id: UUID, status: ResourceStatus, remark: Remark? = nil) {
         if let index = resources.firstIndex(where: { $0.id == id }) {
             resources[index].status = status
-            resources[index].remark = remark
+            if let remark = remark {
+                resources[index].remarks.append(remark)
+            }
             resources[index].approvedAt = status == .approved ? Date() : nil
         }
     }
 
-    func updateBudgetStatus(id: UUID, status: ApprovalStatus, remark: String? = nil) {
+    func updateBudgetStatus(id: UUID, status: ApprovalStatus, remark: Remark? = nil) {
         if let index = budgets.firstIndex(where: { $0.id == id }) {
             budgets[index].status = status
-            budgets[index].remark = remark
+            if let remark = remark {
+                budgets[index].remarks.append(remark)
+            }
             budgets[index].approvedAt = status == .approved ? Date() : nil
+        }
+    }
+    
+    func updateBudget(_ budget: Budget) {
+        if let index = budgets.firstIndex(where: { $0.id == budget.id }) {
+            budgets[index] = budget
+        }
+    }
+    
+    func updateResource(_ resource: Resource) {
+        if let index = resources.firstIndex(where: { $0.id == resource.id }) {
+            resources[index] = resource
+        }
+    }
+    
+    func updateApprovalStatus(id: UUID, status: ApprovalStatus) {
+        if let index = approvals.firstIndex(where: { $0.id == id }) {
+            approvals[index].status = status
+            approvals[index].updatedAt = Date()
+        }
+    }
+    
+    // Helper methods for replies
+    func addRemarkToApproval(id: UUID, remark: Remark) {
+        if let index = approvals.firstIndex(where: { $0.id == id }) {
+            approvals[index].remarks.append(remark)
+        }
+    }
+    
+    func addRemarkToResource(id: UUID, remark: Remark) {
+        if let index = resources.firstIndex(where: { $0.id == id }) {
+            resources[index].remarks.append(remark)
+        }
+    }
+    
+    func addRemarkToBudget(id: UUID, remark: Remark) {
+        if let index = budgets.firstIndex(where: { $0.id == id }) {
+            budgets[index].remarks.append(remark)
         }
     }
 }

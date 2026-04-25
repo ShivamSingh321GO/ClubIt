@@ -5,15 +5,15 @@ struct PresidentApprovalsModule: View {
     let user: User
 
     var body: some View {
-        let eventsWithPending = appSession.eventStore.events.filter { event in
-            appSession.approvalStore.budgets.contains { $0.eventId == event.id && $0.status == .pending } ||
-            appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .pending } ||
-            appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .venue && $0.status == .pending }
+        let eventsWithApprovals = appSession.eventStore.events.filter { event in
+            appSession.approvalStore.budgets.contains { $0.eventId == event.id } ||
+            appSession.approvalStore.resources.contains { $0.eventId == event.id } ||
+            appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .venue }
         }.sorted(by: { $0.startDate > $1.startDate })
         
         VStack(alignment: .leading, spacing: 16) {
-            if eventsWithPending.isEmpty {
-                Text("No pending budget requests")
+            if eventsWithApprovals.isEmpty {
+                Text("No budget requests")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding()
@@ -21,7 +21,8 @@ struct PresidentApprovalsModule: View {
                     .glassEffect(in: .rect(cornerRadius: 20))
             } else {
                 VStack(spacing: 16) {
-                    ForEach(eventsWithPending.prefix(2)) { event in
+                    ForEach(eventsWithApprovals.prefix(2)) { event in
+
                         if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
                             NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
                                 EventManagementEventApprovalCard(event: event, club: club)

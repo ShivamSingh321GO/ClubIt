@@ -248,10 +248,10 @@ struct MockData {
         let leadId = clubLeadUser.id
         
         return [
-            Approval(id: UUID(), type: .event, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: "Event creation approval requested", createdAt: Date().addingTimeInterval(-172800), updatedAt: Date()),
-            Approval(id: UUID(), type: .resource, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-7200), updatedAt: Date()),
-            Approval(id: UUID(), type: .budget, senderId: leadId, receiverId: presidentId, eventId: musicNightId, approvalRelatedId: UUID(), status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-3600), updatedAt: Date()),
-            Approval(id: UUID(), type: .venue, senderId: leadId, receiverId: facultyVenue.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remark: nil, createdAt: Date().addingTimeInterval(-86400), updatedAt: Date())
+            Approval(id: UUID(), type: .event, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [Remark(text: "Event creation approval requested", authorId: leadId, authorName: "Aryan", createdAt: Date().addingTimeInterval(-172800))], createdAt: Date().addingTimeInterval(-172800), updatedAt: Date()),
+            Approval(id: UUID(), type: .resource, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [], createdAt: Date().addingTimeInterval(-7200), updatedAt: Date()),
+            Approval(id: UUID(), type: .budget, senderId: leadId, receiverId: presidentId, eventId: musicNightId, approvalRelatedId: UUID(), status: .pending, remarks: [], createdAt: Date().addingTimeInterval(-3600), updatedAt: Date()),
+            Approval(id: UUID(), type: .venue, senderId: leadId, receiverId: facultyVenue.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [], createdAt: Date().addingTimeInterval(-86400), updatedAt: Date())
         ]
     }()
 
@@ -264,19 +264,23 @@ struct MockData {
         
         return [
             // Technojam University Resources
-            Resource(id: UUID(), eventId: techSummitId, name: "Projectors", quantity: 5, type: .university, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-172800)),
-            Resource(id: UUID(), eventId: techSummitId, name: "Extension Boards", quantity: 10, type: .university, status: .approved, addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
+            Resource(id: UUID(), eventId: techSummitId, name: "Projectors", quantity: 5, type: .university, status: .pending, addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-172800)),
+            Resource(id: UUID(), eventId: techSummitId, name: "Extension Boards", quantity: 10, type: .university, status: .approved, addedBy: leadId, remarks: [Remark(text: "Approved for the event", authorId: eventManagementFacultyId, authorName: "EMT", createdAt: Date().addingTimeInterval(-80000))], createdAt: Date().addingTimeInterval(-86400)),
             
             // Lingo Freaks External Rentals
-            Resource(id: UUID(), eventId: musicNightId, name: "Concert Stage Lights", quantity: 12, type: .external, status: .pending, cost: 15000, vendorName: "Bright Events", addedBy: leadId, createdAt: Date().addingTimeInterval(-129600)),
-            Resource(id: UUID(), eventId: musicNightId, name: "Professional Sound System", quantity: 1, type: .external, status: .pending, cost: 25000, vendorName: "Echo Pro Audio", addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
-            Resource(id: UUID(), eventId: musicNightId, name: "Plastic Chairs", quantity: 200, type: .external, status: .approved, cost: 2000, vendorName: "Local Rentals", addedBy: leadId, createdAt: Date().addingTimeInterval(-43200)),
+            Resource(id: UUID(), eventId: musicNightId, name: "Concert Stage Lights", quantity: 12, type: .external, status: .pending, cost: 15000, vendorName: "Bright Events", addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-129600)),
+            Resource(id: UUID(), eventId: musicNightId, name: "Professional Sound System", quantity: 1, type: .external, status: .pending, cost: 25000, vendorName: "Echo Pro Audio", addedBy: leadId, remarks: [
+                Remark(text: "Cost seems a bit high. Can we negotiate?", authorId: eventManagementFacultyId, authorName: "EMT", createdAt: Date().addingTimeInterval(-70000)),
+                Remark(text: "Already negotiated, this is the best price.", authorId: leadId, authorName: "Aryan", createdAt: Date().addingTimeInterval(-60000)),
+                Remark(text: "Okay, please provide the quotation.", authorId: eventManagementFacultyId, authorName: "EMT", createdAt: Date().addingTimeInterval(-50000))
+            ], createdAt: Date().addingTimeInterval(-86400)),
+            Resource(id: UUID(), eventId: musicNightId, name: "Plastic Chairs", quantity: 200, type: .external, status: .approved, cost: 2000, vendorName: "Local Rentals", addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-43200)),
             
             // Technojam External Rentals
-            Resource(id: UUID(), eventId: techSummitId, name: "Premium Catering", quantity: 50, type: .external, status: .pending, cost: 35000, vendorName: "Gourmet Hub", addedBy: leadId, createdAt: Date().addingTimeInterval(-259200)),
+            Resource(id: UUID(), eventId: techSummitId, name: "Premium Catering", quantity: 50, type: .external, status: .pending, cost: 35000, vendorName: "Gourmet Hub", addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-259200)),
             
             // E-Cell University Resources
-            Resource(id: UUID(), eventId: startupPitchId, name: "Movable Whiteboards", quantity: 4, type: .university, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-72000))
+            Resource(id: UUID(), eventId: startupPitchId, name: "Movable Whiteboards", quantity: 4, type: .university, status: .pending, addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-72000))
         ]
     }()
 
@@ -286,9 +290,9 @@ struct MockData {
         let leadId = clubLeadUser.id
         
         return [
-            Budget(id: UUID(), eventId: techSummitId, itemName: "Swags & T-shirts", unitPrice: 500, quantity: 100, totalAmount: 50000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
-            Budget(id: UUID(), eventId: techSummitId, itemName: "Food & Refreshments", unitPrice: 200, quantity: 150, totalAmount: 30000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-86400)),
-            Budget(id: UUID(), eventId: musicNightId, itemName: "Artist Fee", unitPrice: 100000, quantity: 1, totalAmount: 100000, status: .pending, addedBy: leadId, createdAt: Date().addingTimeInterval(-172800))
+            Budget(id: UUID(), eventId: techSummitId, itemName: "Swags & T-shirts", unitPrice: 500, quantity: 100, totalAmount: 50000, status: .pending, addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-86400)),
+            Budget(id: UUID(), eventId: techSummitId, itemName: "Food & Refreshments", unitPrice: 200, quantity: 150, totalAmount: 30000, status: .pending, addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-86400)),
+            Budget(id: UUID(), eventId: musicNightId, itemName: "Artist Fee", unitPrice: 100000, quantity: 1, totalAmount: 100000, status: .pending, addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-172800))
         ]
     }()
 

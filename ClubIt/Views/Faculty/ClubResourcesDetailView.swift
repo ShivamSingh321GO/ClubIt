@@ -229,6 +229,8 @@ struct FacultyResourceRequestCard: View {
     let resource: Resource
     let onReject: () -> Void
     let onApprove: () -> Void
+    @State private var replyText: String = ""
+    @State private var showingReply: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -275,21 +277,38 @@ struct FacultyResourceRequestCard: View {
                     }
                 }
                 
-                if let remark = resource.remark, !remark.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Remark")
-                            .font(.caption2)
+                if !resource.remarks.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("REMARKS")
+                            .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
-                            .textCase(.uppercase)
-                        Text(remark)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
-                            .italic()
+                        
+                        RemarkConversationView(remarks: resource.remarks)
                     }
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.red.opacity(0.05))
-                    .cornerRadius(8)
+                    .padding(.top, 4)
+                }
+                
+                if showingReply {
+                    ReplyInputView(replyText: $replyText, onSend: {
+                        let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        appSession.approvalStore.addRemarkToResource(id: resource.id, remark: newRemark)
+                        replyText = ""
+                        showingReply = false
+                    }, onCancel: {
+                        showingReply = false
+                        replyText = ""
+                    })
+                } else {
+                    Button(action: { withAnimation { showingReply = true } }) {
+                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                    .padding(.top, 4)
                 }
             }
             
@@ -346,6 +365,8 @@ struct FacultyVenueApprovalCard: View {
     let approval: Approval
     let onReject: () -> Void
     let onApprove: () -> Void
+    @State private var replyText: String = ""
+    @State private var showingReply: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -385,20 +406,38 @@ struct FacultyVenueApprovalCard: View {
                     }
                 }
                 
-                if let remark = approval.remark, !remark.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Remark")
-                            .font(.caption2)
+                if !approval.remarks.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("REMARKS")
+                            .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
-                        Text(remark)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
-                            .italic()
+                        
+                        RemarkConversationView(remarks: approval.remarks)
                     }
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.red.opacity(0.05))
-                    .cornerRadius(8)
+                    .padding(.top, 4)
+                }
+                
+                if showingReply {
+                    ReplyInputView(replyText: $replyText, onSend: {
+                        let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        appSession.approvalStore.addRemarkToApproval(id: approval.id, remark: newRemark)
+                        replyText = ""
+                        showingReply = false
+                    }, onCancel: {
+                        showingReply = false
+                        replyText = ""
+                    })
+                } else {
+                    Button(action: { withAnimation { showingReply = true } }) {
+                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                    .padding(.top, 4)
                 }
             }
             
@@ -547,10 +586,11 @@ struct FacultyVenueRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
+                    let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
                     if let onReject = onReject {
                         onReject(remark)
                     } else {
-                        appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: remark)
+                        appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
                     }
                     dismiss()
                 }) {
@@ -660,7 +700,8 @@ struct FacultyRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected, remark: remark)
+                    let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                    appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected, remark: newRemark)
                     dismiss()
                 }) {
                     Text("Reject with Remark")

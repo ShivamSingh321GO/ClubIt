@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DraftResourceItem: Identifiable {
-    let id = UUID()
+    var id: UUID = UUID()
     var name: String = ""
     var price: String = ""
     var quantity: Int = 1

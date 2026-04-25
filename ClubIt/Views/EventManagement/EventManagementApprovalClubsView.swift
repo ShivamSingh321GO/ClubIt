@@ -6,18 +6,19 @@ struct EventManagementApprovalClubsView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
-                let allEventsWithPending = appSession.eventStore.events.filter { event in
-                    let hasPendingEvents = appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .pending }
-                    let hasPendingResources = appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .pending }
-                    let hasPendingBudgets = appSession.approvalStore.budgets.contains { $0.eventId == event.id && $0.status == .pending }
-                    return hasPendingEvents || hasPendingResources || hasPendingBudgets
-                }.sorted(by: { $0.startDate > $1.startDate })
+                let allEventsWithApprovals = appSession.eventStore.events.filter { event in
+                    let hasEvents = appSession.approvalStore.approvals.contains { $0.eventId == event.id }
+                    let hasResources = appSession.approvalStore.resources.contains { $0.eventId == event.id }
+                    let hasBudgets = appSession.approvalStore.budgets.contains { $0.eventId == event.id }
+                    return hasEvents || hasResources || hasBudgets
+                }.sorted(by: { $0.createdAt > $1.createdAt })
+
                 
-                if allEventsWithPending.isEmpty {
-                    FacultyEmptyStateView(icon: "calendar.badge.exclamationmark", title: "No Pending Approvals", message: "There are no events currently requiring your approval.")
+                if allEventsWithApprovals.isEmpty {
+                    FacultyEmptyStateView(icon: "calendar.badge.exclamationmark", title: "No Approvals", message: "There are no events currently requiring or having received approval.")
                 } else {
                     LazyVStack(spacing: 16) {
-                        ForEach(allEventsWithPending) { event in
+                        ForEach(allEventsWithApprovals) { event in
                             if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
                                 NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
                                     EventManagementEventApprovalCard(event: event, club: club)
@@ -55,18 +56,27 @@ struct EventManagementEventApprovalCard: View {
             $0.eventId == event.id && $0.status == .pending 
         }
         
-        let totalPending = pendingEvents.count + pendingResources.count + pendingVenues.count + pendingBudgets.count
+        let totalPending = pendingResources.count + pendingVenues.count + pendingBudgets.count
+        
+        let isRejected = appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .rejected } ||
+
+                         appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .rejected } ||
+                         appSession.approvalStore.budgets.contains { $0.eventId == event.id && $0.status == .rejected }
+        
+        let isApproved = totalPending == 0 && !isRejected
+
+
         
         HStack(spacing: 16) {
             // Club Logo/Initials
             ZStack {
                 Circle()
-                    .fill(Color.orange.gradient.opacity(0.1))
+                    .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
                     .frame(width: 60, height: 60)
                 
                 Text(String(club.name.prefix(1)))
                     .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.orange)
+                    .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -101,19 +111,38 @@ struct EventManagementEventApprovalCard: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 6) {
-                Text("\(totalPending)")
-                    .font(.subheadline.bold())
-                    .foregroundColor(totalPending > 0 ? .orange : .secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(totalPending > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
-                    .clipShape(Capsule())
-                
-                Text("Pending")
-                    .font(.caption2.bold())
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
+                if isApproved {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.title3)
+                        .foregroundColor(.green)
+                    Text("Approved")
+                        .font(.caption2.bold())
+                        .foregroundColor(.green)
+                        .textCase(.uppercase)
+                } else if isRejected {
+                    Image(systemName: "xmark.seal.fill")
+                        .font(.title3)
+                        .foregroundColor(.red)
+                    Text("Rejected")
+                        .font(.caption2.bold())
+                        .foregroundColor(.red)
+                        .textCase(.uppercase)
+                } else {
+                    Text("\(totalPending)")
+                        .font(.subheadline.bold())
+                        .foregroundColor(totalPending > 0 ? .orange : .secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(totalPending > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
+                        .clipShape(Capsule())
+                    
+                    Text("Pending")
+                        .font(.caption2.bold())
+                        .foregroundColor(.secondary)
+                        .textCase(.uppercase)
+                }
             }
+
             
             Image(systemName: "chevron.right")
                 .font(.caption.bold())
@@ -125,25 +154,6 @@ struct EventManagementEventApprovalCard: View {
     }
 }
 
-struct IndicatorTag: View {
-    let icon: String
-    let count: Int
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: icon)
-                .font(.system(size: 10))
-            Text("\(count)")
-                .font(.system(size: 10, weight: .bold))
-        }
-        .foregroundColor(color)
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
-        .background(color.opacity(0.1))
-        .clipShape(Capsule())
-    }
-}
 
 #Preview {
     NavigationStack {

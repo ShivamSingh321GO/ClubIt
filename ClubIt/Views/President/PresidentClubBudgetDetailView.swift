@@ -224,6 +224,8 @@ struct PresidentBudgetRequestCard: View {
     let budget: Budget
     let onReject: () -> Void
     let onApprove: () -> Void
+    @State private var replyText: String = ""
+    @State private var showingReply: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -268,21 +270,38 @@ struct PresidentBudgetRequestCard: View {
                     }
                 }
                 
-                if let remark = budget.remark, !remark.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Remark")
-                            .font(.caption2)
+                if !budget.remarks.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("REMARKS")
+                            .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
-                            .textCase(.uppercase)
-                        Text(remark)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
-                            .italic()
+                        
+                        RemarkConversationView(remarks: budget.remarks)
                     }
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.red.opacity(0.05))
-                    .cornerRadius(8)
+                    .padding(.top, 4)
+                }
+                
+                if showingReply {
+                    ReplyInputView(replyText: $replyText, onSend: {
+                        let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        appSession.approvalStore.addRemarkToBudget(id: budget.id, remark: newRemark)
+                        replyText = ""
+                        showingReply = false
+                    }, onCancel: {
+                        showingReply = false
+                        replyText = ""
+                    })
+                } else {
+                    Button(action: { withAnimation { showingReply = true } }) {
+                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                    .padding(.top, 4)
                 }
             }
             
@@ -406,7 +425,8 @@ struct PresidentBudgetRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected, remark: remark)
+                    let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "President", createdAt: Date())
+                    appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected, remark: newRemark)
                     dismiss()
                 }) {
                     Text("Reject with Remark")

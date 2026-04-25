@@ -100,7 +100,7 @@ struct Event: Identifiable, Hashable, Codable {
 
 
 struct EventApproval: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     
     var eventId: UUID
     var approvedBy: UUID
@@ -109,10 +109,22 @@ struct EventApproval: Identifiable, Codable {
     var approvalType: ApprovalType
     var status: ApprovalStatus
     
-    var remark: String?
+    var remarks: [Remark]
     
     var createdAt: Date
     var approvedAt: Date?
+
+    init(id: UUID = UUID(), eventId: UUID, approvedBy: UUID, requestedBy: UUID, approvalType: ApprovalType, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+        self.id = id
+        self.eventId = eventId
+        self.approvedBy = approvedBy
+        self.requestedBy = requestedBy
+        self.approvalType = approvalType
+        self.status = status
+        self.remarks = remarks
+        self.createdAt = createdAt
+        self.approvedAt = approvedAt
+    }
 }
 
 
@@ -131,8 +143,7 @@ enum ResourceStatus: String, Codable {
 
 
 struct Resource: Identifiable, Codable {
-    var id: UUID = UUID()
-    
+    var id: UUID
     var eventId: UUID
     
     var name: String
@@ -149,9 +160,26 @@ struct Resource: Identifiable, Codable {
     
     var addedBy: UUID
     
-    var remark: String?
+    var remarks: [Remark]
     var createdAt: Date
     var approvedAt: Date?
+
+    init(id: UUID = UUID(), eventId: UUID, name: String, quantity: Int, type: ResourceType, status: ResourceStatus, cost: Double? = nil, vendorName: String? = nil, issuedAt: Date? = nil, returnedAt: Date? = nil, addedBy: UUID, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+        self.id = id
+        self.eventId = eventId
+        self.name = name
+        self.quantity = quantity
+        self.type = type
+        self.status = status
+        self.cost = cost
+        self.vendorName = vendorName
+        self.issuedAt = issuedAt
+        self.returnedAt = returnedAt
+        self.addedBy = addedBy
+        self.remarks = remarks
+        self.createdAt = createdAt
+        self.approvedAt = approvedAt
+    }
 }
 
 

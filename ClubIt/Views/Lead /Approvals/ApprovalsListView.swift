@@ -17,13 +17,14 @@ struct ApprovalsListView: View {
     var body: some View {
         let sortedApprovals = appSession.approvalStore.approvals.filter { approval in
             if appSession.currentRole == .president {
-                // President sees incoming budget requests
-                return approval.type == .budget && approval.status == .pending
+                // President sees budget requests related to them
+                return approval.type == .budget
             } else {
                 // Leads see their sent approvals
                 return approval.senderId == user.id && approval.type == .event
             }
         }
+
         
         let uniqueEvents = Array(Set(sortedApprovals.compactMap { $0.eventId }))
         
@@ -37,23 +38,39 @@ struct ApprovalsListView: View {
                     )
                     .padding(.top, 40)
                 } else {
-                    ForEach(uniqueEvents, id: \.self) { eventId in
-                        if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
-                            ApprovalSummaryCard(
-                                title: event.name,
-                                subtitle: appSession.currentRole == .president ? "Budget Request • \(formatDate(event.createdAt))" : "Created by you • \(formatDate(event.createdAt))",
-                                action: { selectedEventId = event.id }
-                            )
+                    LazyVStack(spacing: 16) {
+                        ForEach(uniqueEvents, id: \.self) { eventId in
+                            if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
+                                if appSession.currentRole == .president {
+                                    if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                                        NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
+                                            EventManagementEventApprovalCard(event: event, club: club)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                } else {
+                                    if let approval = sortedApprovals.first(where: { $0.eventId == eventId }) {
+                                        Button {
+                                            selectedEventId = event.id
+                                        } label: {
+                                            LeadApprovalEventCard(event: event, approval: approval)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            }
                         }
                     }
+                    .padding(.horizontal)
                 }
             }
-            //.padding(16)
+            .padding(.vertical)
         }
+
         .navigationTitle(appSession.currentRole == .president ? "Budget Requests" : "Approval Requests")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedEventId) { id in
-            EventApprovalsDetailView(eventId: id)
+            LeadEventApprovalDetailView(eventId: id)
         }
     }
     

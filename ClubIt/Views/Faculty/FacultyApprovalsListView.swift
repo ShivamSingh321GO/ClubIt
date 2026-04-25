@@ -8,11 +8,11 @@ struct FacultyApprovalsListView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
-                let pendingApprovals = appSession.approvalStore.approvals.filter { 
-                    $0.receiverId == user.id && $0.status == .pending && $0.type != .budget
+                let relevantApprovals = appSession.approvalStore.approvals.filter { 
+                    $0.receiverId == user.id && $0.type != .budget
                 }
                 
-                let groupedApprovals = Dictionary(grouping: pendingApprovals, by: { $0.eventId })
+                let groupedApprovals = Dictionary(grouping: relevantApprovals, by: { $0.eventId })
                 
                 if groupedApprovals.isEmpty {
                     VStack(spacing: 20) {
@@ -20,10 +20,10 @@ struct FacultyApprovalsListView: View {
                             .font(.system(size: 60))
                             .foregroundColor(.green.opacity(0.5))
                         
-                        Text("You're All Caught Up!")
+                        Text("No Approval Requests")
                             .font(.title2.bold())
                         
-                        Text("No pending event approval requests at the moment.")
+                        Text("There are no event approval requests at the moment.")
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
                     }
@@ -35,10 +35,12 @@ struct FacultyApprovalsListView: View {
                     VStack(spacing: 16) {
                         ForEach(groupedApprovals.keys.sorted(by: { $0.uuidString < $1.uuidString }), id: \.self) { eventId in
                             if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
-                                let _ = groupedApprovals[eventId] ?? []
+                                let eventApprovals = groupedApprovals[eventId] ?? []
+                                let isPending = eventApprovals.contains { $0.status == .pending }
+                                
                                 ApprovalSummaryCard(
                                     title: event.name,
-                                    subtitle: "Event Request • \(formatDate(event.createdAt))",
+                                    subtitle: (isPending ? "Pending Action • " : "Processed • ") + formatDate(event.createdAt),
                                     action: { selectedEventId = eventId }
                                 )
                             }
@@ -48,8 +50,9 @@ struct FacultyApprovalsListView: View {
             }
             .padding()
         }
-        .navigationTitle("Pending Approvals")
+        .navigationTitle("Approval Requests")
         .navigationBarTitleDisplayMode(.large)
+
     }
     
     private func formatDate(_ date: Date) -> String {

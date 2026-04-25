@@ -25,4 +25,10 @@ final class EventStore {
             events[index].status = status
         }
     }
+    
+    func updateEvent(_ event: Event) {
+        if let index = events.firstIndex(where: { $0.id == event.id }) {
+            events[index] = event
+        }
+    }
 }

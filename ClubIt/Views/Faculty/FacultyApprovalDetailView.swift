@@ -79,7 +79,8 @@ struct FacultyApprovalDetailView: View {
         .alert("Confirm Action", isPresented: $showingConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button(targetStatus == .approved ? "Approve" : "Reject", role: targetStatus == .approved ? .none : .destructive) {
-                appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus, remark: remark)
+                let newRemark = remark.isEmpty ? nil : Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus, remark: newRemark)
                 dismiss()
             }
         } message: {
@@ -109,7 +110,8 @@ struct FacultyApprovalDetailView: View {
                     Spacer()
                     
                     Button("Submit Rejection") {
-                        appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: remark)
+                        let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
                         showingRemarkPrompt = false
                         dismiss()
                     }

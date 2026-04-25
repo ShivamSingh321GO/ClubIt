@@ -157,7 +157,8 @@ struct EventManagementApprovalDetailView: View {
         }
         .sheet(item: $selectedEventApprovalForRemark) { approval in
             FacultyVenueRemarkSheet(approval: approval, onReject: { remark in
-                appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: remark)
+                let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "EMT", createdAt: Date())
+                appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
                 appSession.eventStore.updateEventStatus(id: approval.eventId, status: .cancelled)
             })
         }
@@ -423,6 +424,8 @@ struct EventApprovalRequestCard: View {
     let approval: Approval
     let onReject: () -> Void
     let onApprove: () -> Void
+    @State private var replyText: String = ""
+    @State private var showingReply: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -449,6 +452,40 @@ struct EventApprovalRequestCard: View {
                     .font(.caption)
             }
             .foregroundColor(.secondary)
+            
+            if !approval.remarks.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("REMARKS")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(.secondary)
+                    
+                    RemarkConversationView(remarks: approval.remarks)
+                }
+                .padding(.top, 4)
+            }
+            
+            if showingReply {
+                ReplyInputView(replyText: $replyText, onSend: {
+                    let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                    appSession.approvalStore.addRemarkToApproval(id: approval.id, remark: newRemark)
+                    replyText = ""
+                    showingReply = false
+                }, onCancel: {
+                    showingReply = false
+                    replyText = ""
+                })
+            } else {
+                Button(action: { withAnimation { showingReply = true } }) {
+                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                        .font(.caption.bold())
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Capsule())
+                }
+                .padding(.top, 4)
+            }
             
             if approval.status == .pending {
                 HStack(spacing: 12) {
