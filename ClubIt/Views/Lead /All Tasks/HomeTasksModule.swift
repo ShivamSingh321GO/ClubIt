@@ -12,8 +12,17 @@ struct HomeTasksModule: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ForEach(Array(recentTasks.enumerated()), id: \.element.id) { index, task in
-                TaskRowView(task: task, now: appSession.currentTime)
+            if recentTasks.isEmpty {
+                Text("No pending tasks")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                    .glassEffect(in: .rect(cornerRadius: 20))
+            } else {
+                ForEach(Array(recentTasks.enumerated()), id: \.element.id) { index, task in
+                    TaskRowView(task: task, now: appSession.currentTime)
+                }
             }
         }
         .sheet(item: $taskToEdit) { task in

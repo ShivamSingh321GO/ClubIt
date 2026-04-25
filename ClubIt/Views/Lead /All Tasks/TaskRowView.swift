@@ -86,11 +86,6 @@ struct TaskRowView: View {
                     }
                 }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                showingTaskDetail = true
-            }
-            
             // Footer: Assignment Chain and Deadline
             HStack(spacing: 8) {
                 // Assignment Chain
@@ -120,6 +115,10 @@ struct TaskRowView: View {
             }
         }
         .padding()
+        .contentShape(Rectangle())
+        .onTapGesture {
+            showingTaskDetail = true
+        }
         .glassEffect(in: .rect(cornerRadius: 20))
         .sheet(isPresented: $showingTaskDetail) {
             TaskDetailView(task: task)

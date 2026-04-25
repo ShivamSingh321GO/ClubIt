@@ -9,6 +9,8 @@ final class TaskStore {
         let leadId = MockData.clubLeadUser.id
         let memberId = MockData.technoJamBundle.users.first { $0.role == .clubMember }?.id ?? UUID()
         let clubId = MockData.tj_id
+        let lfClubId = MockData.lf_id
+        let lfLeadId = MockData.lingoFreaksBundle.club.clubLeadId
         let eventId = MockData.sampleEvents.first?.id
         
         return [
@@ -18,8 +20,8 @@ final class TaskStore {
                 eventId: eventId,
                 title: "Annual Tech Summit Budget",
                 description: "Finalize the sponsorship budget and get approval from the President.",
-                assignedBy: presidentId,
-                assignedByRole: .president,
+                assignedBy: leadId,
+                assignedByRole: .clubLead,
                 assignedTo: leadId,
                 assignedToRole: .clubLead,
                 delegatedToId: nil,
@@ -35,10 +37,10 @@ final class TaskStore {
                 eventId: eventId,
                 title: "Speaker Invitation List",
                 description: "Review and short-list speakers for the upcoming summit.",
-                assignedBy: presidentId,
-                assignedByRole: .president,
-                assignedTo: leadId,
-                assignedToRole: .clubLead,
+                assignedBy: leadId,
+                assignedByRole: .clubLead,
+                assignedTo: memberId,
+                assignedToRole: .clubMember,
                 delegatedToId: nil,
                 delegatedToName: nil,
                 deadline: Date().addingTimeInterval(3600 * 24 * 5),
@@ -48,13 +50,13 @@ final class TaskStore {
             ),
             Tasks(
                 clubId: clubId,
-                targetClubId: nil,
+                targetClubId: lfClubId,
                 eventId: nil,
                 title: "Social Media Strategy",
                 description: "Plan the next month's posts for Instagram and Twitter.",
                 assignedBy: leadId,
                 assignedByRole: .clubLead,
-                assignedTo: leadId,
+                assignedTo: lfLeadId,
                 assignedToRole: .clubLead,
                 delegatedToId: nil,
                 delegatedToName: nil,
