@@ -62,17 +62,6 @@ struct EventCardView: View {
                         .foregroundStyle(.secondary)
                     
                     Spacer()
-                    
-                    Text("Registered")
-                        .font(.caption)
-                        .bold()
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                        )
-                        .foregroundStyle(.blue)
                 }
             }
             .padding(.horizontal, 8)

@@ -53,35 +53,42 @@ struct ExploreEventCard: View {
                     }
                 }
                 
-                HStack {
-                    HStack(spacing: 4) {
-                        Text("Registration :")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-                        
-                        Text("\(event.numberOfRegistrations)/\(event.maxParticipants)")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    if !isMyEvent {
-                        Button {
-                            appSession.registerForEvent(id: event.id)
-                        } label: {
-                            Text(appSession.registeredEventIds.contains(event.id) ? "Registered" : "Register")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(appSession.registeredEventIds.contains(event.id) ? Color.green : Color.blue)
-                                .clipShape(Capsule())
-                        }
-                    } else if appSession.currentRole != .student {
+                if event.status == .pending {
+                    HStack {
+                        Spacer()
                         statusBadge
+                    }
+                } else {
+                    HStack {
+                        HStack(spacing: 4) {
+                            Text("Registration :")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                            
+                            Text("\(event.numberOfRegistrations)/\(event.maxParticipants)")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        if !isMyEvent {
+                            Button {
+                                appSession.registerForEvent(id: event.id)
+                            } label: {
+                                Text(appSession.registeredEventIds.contains(event.id) ? "Registered" : "Register")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(appSession.registeredEventIds.contains(event.id) ? Color.green : Color.blue)
+                                    .clipShape(Capsule())
+                            }
+                        } else if appSession.currentRole != .student {
+                            statusBadge
+                        }
                     }
                 }
             }

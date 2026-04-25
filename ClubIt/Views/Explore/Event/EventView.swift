@@ -36,21 +36,46 @@ struct EventView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(EventFilterCategory.allCases) { category in
-                        Button {
-                            selectedCategory = category
-                        } label: {
-                            Text(category.rawValue)
-                                .font(.footnote)
-                                .fontWeight(.medium)
-                                .padding()
-                                .glassEffect(in: .capsule)
+            HStack(alignment: .center, spacing: 10) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(EventFilterCategory.allCases) { category in
+                            let isSelected = selectedCategory == category
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    selectedCategory = category
+                                }
+                            } label: {
+                                Text(category.rawValue)
+                                    .font(.footnote)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal, 18)
+                                    .padding(.vertical, 8)
+                                    .frame(minWidth: 65)
+                                    .background(isSelected ? Color(.secondarySystemFill) : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                                    .foregroundStyle(.primary)
+                                    .glassEffect(in: .capsule)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
+                
+                VStack(spacing: -2) {
+                    Text("MY EVENT ")
+                        .font(.system(size: 9, weight: .black))
+                        .foregroundStyle(scope == .myEvents ? .orange : .secondary)
+                    
+                    Toggle("", isOn: Binding(
+                        get: { scope == .myEvents },
+                        set: { scope = $0 ? .myEvents : .allEvents }
+                    ))
+                    .toggleStyle(SwitchToggleStyle(tint: .orange))
+                    .labelsHidden()
+                    .scaleEffect(0.75)
+                }
+                .padding(.leading, 4)
             }
             
             ScrollView(.vertical, showsIndicators: false) {

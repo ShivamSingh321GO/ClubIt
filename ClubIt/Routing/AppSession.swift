@@ -32,6 +32,7 @@ final class AppSession {
     var chatStore: ChatStore
     var approvalStore: ApprovalStore
     var activityStore: ActivityStore
+    var registrationStore: RegistrationStore
     
     var registeredEventIds: Set<UUID> = []
 
@@ -59,6 +60,7 @@ final class AppSession {
         self.studentDashboardStore = StudentDashboardStore(clubStore: clubStore, eventStore: eventStore)
         self.chatStore = ChatStore()
         self.activityStore = ActivityStore()
+        self.registrationStore = RegistrationStore()
         
         self.timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             self?.currentTime = Date()

@@ -38,26 +38,44 @@ struct ExploreView: View {
                 .pickerStyle(.segmented)
                 
                 ZStack(alignment: .bottomTrailing) {
-                    Group {
-                        switch selectedTab {
-                        case .announcement:
-                            AnnouncementView(announcements: appSession.globalAnnouncementStore.announcements)
-                        case .events:
-                            EventView(scope: $scope, eventStore: appSession.eventStore)
+                    VStack(spacing: 12) {
+                        Group {
+                            switch selectedTab {
+                            case .announcement:
+                                AnnouncementView(announcements: appSession.globalAnnouncementStore.announcements)
+                            case .events:
+                                EventView(scope: $scope, eventStore: appSession.eventStore)
+                            }
                         }
                     }
                     
-                    if canCreateAnnouncement && selectedTab == .announcement {
-                        Button {
-                            showCreateAnnouncementSheet = true
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title.bold())
-                                .foregroundColor(.white)
-                                .frame(width: 56, height: 56)
-                                .background(Color.orange.gradient)
-                                .clipShape(Circle())
-                                .shadow(color: .orange.opacity(0.3), radius: 10, x: 0, y: 5)
+                    if (selectedTab == .announcement && canCreateAnnouncement) || (selectedTab == .events && canCreateEvent) {
+                        Group {
+                            if selectedTab == .announcement {
+                                Button {
+                                    showCreateAnnouncementSheet = true
+                                } label: {
+                                    Image(systemName: "plus")
+                                        .font(.title2.bold())
+                                        .foregroundStyle(.primary)
+                                        .frame(width: 56, height: 56)
+                                        .glassEffect(in: .circle)
+                                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                                }
+                            } else {
+                                NavigationLink {
+                                    CreateNewEventView { event in
+                                        appSession.eventStore.addEvent(event)
+                                    }
+                                } label: {
+                                    Image(systemName: "plus")
+                                        .font(.title2.bold())
+                                        .foregroundStyle(.primary)
+                                        .frame(width: 56, height: 56)
+                                        .glassEffect(in: .circle)
+                                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                                }
+                            }
                         }
                         .padding(.trailing, 16)
                         .padding(.bottom, 16)
@@ -69,33 +87,7 @@ struct ExploreView: View {
             .navigationTitle("Explore")
             .toolbarTitleDisplayMode(.inlineLarge)
             .toolbar {
-                if selectedTab == .events {
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        if canCreateEvent {
-                            NavigationLink {
-                                CreateNewEventView { event in
-                                    appSession.eventStore.addEvent(event)
-                                }
-                            } label: {
-                                Image(systemName: "plus")
-                            }
-                        }
-                        
-                        if appSession.currentRole != .president && appSession.currentRole != .faculty {
-                            Menu {
-                                Button("My Events") {
-                                    scope = .myEvents
-                                }
-                                
-                                Button("All Events") {
-                                    scope = .allEvents
-                                }
-                            } label: {
-                                Image(systemName: "line.3.horizontal.decrease")
-                            }
-                        }
-                    }
-                }
+                // Toolbar menu/buttons removed as they are now in the FAB
             }
             .sheet(isPresented: $showCreateAnnouncementSheet) {
                 CreateAnnouncementView { title, content, url, postedBy, clubId in
