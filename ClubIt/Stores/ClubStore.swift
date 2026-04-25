@@ -5,6 +5,7 @@ import Observation
 final class ClubStore {
     var club: Club
     var allClubs: [Club] = []
+    var allUsers: [User] = MockData.allMockUsers
     
     var followedClubIds: Set<UUID> = []
     var requestedClubIds: Set<UUID> = []
