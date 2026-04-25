@@ -3,39 +3,55 @@
 //  ClubIt
 //
 
-
 import SwiftUI
 
 struct LeadMyClubView: View {
     @Environment(AppSession.self) var appSession
-    
+
     var user: User? {
         appSession.currentUser
     }
-    
+
     @State private var isAboutExpanded: Bool = false
     @State private var selectedActivity: Activity? = nil
-    
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    
+
                     // MARK: - About Club section
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(spacing: 16) {
                             ZStack {
                                 Circle()
-                                    .fill(LinearGradient(colors: [.goldenBrown, .goldenBrown.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                .goldenBrown,
+                                                .goldenBrown.opacity(0.7),
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
                                     .frame(width: 60, height: 60)
-                                
-                                if let imageData = appSession.clubStore.club.imageData, let uiImage = UIImage(data: imageData) {
+
+                                if let imageData = appSession.clubStore.club
+                                    .imageData,
+                                    let uiImage = UIImage(data: imageData)
+                                {
                                     Image(uiImage: uiImage)
                                         .resizable()
                                         .scaledToFill()
                                         .frame(width: 60, height: 60)
                                         .clipShape(Circle())
-                                } else if !appSession.clubStore.club.logo.isEmpty && UIImage(named: appSession.clubStore.club.logo) != nil {
+                                } else if !appSession.clubStore.club.logo
+                                    .isEmpty
+                                    && UIImage(
+                                        named: appSession.clubStore.club.logo
+                                    ) != nil
+                                {
                                     Image(appSession.clubStore.club.logo)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
@@ -47,7 +63,7 @@ struct LeadMyClubView: View {
                                         .foregroundColor(.white)
                                 }
                             }
-                            
+
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(appSession.clubStore.club.name)
                                     .font(.title3)
@@ -57,22 +73,25 @@ struct LeadMyClubView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             Spacer()
-                            
+
                             Button(action: {
                                 withAnimation(.spring()) {
                                     isAboutExpanded.toggle()
                                 }
                             }) {
-                                Image(systemName: isAboutExpanded ? "chevron.up" : "chevron.down")
-                                    .font(.headline)
-                                    .bold()
-                                    .padding()
-                                    .glassEffect(in: .circle)
+                                Image(
+                                    systemName: isAboutExpanded
+                                        ? "chevron.up" : "chevron.down"
+                                )
+                                .font(.headline)
+                                .bold()
+                                .padding()
+                                .glassEffect(in: .circle)
                             }
                         }
-                        
+
                         if isAboutExpanded {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("About the Club")
@@ -83,30 +102,93 @@ struct LeadMyClubView: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                     .lineSpacing(4)
-                                
+
                                 HStack(spacing: 20) {
-                                    NavigationLink(destination: ClubMemberListView(club: appSession.clubStore.club)) {
-                                        StatBadge(icon: "person.2.fill", count: "\(appSession.clubStore.allUsers.filter { $0.clubId == appSession.clubStore.club.id }.count)", label: "Members", color: Color(red: 0.2, green: 0.8, blue: 0.5))
+                                    NavigationLink(
+                                        destination: ClubMemberListView(
+                                            club: appSession.clubStore.club
+                                        )
+                                    ) {
+                                        StatBadge(
+                                            icon: "person.2.fill",
+                                            count:
+                                                "\(appSession.clubStore.allUsers.filter { $0.clubId == appSession.clubStore.club.id }.count)",
+                                            label: "Members",
+                                            color: Color(
+                                                red: 0.2,
+                                                green: 0.8,
+                                                blue: 0.5
+                                            )
+                                        )
                                     }
                                     .buttonStyle(.plain)
                                     Spacer()
-                                    NavigationLink(destination: AchievementsListView()) {
-                                        StatBadge(icon: "trophy.fill", count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == appSession.clubStore.club.id }.count)", label: "Achievements", color: Color(red: 1.0, green: 0.8, blue: 0.2))
+                                    NavigationLink(
+                                        destination: AchievementsListView()
+                                    ) {
+                                        StatBadge(
+                                            icon: "trophy.fill",
+                                            count:
+                                                "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == appSession.clubStore.club.id }.count)",
+                                            label: "Achievements",
+                                            color: Color(
+                                                red: 1.0,
+                                                green: 0.8,
+                                                blue: 0.2
+                                            )
+                                        )
                                     }
                                     .buttonStyle(.plain)
                                 }
                                 .padding(.top, 5)
-                                
+
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("Socials")
                                         .font(.headline)
                                         .bold()
                                         .foregroundColor(.primary)
-                                    HStack(spacing: 16) {
-                                        ForEach(appSession.clubStore.club.socials.sorted(by: { $0.key < $1.key }), id: \.key) { platform, urlString in
-                                            if let url = URL(string: urlString) {
-                                                Link(destination: url) {
-                                                    SocialCircle(platform: platform)
+                                    HStack {
+                                        let orderedPlatforms = [
+                                            "whatsapp", "instagram", "facebook",
+                                            "linkedin", "discord",
+                                        ]
+                                        let availableSocials =
+                                            orderedPlatforms.filter {
+                                                appSession.clubStore.club
+                                                    .socials.keys.contains($0)
+                                            }
+
+                                        if availableSocials.isEmpty {
+                                            Text("No social links provided")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                                .italic()
+                                        } else {
+                                            ForEach(
+                                                availableSocials.indices,
+                                                id: \.self
+                                            ) { index in
+                                                let platform = availableSocials[
+                                                    index
+                                                ]
+                                                if let urlString = appSession
+                                                    .clubStore.club.socials[
+                                                        platform
+                                                    ],
+                                                    let url = URL(
+                                                        string: urlString
+                                                    )
+                                                {
+                                                    Link(destination: url) {
+                                                        SocialCircle(
+                                                            platform: platform
+                                                        )
+                                                    }
+                                                }
+
+                                                if index < availableSocials
+                                                    .count - 1
+                                                {
                                                     Spacer()
                                                 }
                                             }
@@ -115,14 +197,15 @@ struct LeadMyClubView: View {
                                 }
                                 .padding(.top, 4)
                             }
-                            .transition(.opacity.combined(with: .move(edge: .top)))
+                            .transition(
+                                .opacity.combined(with: .move(edge: .top))
+                            )
                         }
                     }
                     .padding()
                     .glassEffect(in: .rect(cornerRadius: 20))
                     .padding(.horizontal, 16)
-                    
-                    
+
                     // MARK: - Activities
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
@@ -134,9 +217,10 @@ struct LeadMyClubView: View {
                         .font(.title2)
                         .bold()
                         .padding(.horizontal, 16)
-                        
-                        VStack() {
-                            let activities = appSession.activityStore.activities.prefix(2)
+
+                        VStack {
+                            let activities = appSession.activityStore.activities
+                                .prefix(2)
                             if activities.isEmpty {
                                 Text("No recent activities")
                                     .font(.subheadline)
@@ -147,7 +231,8 @@ struct LeadMyClubView: View {
                                     .padding(.horizontal, 16)
                             } else {
                                 ForEach(activities) { activity in
-                                    ActivityCard(activity: activity) { tappedActivity in
+                                    ActivityCard(activity: activity) {
+                                        tappedActivity in
                                         selectedActivity = tappedActivity
                                     }
                                     .padding(.bottom, 12)
@@ -155,56 +240,54 @@ struct LeadMyClubView: View {
                             }
                         }
                     }
-                    
-                    
-//                    // MARK: - Club Announcements
-//                    VStack(alignment: .leading, spacing: 24) {
-//                        HStack {
-//                            Text("Club announcement")
-//                            NavigationLink(destination: ClubAnnouncementsView()) {
-//                                Image(systemName: "chevron.right")
-//                            }
-//                        }
-//                        .font(.title2)
-//                        .bold()
-//                        .padding(.horizontal, 16)
-//                        
-//                        VStack(spacing: 8) {
-//                            let recentAnnouncements = appSession.clubAnnouncementStore.announcements
-//                                .filter { $0.clubId == appSession.clubStore.club.id }
-//                                .sorted(by: { $0.createdAt > $1.createdAt })
-//                                .prefix(2)
-//                            
-//                            if recentAnnouncements.isEmpty {
-//                                Text("No announcements added yet.")
-//                                    .font(.subheadline)
-//                                    .foregroundColor(.secondary)
-//                                    .frame(maxWidth: .infinity, alignment: .center)
-//                                    .padding()
-//                                    .glassEffect(in: .rect(cornerRadius: 20))
-//                            } else {
-//                                ForEach(recentAnnouncements) { ann in
-//                                    LocalAnnouncementCard(announcement: ann)
-//                                        .contentShape(Rectangle())
-//                                        .contextMenu {
-//                                            if appSession.currentRole == .clubLead {
-//                                                Button(role: .destructive) {
-//                                                    withAnimation {
-//                                                        appSession.clubAnnouncementStore.deleteAnnouncement(ann)
-//                                                    }
-//                                                } label: {
-//                                                    Label("Delete", systemImage: "trash")
-//                                                }
-//                                            }
-//                                        }
-//                                }
-//                            }
-//                        }
-//                        .padding(.horizontal, 16)
-//                    }
-//                    
-                    
-                    
+
+                    //                    // MARK: - Club Announcements
+                    //                    VStack(alignment: .leading, spacing: 24) {
+                    //                        HStack {
+                    //                            Text("Club announcement")
+                    //                            NavigationLink(destination: ClubAnnouncementsView()) {
+                    //                                Image(systemName: "chevron.right")
+                    //                            }
+                    //                        }
+                    //                        .font(.title2)
+                    //                        .bold()
+                    //                        .padding(.horizontal, 16)
+                    //
+                    //                        VStack(spacing: 8) {
+                    //                            let recentAnnouncements = appSession.clubAnnouncementStore.announcements
+                    //                                .filter { $0.clubId == appSession.clubStore.club.id }
+                    //                                .sorted(by: { $0.createdAt > $1.createdAt })
+                    //                                .prefix(2)
+                    //
+                    //                            if recentAnnouncements.isEmpty {
+                    //                                Text("No announcements added yet.")
+                    //                                    .font(.subheadline)
+                    //                                    .foregroundColor(.secondary)
+                    //                                    .frame(maxWidth: .infinity, alignment: .center)
+                    //                                    .padding()
+                    //                                    .glassEffect(in: .rect(cornerRadius: 20))
+                    //                            } else {
+                    //                                ForEach(recentAnnouncements) { ann in
+                    //                                    LocalAnnouncementCard(announcement: ann)
+                    //                                        .contentShape(Rectangle())
+                    //                                        .contextMenu {
+                    //                                            if appSession.currentRole == .clubLead {
+                    //                                                Button(role: .destructive) {
+                    //                                                    withAnimation {
+                    //                                                        appSession.clubAnnouncementStore.deleteAnnouncement(ann)
+                    //                                                    }
+                    //                                                } label: {
+                    //                                                    Label("Delete", systemImage: "trash")
+                    //                                                }
+                    //                                            }
+                    //                                        }
+                    //                                }
+                    //                            }
+                    //                        }
+                    //                        .padding(.horizontal, 16)
+                    //                    }
+                    //
+
                     // MARK: - Media
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
@@ -214,32 +297,44 @@ struct LeadMyClubView: View {
                         .font(.title2)
                         .bold()
                         .padding(.horizontal, 16)
-                        
+
                         HStack(spacing: 16) {
                             NavigationLink(destination: ClubImagesView()) {
-                                MediaButton(icon: "photo.fill", label: "Images", color: .orange)
+                                MediaButton(
+                                    icon: "photo.fill",
+                                    label: "Images",
+                                    color: .orange
+                                )
                             }
                             .buttonStyle(.plain)
-                            
+
                             Spacer()
-                            
+
                             NavigationLink(destination: ClubFilesView()) {
-                                MediaButton(icon: "doc.text.fill", label: "Files", color: .brown)
+                                MediaButton(
+                                    icon: "doc.text.fill",
+                                    label: "Files",
+                                    color: .brown
+                                )
                             }
                             .buttonStyle(.plain)
-                            
+
                             Spacer()
-                            
+
                             NavigationLink(destination: ClubLinksView()) {
-                                MediaButton(icon: "link", label: "Links", color: .green)
+                                MediaButton(
+                                    icon: "link",
+                                    label: "Links",
+                                    color: .green
+                                )
                             }
                             .buttonStyle(.plain)
                         }
-//                        .padding()
-//                        .glassEffect(in: .rect(cornerRadius: 20))
+                        //                        .padding()
+                        //                        .glassEffect(in: .rect(cornerRadius: 20))
                         .padding(.horizontal, 12)
                     }
-                    
+
                 }
                 .padding(.vertical, 16)
             }
@@ -248,7 +343,11 @@ struct LeadMyClubView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if appSession.currentRole == .clubLead {
-                        NavigationLink(destination: EditClubDetailView(club: appSession.clubStore.club)) {
+                        NavigationLink(
+                            destination: EditClubDetailView(
+                                club: appSession.clubStore.club
+                            )
+                        ) {
                             Text("Edit")
                         }
                     }
@@ -258,11 +357,11 @@ struct LeadMyClubView: View {
         .sheet(item: $selectedActivity) { activity in
             ActivityDetailView(activity: activity)
                 .environment(appSession)
-//                .presentationDragIndicator(.visible)
+                //                .presentationDragIndicator(.visible)
                 .presentationDetents([.large])
         }
     }
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
@@ -275,14 +374,14 @@ struct StatBadge: View {
     let count: String
     let label: String
     let color: Color
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundColor(color)
                 .frame(width: 32)
-            
+
             VStack(alignment: .center, spacing: 0) {
                 Text(count)
                     .font(.headline)
@@ -304,18 +403,18 @@ struct StatBadge: View {
 
 struct SocialCircle: View {
     let platform: String
-    
+
     var iconName: String {
         switch platform.lowercased() {
-        case "instagram": return "camera.fill"
-        case "facebook": return "f.square.fill"
-        case "linkedin": return "l.square.fill"
-        case "whatsapp": return "message.fill"
-        case "discord": return "bubble.left.and.bubble.right.fill"
+        case "instagram": return "instagramLogo"
+        case "facebook": return "facebookLogo"
+        case "linkedin": return "linkedInLogo"
+        case "whatsapp": return "whatsappLogo"
+        case "discord": return "discordLogo"
         default: return "globe"
         }
     }
-    
+
     var color: Color {
         switch platform.lowercased() {
         case "instagram": return .pink
@@ -326,25 +425,31 @@ struct SocialCircle: View {
         default: return .gray
         }
     }
-    
+
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(color.opacity(0.1))
-                .frame(width: 44, height: 44)
-            Image(systemName: iconName)
+        //        ZStack {
+        //            Circle()
+        //                .fill(color.opacity(0.1))
+        //                .frame(width: 44, height: 44)
+        //            Image(systemName: iconName)
+        HStack {
+            Image(iconName)
+                .resizable()
+                .frame(width: 50, height: 50)
                 .font(.headline)
-                .foregroundColor(color)
+            //                .foregroundColor(color)
+
         }
+        //        }
     }
 }
 
 struct LocalAnnouncementCard: View {
     let announcement: Announcement
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            
+
             HStack(alignment: .top, spacing: 12) {
                 Circle()
                     .fill(Color(.systemGray5))
@@ -353,27 +458,29 @@ struct LocalAnnouncementCard: View {
                         Image(systemName: "megaphone.fill")
                             .foregroundStyle(.goldenBrown)
                     )
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(announcement.title)
                         .font(.headline)
                         .foregroundColor(.primary)
-                    
+
                     Text(relativeTimeText(from: announcement.createdAt))
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
             }
-            
+
             Text(announcement.content)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineLimit(3)
-            
-            if !announcement.url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+
+            if !announcement.url.trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty
+            {
                 Text(announcement.url)
                     .font(.callout)
                     .foregroundColor(.blue)
@@ -384,13 +491,13 @@ struct LocalAnnouncementCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(in: .rect(cornerRadius: 20))
     }
-    
+
     private func relativeTimeText(from date: Date) -> String {
         let diff = Int(Date().timeIntervalSince(date))
         let minutes = diff / 60
         let hours = diff / 3600
         let days = diff / 86400
-        
+
         if minutes < 1 { return "0 minutes ago" }
         if minutes < 60 { return "\(minutes) minutes ago" }
         if hours < 24 { return "\(hours) hours ago" }
@@ -402,7 +509,7 @@ struct MediaButton: View {
     let icon: String
     let label: String
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 10) {
             ZStack {
@@ -426,7 +533,7 @@ struct MediaButton: View {
 struct AchievementStatBox: View {
     let count: String
     let label: String
-    
+
     var body: some View {
         VStack(spacing: 6) {
             Text(count)
@@ -449,7 +556,7 @@ struct AchievementItem: View {
     let title: String
     let date: String
     let desc: String
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 16) {
@@ -457,12 +564,12 @@ struct AchievementItem: View {
                     Circle()
                         .fill(Color.gray.opacity(0.05))
                         .frame(width: 44, height: 44)
-                    
+
                     Image(systemName: icon)
                         .font(.body)
                 }
-//                .frame(width: 40)
-                
+                //                .frame(width: 40)
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.headline)
