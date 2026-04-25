@@ -16,115 +16,154 @@ struct ExploreEventCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            
             bannerSection
             
-            VStack(alignment: .leading, spacing: 10) {
-                Text(event.title)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
-                
-                Text("Hosted by \(hostName)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "calendar")
-                            .font(.subheadline)
-                            .foregroundStyle(.blue)
-                            .frame(width: 20)
-                        
-                        Text(formattedDateAndTime)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
+            VStack(alignment: .leading, spacing: 16) {
+                // Title Section
+                HStack(alignment: .top) {
+                    Text(event.title)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .lineLimit(1)
+                        .foregroundStyle(.primary)
                     
-                    HStack(spacing: 8) {
-                        Image(systemName: "mappin.and.ellipse")
-                            .font(.subheadline)
-                            .foregroundStyle(.red)
-                            .frame(width: 20)
-                        
-                        Text(event.location)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
+                    Spacer()
                 }
                 
-                if event.status == .pending {
-                    HStack {
-                        Spacer()
-                        statusBadge
-                    }
-                } else {
-                    HStack {
-                        HStack(spacing: 4) {
-                            Text("Registration :")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.primary)
-                            
-                            Text("\(event.numberOfRegistrations)/\(event.maxParticipants)")
-                                .font(.subheadline)
+                VStack(alignment: .leading, spacing: 12) {
+                    // Venue Section
+                    HStack(spacing: 10) {
+                        ZStack {
+                            Circle()
+                                .fill(.orange.opacity(0.15))
+                                .frame(width: 32, height: 32)
+                            Image(systemName: "mappin.and.ellipse")
+                                .font(.caption2.bold())
+                                .foregroundStyle(.orange)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("VENUE")
+                                .font(.caption2.bold())
                                 .foregroundStyle(.secondary)
+                            Text(event.location)
+                                .font(.footnote.bold())
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                        }
+                    }
+                    
+                    // Registration & Status Row
+                    HStack(alignment: .center, spacing: 10) {
+                        HStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(.blue.opacity(0.1))
+                                    .frame(width: 32, height: 32)
+                                Image(systemName: "person.2.fill")
+                                    .font(.caption2)
+                                    .foregroundStyle(.blue)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("REGISTRATIONS")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.secondary)
+                                Text("\(event.status == .pending ? 0 : event.numberOfRegistrations) / \(event.maxParticipants)")
+                                    .font(.footnote.bold())
+                                    .foregroundStyle(.primary)
+                            }
                         }
                         
                         Spacer()
                         
-                        if !isMyEvent {
-                            Button {
-                                appSession.registerForEvent(id: event.id)
-                            } label: {
-                                Text(appSession.registeredEventIds.contains(event.id) ? "Registered" : "Register")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .background(appSession.registeredEventIds.contains(event.id) ? Color.green : Color.blue)
-                                    .clipShape(Capsule())
-                            }
-                        } else if appSession.currentRole != .student {
+                        // Action/Status Badge area
+                        if isMyEvent || event.status == .pending {
+                            // Show status label for my events or any pending event
                             statusBadge
+                        } else if appSession.registeredEventIds.contains(event.id) {
+                            // Show 'Registered' label for events user has joined
+                            statusLabel(text: "Registered", color: .green)
                         }
                     }
                 }
             }
-            .padding()
+            .padding(16)
         }
-        .glassEffect(in: .rect(cornerRadius: 20))
-        .contentShape(Rectangle())
+        .background(Color(.secondarySystemBackground).opacity(0.4))
+        .glassEffect(in: .rect(cornerRadius: 24))
+        .padding(.vertical, 8)
     }
     
     private var bannerSection: some View {
-        Group {
-            if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-            } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Image(bannerImage)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                placeholderBanner
+        ZStack(alignment: .top) {
+            Group {
+                if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Image(bannerImage)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    placeholderBanner
+                }
             }
+            .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 22))
+            
+            HStack(alignment: .top) {
+                // Calendar & Time Badge
+                VStack(spacing: 0) {
+                    Text(formattedMonth)
+                        .font(.caption2)
+                        .fontWeight(.heavy)
+                        .foregroundStyle(Color(red: 0.9, green: 0.1, blue: 0.1)) // Deep vibrant red
+                    Text(formattedDay)
+                        .font(.title2)
+                        .fontWeight(.black)
+                        .foregroundStyle(.black)
+                    
+                    Text(formattedTime)
+                        .font(.system(size: 8, weight: .heavy))
+                        .foregroundStyle(.black.opacity(0.8))
+                        .padding(.top, 2)
+                }
+                .padding(.vertical, 8)
+                .frame(width: 62)
+                .background(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .shadow(color: .black.opacity(0.15), radius: 8)
+                
+                Spacer()
+                
+                // Favorite Button removed as per request
+            }
+            .padding(12)
         }
-        .frame(height: 180)
-
-        .frame(maxWidth: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .padding(6)
     }
     
     private var placeholderBanner: some View {
         ZStack {
-            Color(.systemGray5)
-            Image(systemName: "photo")
+            Color.orange.opacity(0.1)
+            Image(systemName: "sparkles")
                 .font(.largeTitle)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.orange.opacity(0.5))
         }
+    }
+    
+    private func statusLabel(text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption2.bold())
+            .foregroundStyle(color)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.12))
+            .clipShape(Capsule())
+            .overlay(Capsule().stroke(color.opacity(0.3), lineWidth: 0.5))
     }
     
     @ViewBuilder
@@ -147,28 +186,35 @@ struct ExploreEventCard: View {
             }
         }()
         
-        Text(text)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(color)
-            .clipShape(Capsule())
+        statusLabel(text: text, color: color)
     }
     
     private var hostName: String {
-        appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })?.name ?? "Club"
+        appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })?.name ?? "Connexus Club"
     }
     
-    private var formattedDateAndTime: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMM d"
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "hh:mm a"
-        
-        return "\(dateFormatter.string(from: event.startDate))   \(timeFormatter.string(from: event.startTime))"
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMM d"
+        return formatter.string(from: event.startDate)
+    }
+    
+    private var formattedDay: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd"
+        return formatter.string(from: event.startDate)
+    }
+    
+    private var formattedMonth: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM"
+        return formatter.string(from: event.startDate).uppercased()
+    }
+    
+    private var formattedTime: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: event.startTime)
     }
 }
 
@@ -184,8 +230,8 @@ struct ExploreEventCard: View {
                 startTime: Date(),
                 endTime: Date().addingTimeInterval(3600),
                 numberOfVolunteers: 10,
-                numberOfRegistrations: 150,
-                maxParticipants: 100,
+                numberOfRegistrations: 100,
+                maxParticipants: 150,
                 registrationType: .individual,
                 location: "C-Block",
                 clubId: UUID(),

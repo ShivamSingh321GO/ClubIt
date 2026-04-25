@@ -4,8 +4,14 @@ struct StudentProfileView: View {
     @Environment(AppSession.self) private var appSession
     @Environment(\.dismiss) private var dismiss
     
-    var user: User? {
-        appSession.currentUser ?? MockData.studentUser
+    var user: User?
+    
+    private var displayUser: User? {
+        user ?? appSession.currentUser ?? MockData.studentUser
+    }
+    
+    private var isCurrentUser: Bool {
+        displayUser?.id == appSession.currentUser?.id
     }
     
     var body: some View {
@@ -20,16 +26,21 @@ struct StudentProfileView: View {
                 // Requested Clubs
                 requestedClubsSection
                 
+                // Saved Events
+                savedEventsSection
+                
                 // Clubs Followed
                 clubsFollowedSection
                 
-                // Settings Section
-                settingsSection
+                // Settings Section (Only for current user)
+                if isCurrentUser {
+                    settingsSection
+                }
             }
             .padding(.horizontal)
             .padding(.bottom, 30)
         }
-        .navigationTitle("Profile")
+        .navigationTitle(isCurrentUser ? "Profile" : (displayUser?.name ?? "Profile"))
         .navigationBarTitleDisplayMode(.inline)
     }
     
@@ -38,7 +49,7 @@ struct StudentProfileView: View {
     private var profileInfoCard: some View {
         HStack(spacing: 20) {
             // Profile Image
-            AsyncImage(url: URL(string: user?.profileImg ?? "")) { image in
+            AsyncImage(url: URL(string: displayUser?.profileImg ?? "")) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -52,7 +63,7 @@ struct StudentProfileView: View {
             .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 2))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(user?.name ?? "Kamakshi")
+                Text(displayUser?.name ?? "Kamakshi")
                     .font(.title3)
                     .bold()
                 
@@ -78,11 +89,11 @@ struct StudentProfileView: View {
                 .padding(.leading, 4)
             
             VStack(spacing: 1) {
-                infoRow(icon: "phone.fill", text: user?.phoneNumber ?? "+91 12345 67890")
+                infoRow(icon: "phone.fill", text: displayUser?.phoneNumber ?? "+91 12345 67890")
                 Divider().padding(.leading, 44).opacity(0.5)
-                infoRow(icon: "envelope.fill", text: user?.email ?? "kamakshi@gmail.com")
+                infoRow(icon: "envelope.fill", text: displayUser?.email ?? "kamakshi@gmail.com")
                 Divider().padding(.leading, 44).opacity(0.5)
-                infoRow(icon: "graduationcap.fill", text: user?.course ?? "B Tech CSE")
+                infoRow(icon: "graduationcap.fill", text: displayUser?.course ?? "B Tech CSE")
             }
             .glassEffect(in: .rect(cornerRadius: 20))
         }
@@ -116,6 +127,58 @@ struct StudentProfileView: View {
                 }
             }
             .glassEffect(in: .rect(cornerRadius: 20))
+        }
+    }
+    
+    private var savedEventsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Saved Events")
+                    .font(.headline)
+                Spacer()
+                if !appSession.favouritedEventIds.isEmpty {
+                    Text("\(appSession.favouritedEventIds.count)")
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.orange.gradient)
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(.leading, 4)
+            
+            let savedEvents = MockData.sampleEvents.filter { appSession.favouritedEventIds.contains($0.id) }
+            
+            if savedEvents.isEmpty {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.secondary.opacity(0.3))
+                        Text("No saved events yet")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 32)
+                    Spacer()
+                }
+                .glassEffect(in: .rect(cornerRadius: 20))
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(savedEvents) { event in
+                            NavigationLink(destination: EventDetailView(event: event, isMyEvent: false)) {
+                                ExploreEventCard(event: event, isMyEvent: false)
+                                    .frame(width: 300) // Slightly smaller for profile
+                                    .scaleEffect(0.9)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
         }
     }
     

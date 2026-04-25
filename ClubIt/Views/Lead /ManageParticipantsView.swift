@@ -4,67 +4,119 @@ struct ManageParticipantsView: View {
     @Environment(AppSession.self) var appSession
     let event: Event
     
-    var body: some View {
-        let registrations = appSession.registrationStore.getRegistrations(for: event.id)
+    @State private var selectedRole: ParticipantFilterRole = .all
+    
+    enum ParticipantFilterRole: String, CaseIterable, Identifiable {
+        case all = "All"
+        case students = "Students"
+        case members = "Members"
+        case leads = "Leads"
         
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 20) {
-                // Header Summary
-                HStack(spacing: 16) {
-                    SummaryStatCard(title: "Total Joined", count: "\(registrations.count)", icon: "person.2.fill", color: .blue)
-                    SummaryStatCard(title: "Confirmed", count: "\(registrations.filter { $0.status == .confirmed }.count)", icon: "checkmark.circle.fill", color: .green)
+        var id: String { rawValue }
+    }
+    
+    var body: some View {
+        let allRegistrations = appSession.registrationStore.getRegistrations(for: event.id)
+        
+        VStack(alignment: .leading, spacing: 0) {
+            // Filter Header
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Participants")
+                            .font(.title2.bold())
+                        Text("\(allRegistrations.count) Total Registered")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Spacer()
                 }
                 
-                HStack {
-                    Text("Participant List")
-                        .font(.headline)
-                    Spacer()
-                    
-                    if registrations.contains(where: { $0.status != .confirmed }) {
+                // Role Picker
+                HStack(spacing: 8) {
+                    ForEach(ParticipantFilterRole.allCases) { role in
+                        let isSelected = selectedRole == role
                         Button {
-                            withAnimation {
-                                appSession.registrationStore.confirmAll(for: event.id)
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                selectedRole = role
                             }
                         } label: {
-                            Text("Confirm All")
-                                .font(.caption.bold())
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.green.gradient)
+                            Text(role.rawValue)
+                                .font(.footnote.bold())
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(isSelected ? Color.orange : Color.orange.opacity(0.1))
+                                .foregroundStyle(isSelected ? .white : .orange)
                                 .clipShape(Capsule())
                         }
-                        .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                .padding(.top, 8)
-                
-                if registrations.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "person.crop.circle.badge.exclamationmark")
-                            .font(.system(size: 40))
-                            .foregroundColor(.secondary)
-                        Text("No participants yet")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 40)
-                    .glassEffect(in: .rect(cornerRadius: 24))
-                } else {
-                    VStack(spacing: 16) {
-                        ForEach(registrations) { registration in
-                            if let user = appSession.clubStore.allUsers.first(where: { $0.id == registration.userId }) {
-                                ParticipantRow(user: user, registration: registration)
-                            }
-                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
             .padding(20)
+            .background(Color(.systemBackground))
+            
+            Divider()
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 12) {
+                    if filteredRegistrations(allRegistrations).isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "person.crop.circle.badge.exclamationmark")
+                                .font(.system(size: 44))
+                                .foregroundColor(.secondary.opacity(0.5))
+                            Text("No \(selectedRole.rawValue.lowercased()) found")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 60)
+                    } else {
+                        ForEach(filteredRegistrations(allRegistrations)) { registration in
+                            if let user = appSession.clubStore.allUsers.first(where: { $0.id == registration.userId }) {
+                                NavigationLink {
+                                    destinationProfile(for: user)
+                                } label: {
+                                    ParticipantRow(user: user, registration: registration)
+                                }
+                                .buttonStyle(.plain)
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
         }
-        .navigationTitle("Manage Participants")
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    @ViewBuilder
+    private func destinationProfile(for user: User) -> some View {
+        if user.role == .clubLead || user.role == .clubMember {
+            LeadProfileView(user: user)
+        } else {
+            StudentProfileView(user: user)
+        }
+    }
+    
+    private func filteredRegistrations(_ registrations: [IndividualRegistration]) -> [IndividualRegistration] {
+        registrations.filter { registration in
+            guard let user = appSession.clubStore.allUsers.first(where: { $0.id == registration.userId }) else { return false }
+            
+            switch selectedRole {
+            case .all:
+                return true
+            case .students:
+                return user.role == .student
+            case .members:
+                return user.role == .clubMember
+            case .leads:
+                return user.role == .clubLead
+            }
+        }
     }
 }
 
@@ -119,27 +171,17 @@ struct ParticipantRow: View {
             
             Spacer()
             
-            // Status Tag
-            Text(registration.status.rawValue.capitalized)
-                .font(.system(size: 10, weight: .bold))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(statusColor.opacity(0.1))
-                .foregroundColor(statusColor)
-                .clipShape(Capsule())
+            Spacer()
             
-            Menu {
-                Button("Confirm") {
-                    appSession.registrationStore.updateStatus(registrationId: registration.id, status: .confirmed)
-                }
-                Button("Cancel", role: .destructive) {
-                    appSession.registrationStore.updateStatus(registrationId: registration.id, status: .cancelled)
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.subheadline)
+            if user.role == .clubLead {
+                // For leads, show a Host badge
+                Text("Host")
+                    .font(.system(size: 10, weight: .bold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.secondary.opacity(0.1))
                     .foregroundColor(.secondary)
-                    .padding(8)
+                    .clipShape(Capsule())
             }
         }
         .padding(12)

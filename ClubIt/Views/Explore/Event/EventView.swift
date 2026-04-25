@@ -32,17 +32,32 @@ struct EventView: View {
     let eventStore: EventStore
     
     @State private var selectedCategory: EventFilterCategory = .all
+    @State private var isRefreshing = false
+    
+    private func triggerRefresh(action: @escaping () -> Void) {
+        withAnimation(.easeIn(duration: 0.15)) {
+            isRefreshing = true
+        }
+        
+        // Brief delay to simulate a real refresh
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                action()
+                isRefreshing = false
+            }
+        }
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             
-            HStack(alignment: .center, spacing: 10) {
+            ZStack(alignment: .trailing) {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(EventFilterCategory.allCases) { category in
                             let isSelected = selectedCategory == category
                             Button {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                triggerRefresh {
                                     selectedCategory = category
                                 }
                             } label: {
@@ -60,48 +75,102 @@ struct EventView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                    .padding(.trailing, 85)
                 }
+                .mask(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .black, location: 0),
+                            .init(color: .black, location: 0.7),
+                            .init(color: .clear, location: 0.95)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
                 
-                VStack(spacing: -2) {
-                    Text("MY EVENT ")
+                VStack(spacing: -3) {
+                    Text("MY EVENTS")
+                        .multilineTextAlignment(.center)
                         .font(.system(size: 9, weight: .black))
+                        .lineLimit(2)
                         .foregroundStyle(scope == .myEvents ? .orange : .secondary)
                     
                     Toggle("", isOn: Binding(
                         get: { scope == .myEvents },
-                        set: { scope = $0 ? .myEvents : .allEvents }
+                        set: { newValue in
+                            triggerRefresh {
+                                scope = newValue ? .myEvents : .allEvents
+                            }
+                        }
                     ))
                     .toggleStyle(SwitchToggleStyle(tint: .orange))
                     .labelsHidden()
-                    .scaleEffect(0.75)
+                    .scaleEffect(0.72)
                 }
-                .padding(.leading, 4)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 10)
+                .background(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0),
+                            .init(color: Color(.systemBackground).opacity(0.6), location: 0.4),
+                            .init(color: Color(.systemBackground).opacity(0.9), location: 1.0)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .blur(radius: 8)
+                )
+                .padding(.trailing, 4)
             }
             
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 16) {
-                    if filteredEvents.isEmpty {
-                        ContentUnavailableView(
-                            "No Events Found",
-                            systemImage: "calendar",
-                            description: Text("There are no events in this filter right now.")
-                        )
-                        .padding(.top, 40)
-                    } else {
-                        ForEach(filteredEvents) { event in
-                            NavigationLink {
-                                EventDetailView(event: event, isMyEvent: isMyEvent(event))
-                            } label: {
-                                ExploreEventCard(
-                                    event: event,
-                                    isMyEvent: isMyEvent(event)
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
+            ZStack {
+                if isRefreshing {
+                    VStack {
+                        ProgressView()
+                            .tint(.orange)
+                            .scaleEffect(1.2)
+                        Text("Refreshing events...")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 8)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                } else {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 16) {
+                            if filteredEvents.isEmpty {
+                                ContentUnavailableView(
+                                    "No Events Found",
+                                    systemImage: "calendar",
+                                    description: Text("There are no events in this filter right now.")
+                                )
+                                .padding(.top, 40)
+                                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                            } else {
+                                ForEach(filteredEvents) { event in
+                                    NavigationLink {
+                                        EventDetailView(event: event, isMyEvent: isMyEvent(event))
+                                    } label: {
+                                        ExploreEventCard(
+                                            event: event,
+                                            isMyEvent: isMyEvent(event)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.asymmetric(
+                                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                                        removal: .move(edge: .top).combined(with: .opacity)
+                                    ))
+                                }
+                            }
+                        }
+                        .padding(.bottom, 12)
+                    }
+                    .transition(.opacity)
                 }
-                .padding(.bottom, 12)
             }
         }
     }

@@ -87,32 +87,40 @@ struct EventDetailView: View {
             .frame(height: 220)
             .clipShape(RoundedRectangle(cornerRadius: 24))
             
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 6) {
-                    Image(systemName: categoryIcon)
-                        .font(.system(size: 10, weight: .bold))
-                    Text(event.category.rawValue)
-                        .font(.caption.bold())
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(.ultraThinMaterial)
-                .foregroundColor(.white)
-                .clipShape(Capsule())
-                .shadow(color: .black.opacity(0.3), radius: 4)
-                
-                Text(event.title)
-                    .font(.title2.bold())
+            VStack {
+                HStack {
+                    Spacer()
+                    HStack(spacing: 6) {
+                        Image(systemName: categoryIcon)
+                            .font(.system(size: 10, weight: .bold))
+                        Text(event.category.rawValue)
+                            .font(.caption.bold())
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial)
                     .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-                    .lineLimit(2)
+                    .clipShape(Capsule())
+                    .shadow(color: .black.opacity(0.3), radius: 4)
+                }
+                .padding(20)
+                
+                Spacer()
+                
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(event.title)
+                        .font(.title2.bold())
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                        .lineLimit(2)
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
+                )
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
-            )
             .clipShape(RoundedRectangle(cornerRadius: 24))
         }
     }
@@ -310,7 +318,7 @@ struct EventDetailView: View {
                     Text("Registrations")
                         .font(.headline)
                     
-                    Text("\(event.numberOfRegistrations) joined / \(event.maxParticipants) total")
+                    Text("\(event.numberOfRegistrations) Registered / \(event.maxParticipants) total")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -328,16 +336,17 @@ struct EventDetailView: View {
                 } else {
                     HStack(spacing: 4) {
                         Circle()
-                            .fill(Color.orange)
-                            .frame(width: 6, height: 6)
-                        Text("\(event.maxParticipants - event.numberOfRegistrations) left")
+                            .fill(.orange)
+                            .frame(width: 4, height: 4)
+                        Text("\(event.maxParticipants - event.numberOfRegistrations) slots left")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.orange)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.orange.opacity(0.1))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.orange.opacity(0.12))
                     .clipShape(Capsule())
+                    .overlay(Capsule().stroke(Color.orange.opacity(0.2), lineWidth: 0.5))
                 }
             }
             
@@ -407,7 +416,7 @@ struct EventDetailView: View {
                 .disabled(true)
             } else if isMyEvent {
                 NavigationLink(destination: ManageParticipantsView(event: event)) {
-                    Text("Manage Participants")
+                    Text("View Participants")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }

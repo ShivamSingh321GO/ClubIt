@@ -35,6 +35,7 @@ final class AppSession {
     var registrationStore: RegistrationStore
     
     var registeredEventIds: Set<UUID> = []
+    var favouritedEventIds: Set<UUID> = []
 
     var currentTime: Date = Date()
     private var timer: Timer?
@@ -92,6 +93,14 @@ final class AppSession {
             registeredEventIds.insert(id)
         }
         studentDashboardStore.registeredEventIds = registeredEventIds
+    }
+    
+    func toggleFavorite(id: UUID) {
+        if favouritedEventIds.contains(id) {
+            favouritedEventIds.remove(id)
+        } else {
+            favouritedEventIds.insert(id)
+        }
     }
     
     func checkAndAutoApproveEvent(eventId: UUID) {
