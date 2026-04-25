@@ -49,7 +49,7 @@ struct ClubFilesView: View {
                     Button(action: {
                         showingAddSheet = true
                     }) {
-                        Image(systemName: "plus")
+                        Image(systemName: "square.and.arrow.up")
                     }
                 }
             }

@@ -49,6 +49,7 @@ struct Club: Identifiable, Hashable ,Codable {
     var memberCount: Int
     var eventCount: Int
     var socials: [String: String]
+    var imageData: Data?
 }
 
 struct ClubFollower: Identifiable, Codable {

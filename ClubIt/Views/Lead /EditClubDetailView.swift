@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct EditClubDetailView: View {
     @Environment(\.dismiss) var dismiss
@@ -15,6 +16,9 @@ struct EditClubDetailView: View {
     @State private var linkedin: String
     @State private var whatsapp: String
     @State private var discord: String
+    @State private var logo: String
+    @State private var imageData: Data?
+    @State private var selectedItem: PhotosPickerItem?
     
     init(club: Club) {
         _name = State(initialValue: club.name)
@@ -28,13 +32,71 @@ struct EditClubDetailView: View {
         _linkedin = State(initialValue: club.socials["linkedin"] ?? "")
         _whatsapp = State(initialValue: club.socials["whatsapp"] ?? "")
         _discord = State(initialValue: club.socials["discord"] ?? "")
+        _logo = State(initialValue: club.logo)
+        _imageData = State(initialValue: club.imageData)
     }
     
     var body: some View {
         Form {
             Section("Basic Information") {
-                TextField("Club Name", text: $name)
-                TextField("Tagline", text: $tagLine)
+                HStack(spacing: 16) {
+                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                        ZStack {
+                            Circle()
+                                .fill(Color(.secondarySystemBackground))
+                                .frame(width: 80, height: 80)
+                            
+                            if let imageData, let uiImage = UIImage(data: imageData) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(Circle())
+                            } else if !logo.isEmpty && UIImage(named: logo) != nil {
+                                Image(logo)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 80, height: 80)
+                                    .padding(15)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "flame.fill")
+                                    .font(.system(size: 30))
+                                    .foregroundColor(.goldenBrown)
+                            }
+                        }
+                        .frame(width: 80, height: 80)
+                        .overlay(alignment: .bottom) {
+                            Text("Edit")
+                                .font(.caption2.bold())
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
+                                .background(Color.black.opacity(0.4))
+                        }
+                        .clipShape(Circle())
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        TextField("Club Name", text: $name)
+                            .font(.headline)
+                        
+                        Divider()
+                        
+                        TextField("Tagline", text: $tagLine)
+                            .font(.subheadline)
+                            .multilineTextAlignment(.leading)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+            .onChange(of: selectedItem) { _, newItem in
+                Task {
+                    if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                        imageData = data
+                    }
+                }
             }
             
             Section("Description") {
@@ -46,7 +108,7 @@ struct EditClubDetailView: View {
                             .padding(.leading, 5)
                     }
                     TextEditor(text: $description)
-                        .frame(minHeight: 150)
+                        .frame(minHeight: 100)
                 }
             }
             
@@ -108,7 +170,9 @@ struct EditClubDetailView: View {
             category: category,
             memberCount: memberCount,
             eventCount: eventCount,
-            socials: updatedSocials
+            socials: updatedSocials,
+            logo: logo,
+            imageData: imageData
         )
         dismiss()
     }

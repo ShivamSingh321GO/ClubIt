@@ -14,7 +14,7 @@ final class ClubStore {
         self.allClubs = MockData.allClubs
     }
     
-    func updateClub(name: String, tagLine: String, description: String, category: ClubCategory, memberCount: Int, eventCount: Int, socials: [String: String]) {
+    func updateClub(name: String, tagLine: String, description: String, category: ClubCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) {
         club.name = name
         club.tagLine = tagLine
         club.description = description
@@ -22,6 +22,8 @@ final class ClubStore {
         club.memberCount = memberCount
         club.eventCount = eventCount
         club.socials = socials
+        club.logo = logo
+        club.imageData = imageData
     }
     
     func toggleFollow(for clubId: UUID) {

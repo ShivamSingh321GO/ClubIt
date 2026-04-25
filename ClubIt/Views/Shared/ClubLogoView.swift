@@ -1,0 +1,42 @@
+import SwiftUI
+
+struct ClubLogoView: View {
+    let logo: String
+    let imageData: Data?
+    var size: CGFloat = 60
+    var iconSize: CGFloat = 35
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(LinearGradient(colors: [.goldenBrown, .goldenBrown.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: size, height: size)
+            
+            if let imageData, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: size, height: size)
+                    .clipShape(Circle())
+            } else if !logo.isEmpty && UIImage(named: logo) != nil {
+                Image(logo)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: iconSize, height: iconSize)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "flame.fill")
+                    .font(.system(size: iconSize * 0.8).bold())
+                    .foregroundColor(.white)
+            }
+        }
+    }
+}
+
+#Preview {
+    VStack(spacing: 20) {
+        ClubLogoView(logo: "technojamLogo", imageData: nil)
+        ClubLogoView(logo: "", imageData: nil)
+        ClubLogoView(logo: "invalid", imageData: nil)
+    }
+}

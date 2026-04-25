@@ -29,7 +29,7 @@ struct MockData {
             tagLine: "Shaping future tech leaders through innovation",
             description: "Technojam is a community of passionate individuals dedicated to exploring and creating innovative technological solutions.",
             category: .technical,
-            logo: "technojam_logo",
+            logo: "technojamLogo",
             clubLeadId: leadId,
             facultyId: facultyId,
 
@@ -40,9 +40,15 @@ struct MockData {
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
-            memberCount: 215,
+            memberCount: 45,
             eventCount: 12,
-            socials: ["instagram": "https://instagram.com/technojam"]
+            socials: [
+                "instagram": "https://instagram.com/",
+                "facebook": "https://facebook.com/",
+                "linkedin": "https://linkedin.com/company/",
+                "discord": "https://discord.gg/",
+                "whatsapp": "https://wa.me/"
+            ]
         )
         
         let users = [
@@ -82,7 +88,7 @@ struct MockData {
             tagLine: "Beyond Borders, Beyond Languages",
             description: "One Club. Many Voices. Literary & Language society.",
             category: .literary,
-            logo: "literary_logo",
+            logo: "lingofreaksLogo",
             clubLeadId: leadId,
             facultyId: facultyId,
 
@@ -93,9 +99,15 @@ struct MockData {
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
-            memberCount: 85,
+            memberCount: 25,
             eventCount: 4,
-            socials: ["instagram": "https://instagram.com/lingofreaks"]
+            socials: [
+                "instagram": "https://instagram.com/",
+                "facebook": "https://facebook.com/",
+                "linkedin": "https://linkedin.com/company/",
+                "discord": "https://discord.gg/",
+                "whatsapp": "https://wa.me/"
+            ]
         )
         
         let users = [
@@ -119,7 +131,7 @@ struct MockData {
             tagLine: "Innovation & Entrepreneurship",
             description: "Where innovative ideas transform into impactful ventures.",
             category: .entrepreneurship,
-            logo: "ecell_logo",
+            logo: "ecellLogo",
             clubLeadId: leadId,
             facultyId: eventManagementFacultyId,
             vicePresidentId: vpBizId,
@@ -127,9 +139,15 @@ struct MockData {
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
-            memberCount: 120,
+            memberCount: 20,
             eventCount: 8,
-            socials: ["linkedin": "https://linkedin.com/company/ecell"]
+            socials: [
+                "instagram": "https://instagram.com/",
+                "facebook": "https://facebook.com/",
+                "linkedin": "https://linkedin.com/company/",
+                "discord": "https://discord.gg/",
+                "whatsapp": "https://wa.me/"
+            ]
         )
         
         let users = [
@@ -152,7 +170,7 @@ struct MockData {
             tagLine: "Challenge your mind",
             description: "The ultimate destination for trivia lovers.",
             category: .technical,
-            logo: "quizzards_logo",
+            logo: "quizzardsLogo",
             clubLeadId: leadId,
             facultyId: eventManagementFacultyId,
 
@@ -162,9 +180,15 @@ struct MockData {
             instituteId: instituteId,
             status: .active,
             createdAt: Date(),
-            memberCount: 150,
+            memberCount: 30,
             eventCount: 15,
-            socials: ["discord": "https://discord.gg/quizzards"]
+            socials: [
+                "instagram": "https://instagram.com/",
+                "facebook": "https://facebook.com/",
+                "linkedin": "https://linkedin.com/company/",
+                "discord": "https://discord.gg/",
+                "whatsapp": "https://wa.me/"
+            ]
         )
         
         let users = [

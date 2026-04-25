@@ -4,86 +4,91 @@ struct LeadProfileView: View {
     @Environment(AppSession.self) private var appSession
     @Environment(\.dismiss) private var dismiss
     
+    var user: User?
+    
+    private var displayUser: User? {
+        user ?? appSession.currentUser
+    }
+    
+    private var isCurrentUser: Bool {
+        displayUser?.id == appSession.currentUser?.id
+    }
+    
     var body: some View {
-        if let user = appSession.currentUser {
-            NavigationStack {
-                List {
-                    // MARK: - Profile Header
-                    Section {
-                        HStack(spacing: 16) {
-                            if !user.profileImg.isEmpty {
-                                AsyncImage(url: URL(string: user.profileImg)) { image in
-                                    image.resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                } placeholder: {
-                                    Color.gray.opacity(0.2)
-                                }
+        if let user = displayUser {
+            List {
+                // MARK: - Profile Header
+                Section {
+                    HStack(spacing: 16) {
+                        if !user.profileImg.isEmpty {
+                            Image(user.profileImg)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
                                 .frame(width: 70, height: 70)
                                 .clipShape(Circle())
-                            } else {
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .frame(width: 70, height: 70)
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(user.name)
-                                    .font(.headline)
-                                
-                                Text(user.email)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                
-                                Text(user.role.rawValue.capitalized)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    
-                    // MARK: - About
-                    Section("About") {
-                        Text(user.bio.isEmpty ? "No bio provided" : user.bio)
-                            .font(.body)
-                    }
-                    
-                    // MARK: - Contact
-                    Section("Contact") {
-                        Label(user.phoneNumber, systemImage: "phone")
-                        Label(user.course, systemImage: "building.columns")
-                        Label(user.year, systemImage: "graduationcap")
-                    }
-                    
-                    // MARK: - Club
-                    Section("Club") {
-                        if let clubId = user.clubId,
-                           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
-                            
-                            HStack {
-//                                Image(club.logo)
-//                                    .resizable()
-//                                    .frame(width: 32, height: 32)
-//                                    .clipShape(Circle())
-                                
-                                Text(club.name)
-                                
-                                Spacer()
-                                
-                                Text(user.role.rawValue.capitalized)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
                         } else {
-                            Text("Not part of any club")
+                            Circle()
+                                .fill(Color.secondary.opacity(0.1))
+                                .frame(width: 70, height: 70)
+                                .overlay(
+                                    Text(String(user.name.prefix(1)))
+                                        .font(.title)
+                                        .foregroundColor(.primary)
+                                )
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(user.name)
+                                .font(.headline)
+                            
+                            Text(user.email)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            
+                            Text(user.role.rawValue.capitalized)
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    
-                    // MARK: - Settings
-                    Section("Settings") {
+                    .padding(.vertical, 8)
+                }
+                
+                // MARK: - About
+                Section("About") {
+                    Text(user.bio.isEmpty ? "No bio provided" : user.bio)
+                        .font(.body)
+                }
+                
+                // MARK: - Contact
+                Section("Contact") {
+                    Label(user.phoneNumber, systemImage: "phone")
+                    Label(user.course, systemImage: "building.columns")
+                    Label(user.year, systemImage: "graduationcap")
+                }
+                
+                // MARK: - Club
+                Section("Club") {
+                    if let clubId = user.clubId,
+                       let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
                         
+                        HStack {
+                            Text(club.name)
+                            
+                            Spacer()
+                            
+                            Text(user.role.rawValue.capitalized)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } else {
+                        Text("Not part of any club")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                // MARK: - Settings (Only for current user)
+                if isCurrentUser {
+                    Section("Settings") {
                         NavigationLink {
                             Text("Notifications Screen")
                         } label: {
@@ -104,17 +109,10 @@ struct LeadProfileView: View {
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
-                .navigationTitle("Profile")
-                .navigationBarTitleDisplayMode(.inline)
-//                .toolbar {
-//                    ToolbarItem(placement: .topBarTrailing) {
-//                        Button("Edit") {
-//                            // Edit Action
-//                        }
-//                    }
-//                }
             }
+            .listStyle(.insetGrouped)
+            .navigationTitle(isCurrentUser ? "My Profile" : user.name)
+            .navigationBarTitleDisplayMode(.inline)
         } else {
             ContentUnavailableView(
                 "Please login to view profile",

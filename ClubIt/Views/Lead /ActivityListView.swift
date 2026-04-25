@@ -8,6 +8,7 @@ import SwiftUI
 struct ActivityListView: View {
     @Environment(AppSession.self) var appSession
     @State private var showingAddActivity = false
+    @State private var selectedActivity: Activity? = nil
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -17,7 +18,9 @@ struct ActivityListView: View {
                         .padding(.top, 40)
                 } else {
                     ForEach(appSession.activityStore.activities) { activity in
-                        ActivityCard(activity: activity)
+                        ActivityCard(activity: activity) { tappedActivity in
+                            selectedActivity = tappedActivity
+                        }
                             .contextMenu {
                                 if appSession.currentRole == .clubLead {
                                     Button(role: .destructive) {
@@ -35,6 +38,7 @@ struct ActivityListView: View {
             .padding(.vertical)
         }
         .navigationTitle("Activities")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 if appSession.currentRole == .clubLead {
@@ -48,6 +52,12 @@ struct ActivityListView: View {
         }
         .sheet(isPresented: $showingAddActivity) {
             AddActivityFormView()
+        }
+        .sheet(item: $selectedActivity) { activity in
+            ActivityDetailView(activity: activity)
+                .environment(appSession)
+//                .presentationDragIndicator(.visible)
+                .presentationDetents([.large])
         }
     }
 }
