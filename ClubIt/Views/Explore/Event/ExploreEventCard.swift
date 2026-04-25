@@ -69,7 +69,7 @@ struct ExploreEventCard: View {
                                 Text("REGISTRATIONS")
                                     .font(.caption2.bold())
                                     .foregroundStyle(.secondary)
-                                Text("\(event.status == .pending ? 0 : event.numberOfRegistrations) / \(event.maxParticipants)")
+                                Text("\( (event.status == .pending || event.status == .upcoming) ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) / \(event.maxParticipants)")
                                     .font(.footnote.bold())
                                     .foregroundStyle(.primary)
                             }

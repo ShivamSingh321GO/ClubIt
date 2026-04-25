@@ -73,6 +73,11 @@ final class AppSession {
         currentRole = role
         isLoggedIn = true
         
+        // Sync registrations for the new user
+        let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
+        registeredEventIds = Set(userRegistrations.map { $0.eventId })
+        studentDashboardStore.registeredEventIds = registeredEventIds
+        
         if let clubId = user.clubId {
             if let userClub = clubStore.allClubs.first(where: { $0.id == clubId }) {
                 clubStore.club = userClub
@@ -84,6 +89,9 @@ final class AppSession {
         currentUser = nil
         currentRole = nil
         isLoggedIn = false
+        registeredEventIds = []
+        favouritedEventIds = []
+        studentDashboardStore.registeredEventIds = []
     }
     
     func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, imageData: Data?) {
@@ -101,6 +109,20 @@ final class AppSession {
     }
     
     func registerForEvent(id: UUID) {
+        guard let userId = currentUser?.id else { return }
+        
+        // Find the event to check max participants
+        guard let event = eventStore.events.first(where: { $0.id == id }) else { return }
+        let currentCount = registrationStore.getRegistrations(for: id).count
+        
+        // First Come First Serve: Check if full before allowing new registration
+        if !registeredEventIds.contains(id) && currentCount >= event.maxParticipants {
+            print("Registration failed: Event is full")
+            return
+        }
+        
+        registrationStore.toggleRegistration(eventId: id, userId: userId)
+        
         if registeredEventIds.contains(id) {
             registeredEventIds.remove(id)
         } else {

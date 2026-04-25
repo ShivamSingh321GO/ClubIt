@@ -8,6 +8,9 @@ struct EventDetailView: View {
     let isMyEvent: Bool
     
     @State private var isShowingRegistrationForm = false
+    @State private var isShowingPublishAlert = false
+    @State private var isShowingRegisterConfirmAlert = false
+    @State private var isShowingWithdrawConfirmAlert = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -62,26 +65,35 @@ struct EventDetailView: View {
         }
         .padding(.horizontal, 16)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if isMyEvent && event.status == .pending {
-                    Button {
-                        withAnimation(.spring()) {
-                            appSession.eventStore.updateEventStatus(id: event.id, status: .upcoming)
-                        }
-                    } label: {
-                        Text("Publish")
-                            .font(.subheadline)
-                            .bold()
-                            .frame(width: 55)
-                            .foregroundColor(.white)
-                           
-                        
-                    }
-                    .buttonStyle(.borderedProminent)
-                    
+        .alert("Ready to Go Live?", isPresented: $isShowingPublishAlert) {
+            Button("Publish Now", role: .none) {
+                withAnimation(.spring()) {
+                    appSession.eventStore.updateEventStatus(id: event.id, status: .published)
                 }
             }
+            Button("Not Yet", role: .cancel) {}
+        } message: {
+            Text("Publishing will make this event visible to everyone and open up registrations. Are you sure you want to proceed?")
+        }
+        .alert("Confirm Registration", isPresented: $isShowingRegisterConfirmAlert) {
+            Button("Register", role: .none) {
+                withAnimation {
+                    appSession.registerForEvent(id: event.id)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to register for this event?")
+        }
+        .alert("Withdraw Registration", isPresented: $isShowingWithdrawConfirmAlert) {
+            Button("Withdraw", role: .destructive) {
+                withAnimation {
+                    appSession.registerForEvent(id: event.id)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to withdraw your registration? This will free up your slot.")
         }
         .sheet(isPresented: $isShowingRegistrationForm) {
             DynamicRegistrationFormView(event: event)
@@ -349,85 +361,91 @@ struct EventDetailView: View {
                     Text("Registrations")
                         .font(.headline)
                     
-                    Text("\(event.numberOfRegistrations) Registered / \(event.maxParticipants) total")
+                    Text("\(event.status == .upcoming ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) Registered / \(event.maxParticipants) total")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 
                 Spacer()
                 
-                if event.numberOfRegistrations >= event.maxParticipants {
-                    Text("Sold Out")
-                        .font(.system(size: 10, weight: .heavy))
-                        .foregroundColor(.red)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.red.opacity(0.1))
+                if event.status != .upcoming {
+                    if appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants {
+                        Text("Sold Out")
+                            .font(.system(size: 10, weight: .heavy))
+                            .foregroundColor(.red)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.red.opacity(0.1))
+                            .clipShape(Capsule())
+                    } else {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(.blue)
+                                .frame(width: 4, height: 4)
+                            Text("\(event.maxParticipants - appSession.registrationStore.getRegistrations(for: event.id).count) slots left")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.blue)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.blue.opacity(0.12))
                         .clipShape(Capsule())
-                } else {
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(.orange)
-                            .frame(width: 4, height: 4)
-                        Text("\(event.maxParticipants - event.numberOfRegistrations) slots left")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.orange)
+                        .overlay(Capsule().stroke(Color.blue.opacity(0.2), lineWidth: 0.5))
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.orange.opacity(0.12))
-                    .clipShape(Capsule())
-                    .overlay(Capsule().stroke(Color.orange.opacity(0.2), lineWidth: 0.5))
                 }
             }
             
-            // Avatar Stack (Face Pile)
-            HStack(spacing: -12) {
-                // Show up to 5 avatars
-                let previewRegistrations = registrations.prefix(5)
-                ForEach(Array(previewRegistrations.enumerated()), id: \.element.id) { index, reg in
-                    if let user = appSession.clubStore.allUsers.first(where: { $0.id == reg.userId }) {
+            if event.status != .upcoming {
+                // Avatar Stack (Face Pile)
+                HStack(spacing: -12) {
+                    // Show up to 5 avatars
+                    let previewRegistrations = registrations.prefix(5)
+                    ForEach(Array(previewRegistrations.enumerated()), id: \.element.id) { index, reg in
+                        if let user = appSession.clubStore.allUsers.first(where: { $0.id == reg.userId }) {
+                            Circle()
+                                .fill(Color.orange.gradient.opacity(0.2))
+                                .frame(width: 32, height: 32)
+                                .overlay(
+                                    Text(String(user.name.prefix(1)))
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(.orange)
+                                )
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color(.systemBackground), lineWidth: 2)
+                                )
+                                .zIndex(Double(5 - index))
+                        }
+                    }
+                    
+                    if registrations.count > 5 {
                         Circle()
-                            .fill(Color.orange.gradient.opacity(0.2))
+                            .fill(Color.secondary.opacity(0.1))
                             .frame(width: 32, height: 32)
                             .overlay(
-                                Text(String(user.name.prefix(1)))
+                                Text("+\(registrations.count - 5)")
                                     .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.secondary)
                             )
                             .overlay(
                                 Circle()
                                     .stroke(Color(.systemBackground), lineWidth: 2)
                             )
-                            .zIndex(Double(5 - index))
+                            .zIndex(0)
                     }
+                    
                 }
-                
-                if registrations.count > 5 {
-                    Circle()
-                        .fill(Color.secondary.opacity(0.1))
-                        .frame(width: 32, height: 32)
-                        .overlay(
-                            Text("+\(registrations.count - 5)")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.secondary)
-                        )
-                        .overlay(
-                            Circle()
-                                .stroke(Color(.systemBackground), lineWidth: 2)
-                        )
-                        .zIndex(0)
-                }
-                
-                if event.numberOfRegistrations == 0 {
-                    Text("Be the first one to join!")
+                .padding(.leading, 52)
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle")
                         .font(.caption)
-                        .italic()
-                        .foregroundColor(.secondary)
-                        .padding(.leading, 12)
+                    Text("Registration will open after event is published")
+                        .font(.caption)
                 }
+                .foregroundColor(.secondary)
+                .padding(.leading, 52)
             }
-            .padding(.leading, 52)
         }
     }
     
@@ -446,31 +464,60 @@ struct EventDetailView: View {
                 .tint(.orange)
                 .disabled(true)
             } else if isMyEvent {
-                NavigationLink(destination: ManageParticipantsView(event: event)) {
-                    Text("View Participants")
+                if event.status == .upcoming {
+                    Button {
+                        isShowingPublishAlert = true
+                    } label: {
+                        Text("Publish Event")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(.orange)
+                } else {
+                    NavigationLink(destination: ManageParticipantsView(event: event)) {
+                        Text("View Participants")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(.blue)
+                }
+            } else if appSession.currentRole == .faculty {
+                Button(action: {}) {
+                    Text("No Registration Required")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.bordered)
                 .controlSize(.large)
-                .tint(.blue)
+                .disabled(true)
+                .padding(.top, 12)
             } else {
+                let isRegistered = appSession.registeredEventIds.contains(event.id)
+                let isFull = appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants
+                
                 Button {
-                    guard !appSession.registeredEventIds.contains(event.id) else { return }
-                    
-                    if let form = event.registrationForm, !form.isEmpty {
-                        isShowingRegistrationForm = true
-                    } else {
-                        appSession.registerForEvent(id: event.id)
+                    if isRegistered {
+                        isShowingWithdrawConfirmAlert = true
+                    } else if !isFull {
+                        if event.registrationType == .team {
+                            isShowingRegistrationForm = true
+                        } else {
+                            isShowingRegisterConfirmAlert = true
+                        }
                     }
                 } label: {
-                    Text(appSession.registeredEventIds.contains(event.id) ? "Successfully Enrolled" : "Register Now")
+                    Text(isRegistered ? "Withdraw Registration" : (isFull ? "Event Full" : "Register Now"))
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .tint(buttonColor)
+                .tint(isRegistered ? .red : (isFull ? .secondary : .orange))
+                .disabled(!isRegistered && isFull)
             }
         }
     }
