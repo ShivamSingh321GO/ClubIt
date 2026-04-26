@@ -18,9 +18,10 @@ final class SignInViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
 
-    private let authService = MockAuthService()
+    private let authService = SupabaseAuthService()
 
-    func signIn(appSession: AppSession) {
+    @MainActor
+    func signIn(appSession: AppSession) async {
         errorMessage = nil
 
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -34,8 +35,8 @@ final class SignInViewModel {
         isLoading = true
 
         do {
-            let result = try authService.signIn(email: trimmedEmail, password: trimmedPassword)
-            appSession.signIn(user: result.user, role: result.role)
+            let user = try await authService.signIn(email: trimmedEmail, password: trimmedPassword)
+            await appSession.signIn(user: user, role: user.role)
         } catch {
             errorMessage = error.localizedDescription
         }

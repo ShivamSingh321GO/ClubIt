@@ -11,7 +11,7 @@ final class RegistrationStore {
     
     private func allRegistrationsCount(for event: Event) -> Int {
         // Just a helper to limit mock data
-        return min(sampleUsersCount, 8)
+        min(sampleUsersCount, 8)
     }
     
     private var sampleUsersCount: Int {
@@ -26,8 +26,7 @@ final class RegistrationStore {
         if let index = registrations.firstIndex(where: { $0.eventId == eventId && $0.userId == userId }) {
             registrations.remove(at: index)
         } else {
-            registrations.append(IndividualRegistration(
-                eventId: eventId,
+            registrations.append(IndividualRegistration(id: UUID(), eventId: eventId,
                 userId: userId,
                 status: .confirmed,
                 registeredAt: Date()

@@ -35,7 +35,7 @@ enum ActivityType: String, Codable, CaseIterable {
 }
 
 struct Activity: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var type: ActivityType
     var title: String
     var description: String
@@ -43,6 +43,17 @@ struct Activity: Identifiable, Codable {
     var location: String?
     var clubId: UUID
     var postedBy: UUID
-    var postedByName: String?
     var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case type
+        case title
+        case description
+        case date
+        case location
+        case clubId = "club_id"
+        case postedBy = "posted_by"
+        case createdAt = "created_at"
+    }
 }

@@ -159,8 +159,8 @@ struct ParticipantRow: View {
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 44, height: 44)
                         .clipShape(Circle())
-                } else if !user.profileImg.isEmpty {
-                    Image(user.profileImg)
+                } else if !(user.profileImg?.isEmpty ?? true) {
+                    Image(user.profileImg ?? "")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 44, height: 44)
@@ -180,7 +180,7 @@ struct ParticipantRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.name)
                     .font(.subheadline.bold())
-                Text("\(user.course) • \(user.year)")
+                Text("\(user.course ?? "N/A") • \(user.year ?? "N/A")")
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }

@@ -22,8 +22,8 @@ struct MemberProfileView: View {
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: 70, height: 70)
                                 .clipShape(Circle())
-                        } else if !user.profileImg.isEmpty {
-                            Image(user.profileImg)
+                        } else if !(user.profileImg?.isEmpty ?? true) {
+                            Image(user.profileImg ?? "")
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: 70, height: 70)
@@ -53,15 +53,15 @@ struct MemberProfileView: View {
                 
                 // MARK: - About
                 Section("About") {
-                    Text(user.bio.isEmpty ? "No bio provided" : user.bio)
+                    Text((user.bio?.isEmpty ?? true) ? "No bio provided" : (user.bio ?? "No bio provided"))
                         .font(.body)
                 }
                 
                 // MARK: - Contact
                 Section("Contact") {
-                    Label(user.phoneNumber, systemImage: "phone")
-                    Label(user.course, systemImage: "building.columns")
-                    Label(user.year, systemImage: "graduationcap")
+                    Label(user.phoneNumber ?? "N/A", systemImage: "phone")
+                    Label(user.course ?? "N/A", systemImage: "building.columns")
+                    Label(user.year ?? "N/A", systemImage: "graduationcap")
                 }
                 
                 // MARK: - Club

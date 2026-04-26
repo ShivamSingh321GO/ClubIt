@@ -349,8 +349,7 @@ struct CreateNewEventView: View {
             return
         }
         
-        let newEvent = Event(
-            name: trimmedName,
+        let newEvent = Event(id: UUID(), name: trimmedName,
             title: trimmedName,
             description: trimmedDescription,
             startDate: startDate,
@@ -382,11 +381,11 @@ struct CreateNewEventView: View {
         for item in budgetItems {
             let price = Double(item.price) ?? 0
             let budget = Budget(
+                id: UUID(),
                 eventId: newEvent.id,
                 itemName: item.name,
                 unitPrice: price,
                 quantity: item.quantity,
-                totalAmount: price * Double(item.quantity),
                 status: .pending,
                 addedBy: currentUser.id,
                 remarks: [],
@@ -397,7 +396,7 @@ struct CreateNewEventView: View {
         
         // Save Resource Items
         for item in universityResources {
-            let resource = Resource(
+            let resource = Resource(id: UUID(), 
                 eventId: newEvent.id,
                 name: item.name,
                 quantity: item.quantity,
@@ -412,7 +411,7 @@ struct CreateNewEventView: View {
         
         for item in rentalResources {
             let price = Double(item.price) ?? 0
-            let resource = Resource(
+            let resource = Resource(id: UUID(), 
                 eventId: newEvent.id,
                 name: item.name,
                 quantity: item.quantity,
@@ -436,7 +435,7 @@ struct CreateNewEventView: View {
             eventId: newEvent.id,
             approvalRelatedId: newEvent.id,
             status: .pending,
-            remarks: [Remark(text: "Event creation approval requested", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+            remarks: [Remark(id: UUID(), text: "Event creation approval requested", authorId: currentUser.id, createdAt: Date())],
             createdAt: Date(),
             updatedAt: nil
         )
@@ -451,7 +450,7 @@ struct CreateNewEventView: View {
                 eventId: newEvent.id,
                 approvalRelatedId: UUID(), // Reference for the collection
                 status: .pending,
-                remarks: [Remark(text: "Budget approval requested for \(budgetItems.count) items", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+                remarks: [Remark(id: UUID(), text: "Budget approval requested for \(budgetItems.count) items", authorId: currentUser.id, createdAt: Date())],
                 createdAt: Date(),
                 updatedAt: nil
             )
@@ -467,7 +466,7 @@ struct CreateNewEventView: View {
                 eventId: newEvent.id,
                 approvalRelatedId: UUID(), // Reference for the collection
                 status: .pending,
-                remarks: [Remark(text: "Resource approval requested for \(universityResources.count + rentalResources.count) items", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+                remarks: [Remark(id: UUID(), text: "Resource approval requested for \(universityResources.count + rentalResources.count) items", authorId: currentUser.id, createdAt: Date())],
                 createdAt: Date(),
                 updatedAt: nil
             )
@@ -483,7 +482,7 @@ struct CreateNewEventView: View {
             eventId: newEvent.id,
             approvalRelatedId: UUID(),
             status: .pending,
-            remarks: [Remark(text: "Venue booking approval requested for \(venue)", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date())],
+            remarks: [Remark(id: UUID(), text: "Venue booking approval requested for \(venue)", authorId: currentUser.id, createdAt: Date())],
             createdAt: Date(),
             updatedAt: nil
         )

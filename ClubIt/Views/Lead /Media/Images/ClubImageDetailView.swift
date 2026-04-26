@@ -112,7 +112,7 @@ struct ClubImageDetailView: View {
     let section = ClubImageSection(title: "Euphoria Fest", images: euphoricImages, remainingCount: 0)
     let session = AppSession()
     
-    return NavigationStack {
+    NavigationStack {
         ClubImageDetailView(section: section)
             .environment(session)
     }

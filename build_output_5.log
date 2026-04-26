@@ -1,0 +1,450 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme ClubIt build -destination "generic/platform=iOS Simulator"
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.5.1
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.0
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.44.1
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.9.0
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.3.2
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.0
+
+2026-04-27 01:12:16.935 xcodebuild[12624:6779544] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (28 targets)
+    Target 'ClubIt' in project 'ClubIt'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'swift-crypto_Crypto' in project 'swift-crypto' (no dependencies)
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay' (no dependencies)
+    Target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+    Target 'HTTPTypes' in project 'swift-http-types' (no dependencies)
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/getsh/Desktop/ClubIt/ClubIt/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+ReadFileContents /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/share/docc/features.json
+
+Build description signature: cdebc85a34111d4ab4e6221eaed1b9fb
+Build description path: /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/XCBuildData/cdebc85a34111d4ab4e6221eaed1b9fb.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk /Users/getsh/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.4-23E252-686eebb5dc1d8ecb277353a59184f4aa.sdkstatcache
+    cd /Users/getsh/Desktop/ClubIt/ClubIt.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk -o /Users/getsh/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.4-23E252-686eebb5dc1d8ecb277353a59184f4aa.sdkstatcache
+
+ProcessInfoPlistFile /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist (in target 'swift-crypto_Crypto' from project 'swift-crypto')
+    cd /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/SourcePackages/checkouts/swift-crypto
+    builtin-infoPlistUtility /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist
+
+SwiftDriver ClubIt normal arm64 com.apple.xcode.tools.swift.compiler (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name ClubIt -Onone @/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk -target arm64-apple-ios26.4-simulator -g -module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.4-23E252-686eebb5dc1d8ecb277353a59184f4aa.sdkstatcache -output-file-map /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt_const_extract_protocols.json -Xcc -iquote -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-generated-files.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-own-target-headers.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt-e4ac1324e65f4d6aff0c49c6baee3cca-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-project-headers.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources-normal/arm64 -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources/arm64 -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt-Swift.h -working-directory /Users/getsh/Desktop/ClubIt -experimental-emit-module-separately -disable-cmo
+
+CompileAssetCatalogVariant thinned /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/ClubIt.app /Users/getsh/Desktop/ClubIt/ClubIt/Assets.xcassets (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/getsh/Desktop/ClubIt/ClubIt/Assets.xcassets --compile /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 26.4 --platform iphonesimulator
+
+SwiftDriver ClubIt normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name ClubIt -Onone @/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/x86_64/ClubIt.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk -target x86_64-apple-ios26.4-simulator -g -module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/x86_64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.4-23E252-686eebb5dc1d8ecb277353a59184f4aa.sdkstatcache -output-file-map /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/x86_64/ClubIt-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/x86_64/ClubIt.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/x86_64/ClubIt_const_extract_protocols.json -Xcc -iquote -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-generated-files.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-own-target-headers.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt-e4ac1324e65f4d6aff0c49c6baee3cca-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-project-headers.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources-normal/x86_64 -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources/x86_64 -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/x86_64/ClubIt-Swift.h -working-directory /Users/getsh/Desktop/ClubIt -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/AVFoundation-BZUUI2OREF70P2UTBFA42BYJU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/UIKit-AFHVWL4FUZ62MO3BSEG81AZ1W.pcm
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ ClubIt (in target 'ClubIt' from project 'ClubIt')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -emit-module -experimental-skip-non-inlinable-function-bodies-without-types /Users/getsh/Desktop/ClubIt/ClubIt/Auth/Manager/SupabaseAuthManager.swift /Users/getsh/Desktop/ClubIt/ClubIt/Auth/Service/SupabaseAuthService.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/AdminDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/ClubLeadDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/ClubMemberDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/EventManagementDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/FacultyDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/PresidentDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/StudentDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/VicePresidentDashboardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Keys/Constants.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Achievement.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Activity.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Announcement.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Approval.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Chat.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Club.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/ClubMedia.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Event.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/EventRegistration.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Institution.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Notification.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Role.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/SubscriptionPlan.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Tasks.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/User.swift /Users/getsh/Desktop/ClubIt/ClubIt/Routing/AppRole.swift /Users/getsh/Desktop/ClubIt/ClubIt/Routing/AppSession.swift /Users/getsh/Desktop/ClubIt/ClubIt/Routing/DashboardRouter.swift /Users/getsh/Desktop/ClubIt/ClubIt/Routing/MockAuthService.swift /Users/getsh/Desktop/ClubIt/ClubIt/Routing/RootView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Routing/SignInView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Routing/SignInViewModel.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/AchievementStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ActivityStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/AnnouncementStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ApprovalStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ChatStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubAnnouncementStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubFileStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubImageStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubLinkStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/EventStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/RegistrationStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/StudentDashboardStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/TaskStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/VenueStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Calendar/CalendarEventCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Calendar/CalendarView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/ChatRow.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/MessageBubble.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/PinnedChatItem.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/SubChatRow.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateChatView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateEventChatView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateGroupView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/SelectedUserBadge.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatBox.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/ClubCommonComponents.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/ClubProfileBody.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/CommonComponents.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/RemarkComponents.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalClubsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementTeamView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/HomeVenuesModule.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/AnnouncementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/CreateAnnouncementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/AddBudgetItem.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/AddResourceItem.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/CreateNewEventView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView\ 2.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/ExploreEventCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/TeamRegistrationFormView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/ExploreView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/ClubResourcesDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalsListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalsModule.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyEventApprovalsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyManagementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyResourceClubsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyResourceManagementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyVenueListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/AchievementCardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/AchievementsListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/CreateAchievementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/AddTaskView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/DelegateTaskView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/HomeTasksModule.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/TaskDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/TaskRowView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/TasksListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/ApprovalsListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/ApprovalStatusTrack.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/ApprovalSummaryCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/EditEventView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/EventApprovalsDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/HomeApprovalCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/LeadEventApprovalDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Club\ Announcements/ClubAnnouncementsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Club\ Announcements/CreateClubAnnouncementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Files/AddClubFileView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Files/ClubFilesView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/AddImageSectionView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImageDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImagesView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/FullScreenGalleryView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/MediaImageView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Links/AddClubLinkView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Links/ClubLinksView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Onboarding/LeadOnboardingView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /AddActivityFormView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ClubMemberListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /EditClubDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadApprovalEventCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadMyClubView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadNotificationView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadProfileView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ManageParticipantsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /UpcomingEventsModule.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Member/ClubMemberHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Member/memberProfileView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/MemberClubsOverviewView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentApprovalsModule.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentAssignClubView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentBudgetClubsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubBudgetDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentRemoveVPView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/ClubHeaderView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/ClubLogoView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/EditProfileView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubCardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubSearchView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/EventCardView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/StudentHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/StudentProfileView.swift /Users/getsh/Desktop/ClubIt/ClubIt/ClubItApp.swift /Users/getsh/Desktop/ClubIt/ClubIt/ContentView.swift /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources/GeneratedAssetSymbols.swift -target arm64-apple-ios26.4-simulator -module-can-import-version DeveloperToolsSupport 23.40.26 23.40.26 -module-can-import-version SwiftUI 7.4.27.1 7.4.27 -module-can-import-version UIKit 9126.4.27.1 9126.4.27 -disable-cross-import-overlay-search -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/WidgetKit.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/WidgetKit.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt-dependencies-2.json -Xllvm -aarch64-use-tbi -enable-objc-interop -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk -I /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=5 -module-cache-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -swift-version 5 -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt_const_extract_protocols.json -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -default-isolation\=MainActor -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/getsh/Desktop/ClubIt -enable-anonymous-context-mangled-names -file-compilation-dir /Users/getsh/Desktop/ClubIt -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.4-23E252-686eebb5dc1d8ecb277353a59184f4aa.sdkstatcache -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-generated-files.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-own-target-headers.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt-e4ac1324e65f4d6aff0c49c6baee3cca-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/ClubIt-project-headers.hmap -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources-normal/arm64 -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources/arm64 -Xcc -I/Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name ClubIt -frontend-parseable-output -disable-clang-spi -clang-target arm64-apple-ios26.4-simulator -target-sdk-version 26.4 -target-sdk-name iphonesimulator26.4 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -emit-module-doc-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt.swiftdoc -emit-module-source-info-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt.swiftsourceinfo -emit-objc-header-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt-Swift.h -serialize-diagnostics-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt-primary-emit-module.dia -emit-dependencies-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt-primary-emit-module.d -o /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt.swiftmodule -emit-abi-descriptor-path /Users/getsh/Library/Developer/Xcode/DerivedData/ClubIt-eallhqmpdmhyaubzyvoeojuvvobz/Build/Intermediates.noindex/ClubIt.build/Debug-iphonesimulator/ClubIt.build/Objects-normal/arm64/ClubIt.abi.json
+
+EmitSwiftModule normal arm64 (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:81:9: warning: result of 'MockData.MockClubBundle' initializer is unused
+        MockClubBundle(club: club, users: users, events: events, announcements: announcements)
+        ^             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:128:9: warning: result of 'MockData.MockClubBundle' initializer is unused
+        MockClubBundle(club: club, users: users, events: events, announcements: [])
+        ^             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:170:9: warning: result of 'MockData.MockClubBundle' initializer is unused
+        MockClubBundle(club: club, users: users, events: events, announcements: [])
+        ^             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:210:9: warning: result of 'MockData.MockClubBundle' initializer is unused
+        MockClubBundle(club: club, users: users, events: [], announcements: [])
+        ^             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:81:9: error: missing return in closure expected to return 'MockData.MockClubBundle'
+        MockClubBundle(club: club, users: users, events: events, announcements: announcements)
+        ^
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:81:9: note: did you mean to return the last expression?
+        MockClubBundle(club: club, users: users, events: events, announcements: announcements)
+        ^
+        return 
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:128:9: error: missing return in closure expected to return 'MockData.MockClubBundle'
+        MockClubBundle(club: club, users: users, events: events, announcements: [])
+        ^
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:128:9: note: did you mean to return the last expression?
+        MockClubBundle(club: club, users: users, events: events, announcements: [])
+        ^
+        return 
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:170:9: error: missing return in closure expected to return 'MockData.MockClubBundle'
+        MockClubBundle(club: club, users: users, events: events, announcements: [])
+        ^
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:170:9: note: did you mean to return the last expression?
+        MockClubBundle(club: club, users: users, events: events, announcements: [])
+        ^
+        return 
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:210:9: error: missing return in closure expected to return 'MockData.MockClubBundle'
+        MockClubBundle(club: club, users: users, events: [], announcements: [])
+        ^
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift:210:9: note: did you mean to return the last expression?
+        MockClubBundle(club: club, users: users, events: [], announcements: [])
+        ^
+        return 
+
+SwiftCompile normal arm64 Compiling\ AddActivityFormView.swift,\ LeadHomeView.swift,\ LeadMyClubView.swift,\ PresidentApprovalsModule.swift,\ PresidentClubBudgetDetailView.swift,\ PresidentHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /AddActivityFormView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadHomeView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadMyClubView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentApprovalsModule.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubBudgetDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentHomeView.swift (in target 'ClubIt' from project 'ClubIt')
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /AddActivityFormView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadHomeView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadMyClubView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentApprovalsModule.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubBudgetDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentHomeView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 Compiling\ ClubResourcesDetailView.swift,\ FacultyApprovalDetailView.swift,\ AchievementsListView.swift,\ CreateAchievementView.swift,\ AddTaskView.swift,\ DelegateTaskView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/ClubResourcesDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/AchievementsListView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/CreateAchievementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/AddTaskView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/DelegateTaskView.swift (in target 'ClubIt' from project 'ClubIt')
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/ClubResourcesDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/AchievementsListView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/CreateAchievementView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/AddTaskView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/DelegateTaskView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 Compiling\ ClubAnnouncementsView.swift,\ ClubImageDetailView.swift,\ ClubImagesView.swift,\ FullScreenGalleryView.swift,\ ActivityCard.swift,\ ActivityDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Club\ Announcements/ClubAnnouncementsView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImageDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImagesView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/FullScreenGalleryView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Club\ Announcements/ClubAnnouncementsView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImageDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImagesView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/FullScreenGalleryView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityCard.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 Compiling\ Achievement.swift,\ Activity.swift,\ Announcement.swift,\ Approval.swift,\ Chat.swift,\ Club.swift,\ Event.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Achievement.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Activity.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Announcement.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Approval.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Chat.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Club.swift /Users/getsh/Desktop/ClubIt/ClubIt/Models/Event.swift (in target 'ClubIt' from project 'ClubIt')
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Models/Achievement.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Models/Activity.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Models/Announcement.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Models/Approval.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Models/Chat.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Models/Club.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Models/Event.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 Compiling\ ClubAnnouncementStore.swift,\ MockData.swift,\ RegistrationStore.swift,\ TaskStore.swift,\ MessageBubble.swift,\ ChatBox.swift,\ EventManagementApprovalDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubAnnouncementStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/RegistrationStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Stores/TaskStore.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/MessageBubble.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatBox.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubAnnouncementStore.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Stores/RegistrationStore.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Stores/TaskStore.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/MessageBubble.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatBox.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Photos-GLQHEYXIBSKJENDOLUTRIT65.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/AuthenticationServices-89E560L4KJSNI0BAP5AKP2YX3.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/PhotosUI-ZSFRC846J0DT3T7U5AX0FJAH.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/getsh/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftUI-939J0FEF58MJSJSXCHH6NZTD8.pcm
+
+SwiftCompile normal arm64 Compiling\ AnnouncementView.swift,\ CreateNewEventView.swift,\ DynamicRegistrationFormView.swift,\ DynamicRegistrationFormView\ 2.swift,\ EventDetailView.swift,\ ExploreEventCard.swift,\ TeamRegistrationFormView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/AnnouncementView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/CreateNewEventView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView\ 2.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventDetailView.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/ExploreEventCard.swift /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/TeamRegistrationFormView.swift (in target 'ClubIt' from project 'ClubIt')
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/AnnouncementView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/CreateNewEventView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView\ 2.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventDetailView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/ExploreEventCard.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftCompile normal arm64 /Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/TeamRegistrationFormView.swift (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ ClubIt (in target 'ClubIt' from project 'ClubIt')
+
+EmitSwiftModule normal x86_64 (in target 'ClubIt' from project 'ClubIt')
+    cd /Users/getsh/Desktop/ClubIt
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling Achievement.swift, Activity.swift, Announcement.swift, Approval.swift, Chat.swift, Club.swift, Event.swift (in target 'ClubIt' from project 'ClubIt')
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftEmitModule normal arm64 Emitting\ module\ for\ ClubIt (in target 'ClubIt' from project 'ClubIt')
+	EmitSwiftModule normal arm64 (in target 'ClubIt' from project 'ClubIt')
+	Building project ClubIt with scheme ClubIt
+(3 failures)

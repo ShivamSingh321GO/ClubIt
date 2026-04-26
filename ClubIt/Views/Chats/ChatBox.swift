@@ -182,7 +182,7 @@ struct ChatBox: View {
 #Preview {
     let session = AppSession()
     let mockChat = session.chatStore.chats[0]
-    return NavigationStack {
+    NavigationStack {
         ChatBox(chat: mockChat)
             .environment(session)
     }

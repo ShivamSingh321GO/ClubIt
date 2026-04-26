@@ -20,7 +20,8 @@ struct TaskDetailView: View {
     }
     
     private var delegatedName: String? {
-        task.delegatedToName
+        guard let id = task.delegatedToId else { return nil }
+        return MockData.allMockUsers.first(where: { $0.id == id })?.name
     }
     
     private var associatedEvent: Event? {

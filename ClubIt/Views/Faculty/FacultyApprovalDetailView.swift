@@ -79,7 +79,7 @@ struct FacultyApprovalDetailView: View {
         .alert("Confirm Action", isPresented: $showingConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button(targetStatus == .approved ? "Approve" : "Reject", role: targetStatus == .approved ? .none : .destructive) {
-                let newRemark = remark.isEmpty ? nil : Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                let newRemark = remark.isEmpty ? nil : Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                 appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus, remark: newRemark)
                 dismiss()
             }
@@ -110,7 +110,7 @@ struct FacultyApprovalDetailView: View {
                     Spacer()
                     
                     Button("Submit Rejection") {
-                        let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                         appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
                         showingRemarkPrompt = false
                         dismiss()
@@ -160,7 +160,7 @@ struct InfoRow: View {
 #Preview {
     let session = MockData.session(for: .faculty)
     let approval = session.approvalStore.approvals.first
-    return NavigationStack {
+    NavigationStack {
         if let approval = approval {
             FacultyApprovalDetailView(approval: approval)
                 .environment(session)

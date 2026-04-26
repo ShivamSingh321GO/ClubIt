@@ -23,10 +23,9 @@ enum ApprovalStatus: String, Codable {
 
 
 struct Remark: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var text: String
     var authorId: UUID
-    var authorName: String
     var createdAt: Date
 }
 
@@ -47,7 +46,7 @@ struct Approval: Identifiable, Codable {
     var createdAt: Date
     var updatedAt: Date?
 
-    init(id: UUID = UUID(), type: ApprovalType, senderId: UUID, receiverId: UUID, eventId: UUID, approvalRelatedId: UUID, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, updatedAt: Date? = nil) {
+    init(id: UUID, type: ApprovalType, senderId: UUID, receiverId: UUID, eventId: UUID, approvalRelatedId: UUID, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, updatedAt: Date? = nil) {
         self.id = id
         self.type = type
         self.senderId = senderId
@@ -70,7 +69,10 @@ struct Budget: Identifiable, Codable {
     var itemName: String
     var unitPrice: Double
     var quantity: Int
-    var totalAmount: Double
+    
+    var totalAmount: Double {
+        unitPrice * Double(quantity)
+    }
     
     var status: ApprovalStatus
     var addedBy: UUID
@@ -79,13 +81,12 @@ struct Budget: Identifiable, Codable {
     var createdAt: Date
     var approvedAt: Date?
 
-    init(id: UUID = UUID(), eventId: UUID, itemName: String, unitPrice: Double, quantity: Int, totalAmount: Double, status: ApprovalStatus, addedBy: UUID, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    init(id: UUID, eventId: UUID, itemName: String, unitPrice: Double, quantity: Int, status: ApprovalStatus, addedBy: UUID, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.itemName = itemName
         self.unitPrice = unitPrice
         self.quantity = quantity
-        self.totalAmount = totalAmount
         self.status = status
         self.addedBy = addedBy
         self.remarks = remarks

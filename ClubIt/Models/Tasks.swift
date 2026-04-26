@@ -7,49 +7,7 @@
 
 import Foundation
 
-enum ClubOption: String, CaseIterable, Identifiable {
-    case technoJam = "TechnoJam"
-    case gdsc = "GDSC"
-    case photography = "Photography Club"
-    case music = "Music Society"
-    
-    var id: String { self.rawValue }
-    
-    var uuid: UUID {
-        switch self {
-        case .technoJam: return UUID()
-        case .gdsc: return UUID()
-        case .photography: return UUID()
-        case .music: return UUID()
-        }
-    }
-    
-    static func from(uuid: UUID) -> ClubOption {
-        return ClubOption.allCases.first(where: { $0.uuid == uuid }) ?? .technoJam
-    }
-}
 
-enum AssigneeOption: String, CaseIterable, Identifiable {
-    case aryan = "Aryan"
-    case shivam = "Shivam"
-    case ansh = "Ansh"
-    case rahul = "Rahul"
-    
-    var id: String { self.rawValue }
-    
-    var uuid: UUID {
-        switch self {
-        case .aryan: return UUID()
-        case .shivam: return UUID()
-        case .ansh: return UUID()
-        case .rahul: return UUID()
-        }
-    }
-    
-    static func from(uuid: UUID) -> AssigneeOption {
-        return AssigneeOption.allCases.first(where: { $0.uuid == uuid }) ?? .aryan
-    }
-}
 
 
 enum TaskPriority: String, Codable, CaseIterable {
@@ -64,7 +22,7 @@ enum TaskStatus: String, Codable, CaseIterable {
 }
 
 struct Tasks: Identifiable, Codable {
-    var id = UUID()
+    var id: UUID
     var clubId: UUID
     var targetClubId: UUID? = nil // For cross-club tasks
     var eventId: UUID? = nil
@@ -75,17 +33,42 @@ struct Tasks: Identifiable, Codable {
     var assignedTo: UUID
     var assignedToRole: AppRole
     var delegatedToId: UUID? = nil // For delegation to members
-    var delegatedToName: String? = nil // For quick UI display
     var deadline: Date
     var priority: TaskPriority
     var status: TaskStatus
     var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case clubId = "club_id"
+        case targetClubId = "target_club_id"
+        case eventId = "event_id"
+        case title
+        case description
+        case assignedBy = "assigned_by"
+        case assignedByRole = "assigned_by_role"
+        case assignedTo = "assigned_to"
+        case assignedToRole = "assigned_to_role"
+        case delegatedToId = "delegated_to_id"
+        case deadline
+        case priority
+        case status
+        case createdAt = "created_at"
+    }
 }
 
 struct TeamMember: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var teamId: UUID
     var userId: UUID
     var institutionNumber: String
     var joinedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case teamId = "team_id"
+        case userId = "user_id"
+        case institutionNumber = "institution_number"
+        case joinedAt = "joined_at"
+    }
 }

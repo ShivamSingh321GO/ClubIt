@@ -290,7 +290,7 @@ struct FacultyResourceRequestCard: View {
                 
                 if showingReply {
                     ReplyInputView(replyText: $replyText, onSend: {
-                        let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                         appSession.approvalStore.addRemarkToResource(id: resource.id, remark: newRemark)
                         replyText = ""
                         showingReply = false
@@ -419,7 +419,7 @@ struct FacultyVenueApprovalCard: View {
                 
                 if showingReply {
                     ReplyInputView(replyText: $replyText, onSend: {
-                        let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                         appSession.approvalStore.addRemarkToApproval(id: approval.id, remark: newRemark)
                         replyText = ""
                         showingReply = false
@@ -586,7 +586,7 @@ struct FacultyVenueRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                    let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                     if let onReject = onReject {
                         onReject(remark)
                     } else {
@@ -700,7 +700,7 @@ struct FacultyRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                    let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                     appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected, remark: newRemark)
                     dismiss()
                 }) {

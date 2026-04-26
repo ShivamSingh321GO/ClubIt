@@ -63,8 +63,7 @@ struct ClubAnnouncementsView: View {
         }
         .sheet(isPresented: $showCreateSheet) {
             CreateClubAnnouncementView { title, content, url in
-                let newAnnouncement = Announcement(
-                    clubId: appSession.clubStore.club.id,
+                let newAnnouncement = Announcement(id: UUID(), clubId: appSession.clubStore.club.id,
                     date: Date(),
                     title: title,
                     content: content,

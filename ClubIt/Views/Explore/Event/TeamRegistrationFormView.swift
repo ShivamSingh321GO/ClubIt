@@ -40,7 +40,7 @@ struct TeamRegistrationFormView: View {
     }
     
     private func addField() {
-        let newField = RegistrationFormField(label: "Untitled Question", type: .text)
+        let newField = RegistrationFormField(id: UUID(), label: "Untitled Question", type: .text)
         fields.append(newField)
     }
     
@@ -173,8 +173,8 @@ struct FieldEditorView: View {
 #Preview {
     NavigationStack {
         TeamRegistrationFormView(fields: .constant([
-            RegistrationFormField(label: "What is your name?", type: .text),
-            RegistrationFormField(label: "Choose your shirt size", type: .multipleChoice, options: ["S", "M", "L", "XL"])
+            RegistrationFormField(id: UUID(), label: "What is your name?", type: .text),
+            RegistrationFormField(id: UUID(), label: "Choose your shirt size", type: .multipleChoice, options: ["S", "M", "L", "XL"])
         ]))
     }
 }

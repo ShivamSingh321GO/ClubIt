@@ -41,7 +41,9 @@ struct SignInView: View {
                         .submitLabel(.go)
                         .onSubmit {
                             focusedField = nil
-                            viewModel.signIn(appSession: appSession)
+                            Task {
+                                await viewModel.signIn(appSession: appSession)
+                            }
                         }
                         
                         Button {
@@ -73,7 +75,9 @@ struct SignInView: View {
                 Section {
                     Button {
                         focusedField = nil
-                        viewModel.signIn(appSession: appSession)
+                        Task {
+                            await viewModel.signIn(appSession: appSession)
+                        }
                     } label: {
                         Text("Login")
                             .bold()

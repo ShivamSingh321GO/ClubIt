@@ -190,7 +190,7 @@ struct ExploreEventCard: View {
     }
     
     private var hostName: String {
-        appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })?.name ?? "Connexus Club"
+        appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })?.name ?? "Organizer"
     }
     
     private var formattedDate: String {
@@ -221,8 +221,7 @@ struct ExploreEventCard: View {
 #Preview {
     NavigationStack {
         ExploreEventCard(
-            event: Event(
-                name: "Open Mic Jam",
+            event: Event(id: UUID(), name: "Open Mic Jam",
                 title: "Open mic jam",
                 description: "Sample event description",
                 startDate: Date(),

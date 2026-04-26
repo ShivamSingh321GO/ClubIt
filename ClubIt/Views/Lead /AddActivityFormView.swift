@@ -62,15 +62,13 @@ struct AddActivityFormView: View {
     private func addActivity() {
         guard let user = appSession.currentUser else { return }
         
-        let newActivity = Activity(
-            type: type,
+        let newActivity = Activity(id: UUID(), type: type,
             title: title,
             description: description,
             date: date,
             location: location.isEmpty ? nil : location,
             clubId: appSession.clubStore.club.id,
             postedBy: user.id,
-            postedByName: user.name,
             createdAt: Date()
         )
         

@@ -18,8 +18,7 @@ struct AddTaskView: View {
     @State private var selectedClubLeadId: UUID? = nil
     @State private var title: String = ""
     @State private var description: String = ""
-    @State private var selectedClub: ClubOption = .technoJam
-    @State private var selectedAssignee: AssigneeOption = .aryan
+
     @State private var priority: TaskPriority = .low
     @State private var deadline: Date = Date()
     @State private var selectedEventId: UUID? = nil
@@ -39,8 +38,7 @@ struct AddTaskView: View {
         if let task = initialTask {
             _title = State(initialValue: task.title)
             _description = State(initialValue: task.description)
-            _selectedClub = State(initialValue: ClubOption.from(uuid: task.clubId))
-            _selectedAssignee = State(initialValue: AssigneeOption.from(uuid: task.assignedTo))
+
             _priority = State(initialValue: task.priority)
             _deadline = State(initialValue: task.deadline)
             _selectedEventId = State(initialValue: task.eventId)

@@ -283,7 +283,7 @@ struct PresidentBudgetRequestCard: View {
                 
                 if showingReply {
                     ReplyInputView(replyText: $replyText, onSend: {
-                        let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                        let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                         appSession.approvalStore.addRemarkToBudget(id: budget.id, remark: newRemark)
                         replyText = ""
                         showingReply = false
@@ -425,7 +425,7 @@ struct PresidentBudgetRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "President", createdAt: Date())
+                    let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                     appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected, remark: newRemark)
                     dismiss()
                 }) {

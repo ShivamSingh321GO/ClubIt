@@ -249,10 +249,8 @@ struct LeadEventApprovalDetailView: View {
     private func sendReply() {
         guard let id = replyingToItemId, let type = replyingToType, let user = appSession.currentUser else { return }
         
-        let newRemark = Remark(
-            text: replyText,
+        let newRemark = Remark(id: UUID(), text: replyText,
             authorId: user.id,
-            authorName: user.name,
             createdAt: Date()
         )
         

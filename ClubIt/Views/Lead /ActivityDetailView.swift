@@ -81,7 +81,7 @@ struct ActivityDetailView: View {
                             .foregroundColor(.secondary)
                         
                         VStack(spacing: 16) {
-                            metaRow(icon: "person.circle.fill", label: "Posted By", value: activity.postedByName ?? "Unknown", color: .blue)
+                            metaRow(icon: "person.circle.fill", label: "Posted By", value: MockData.allMockUsers.first { $0.id == activity.postedBy }?.name ?? "Unknown", color: .blue)
                             
                             Divider()
                             
@@ -160,15 +160,13 @@ struct ActivityDetailView: View {
 }
 
 #Preview {
-    ActivityDetailView(activity: Activity(
-        type: .workshop,
+    ActivityDetailView(activity: Activity(id: UUID(), type: .workshop,
         title: "SwiftUI Advanced Patterns",
         description: "An in-depth session on using the new Observation framework, custom transitions, and complex layouts in SwiftUI 5.0.",
         date: Date().addingTimeInterval(86400),
         location: "Block C, Room 204",
         clubId: UUID(),
         postedBy: UUID(),
-        postedByName: "Aryan Srivastava",
         createdAt: Date()
     ))
 }

@@ -54,7 +54,7 @@ enum FormFieldType: String, Codable, CaseIterable {
 }
 
 struct RegistrationFormField: Identifiable, Hashable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var label: String = ""
     var type: FormFieldType = .text
     var options: [String]? // For multiple choice, checkbox, dropdown
@@ -63,7 +63,7 @@ struct RegistrationFormField: Identifiable, Hashable, Codable {
 }
 
 struct Event: Identifiable, Hashable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     
     var name: String
     var title: String
@@ -76,10 +76,10 @@ struct Event: Identifiable, Hashable, Codable {
     var endTime: Date
     
     var numberOfVolunteers: Int
-    var numberOfRegistrations: Int
+    var numberOfRegistrations: Int?
     var maxParticipants: Int
     
-    var registrationType: RegistrationType
+    var registrationType: RegistrationType?
     var location: String
     
     var clubId: UUID
@@ -88,7 +88,7 @@ struct Event: Identifiable, Hashable, Codable {
     var category: EventCategory
     var status: EventStatus
     
-    var registrationDeadline: Date
+    var registrationDeadline: Date?
     var bannerImage: String?
     var imageData: Data?
     var agenda: String?
@@ -96,6 +96,31 @@ struct Event: Identifiable, Hashable, Codable {
     var registrationForm: [RegistrationFormField]? = nil
     
     var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case title
+        case description
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case startTime = "start_time"
+        case endTime = "end_time"
+        case numberOfVolunteers = "number_of_volunteers"
+        case numberOfRegistrations = "number_of_registrations"
+        case maxParticipants = "max_participants"
+        case registrationType = "registration_type"
+        case location
+        case clubId = "club_id"
+        case createdBy = "created_by"
+        case category
+        case status
+        case registrationDeadline = "registration_deadline"
+        case bannerImage = "banner_image"
+        case agenda
+        case registrationForm = "registration_form"
+        case createdAt = "created_at"
+    }
 }
 
 
@@ -115,7 +140,19 @@ struct EventApproval: Identifiable, Codable {
     var createdAt: Date
     var approvedAt: Date?
 
-    init(id: UUID = UUID(), eventId: UUID, approvedBy: UUID, requestedBy: UUID, approvalType: ApprovalType, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case eventId = "event_id"
+        case approvedBy = "approved_by"
+        case requestedBy = "requested_by"
+        case approvalType = "approval_type"
+        case status
+        case remarks
+        case createdAt = "created_at"
+        case approvedAt = "approved_at"
+    }
+
+    init(id: UUID, eventId: UUID, approvedBy: UUID, requestedBy: UUID, approvalType: ApprovalType, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.approvedBy = approvedBy
@@ -165,7 +202,24 @@ struct Resource: Identifiable, Codable {
     var createdAt: Date
     var approvedAt: Date?
 
-    init(id: UUID = UUID(), eventId: UUID, name: String, quantity: Int, type: ResourceType, status: ResourceStatus, cost: Double? = nil, vendorName: String? = nil, issuedAt: Date? = nil, returnedAt: Date? = nil, addedBy: UUID, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case eventId = "event_id"
+        case name
+        case quantity
+        case type
+        case status
+        case cost
+        case vendorName = "vendor_name"
+        case issuedAt = "issued_at"
+        case returnedAt = "returned_at"
+        case addedBy = "added_by"
+        case remarks
+        case createdAt = "created_at"
+        case approvedAt = "approved_at"
+    }
+
+    init(id: UUID, eventId: UUID, name: String, quantity: Int, type: ResourceType, status: ResourceStatus, cost: Double? = nil, vendorName: String? = nil, issuedAt: Date? = nil, returnedAt: Date? = nil, addedBy: UUID, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.name = name
@@ -202,7 +256,7 @@ enum VenueAvailabilityStatus: String, Codable {
 
 
 struct Venue: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     
     var instituteId: UUID
     var name: String
@@ -213,6 +267,17 @@ struct Venue: Identifiable, Codable {
     var availabilityStatus: VenueAvailabilityStatus
     
     var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case instituteId = "institute_id"
+        case name
+        case location
+        case capacity
+        case type
+        case availabilityStatus = "availability_status"
+        case createdAt = "created_at"
+    }
 }
 
 struct BookedSlot: Identifiable {

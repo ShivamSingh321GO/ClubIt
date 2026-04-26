@@ -19,5 +19,10 @@ struct RootView: View {
                 SignInView()
             }
         }
+        .task {
+            if appSession.isLoggedIn {
+                await appSession.refreshData()
+            }
+        }
     }
 }

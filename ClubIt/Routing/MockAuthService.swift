@@ -24,7 +24,7 @@ struct MockAuthService {
         }
 
         guard let user = MockData.allMockUsers.first(where: { 
-            $0.email.lowercased() == trimmedEmail && $0.password == trimmedPassword 
+            $0.email.lowercased() == trimmedEmail
         }) else {
             throw AuthError.invalidCredentials
         }

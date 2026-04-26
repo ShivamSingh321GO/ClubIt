@@ -30,8 +30,7 @@ final class ChatStore {
             isExpanded: true
         )
         
-        let generalChat = Chat(
-            type: .event,
+        let generalChat = Chat(id: UUID(), type: .event,
             createdBy: userId,
             clubId: clubId,
             createdAt: Date(),
@@ -42,8 +41,7 @@ final class ChatStore {
             parentChatId: techSummitId
         )
         
-        let venueChat = Chat(
-            type: .event,
+        let venueChat = Chat(id: UUID(), type: .event,
             createdBy: userId,
             clubId: clubId,
             createdAt: Date(),
@@ -54,8 +52,7 @@ final class ChatStore {
             parentChatId: techSummitId
         )
         
-        let budgetChat = Chat(
-            type: .event,
+        let budgetChat = Chat(id: UUID(), type: .event,
             createdBy: userId,
             clubId: clubId,
             createdAt: Date(),
@@ -67,8 +64,7 @@ final class ChatStore {
         )
         
         // Club Leads (Group Chat)
-        let clubLeads = Chat(
-            type: .group,
+        let clubLeads = Chat(id: UUID(), type: .group,
             createdBy: userId,
             clubId: clubId,
             createdAt: Date(),
@@ -80,8 +76,7 @@ final class ChatStore {
         )
         
         // Aryan
-        let aryan = Chat(
-            type: .individual,
+        let aryan = Chat(id: UUID(), type: .individual,
             createdBy: userId,
             clubId: nil,
             createdAt: Date(),
@@ -93,8 +88,7 @@ final class ChatStore {
         )
         
         // Kamakshi
-        let kamakshi = Chat(
-            type: .individual,
+        let kamakshi = Chat(id: UUID(), type: .individual,
             createdBy: userId,
             clubId: nil,
             createdAt: Date(),
@@ -109,13 +103,13 @@ final class ChatStore {
         
         // Mock Messages
         messages[aryan.id] = [
-            Message(chatId: aryan.id, senderId: UUID(), content: "Fasdfdsaf", createdAt: Date().addingTimeInterval(-3600)),
-            Message(chatId: aryan.id, senderId: userId, content: "Fasdfdsafdsd", createdAt: Date().addingTimeInterval(-1800))
+            Message(id: UUID(), chatId: aryan.id, senderId: UUID(), content: "Fasdfdsaf", createdAt: Date().addingTimeInterval(-3600)),
+            Message(id: UUID(), chatId: aryan.id, senderId: userId, content: "Fasdfdsafdsd", createdAt: Date().addingTimeInterval(-1800))
         ]
         
         messages[clubLeads.id] = [
-            Message(chatId: clubLeads.id, senderId: UUID(), content: "i was going to do it, no need to worry about...", createdAt: Date().addingTimeInterval(-7200)),
-            Message(chatId: clubLeads.id, senderId: userId, content: "Sure, let me know if you need help.", createdAt: Date().addingTimeInterval(-3600))
+            Message(id: UUID(), chatId: clubLeads.id, senderId: UUID(), content: "i was going to do it, no need to worry about...", createdAt: Date().addingTimeInterval(-7200)),
+            Message(id: UUID(), chatId: clubLeads.id, senderId: userId, content: "Sure, let me know if you need help.", createdAt: Date().addingTimeInterval(-3600))
         ]
     }
     
@@ -171,8 +165,7 @@ final class ChatStore {
     }
     
     func sendMessage(_ content: String, to chatId: UUID) {
-        let newMessage = Message(
-            chatId: chatId,
+        let newMessage = Message(id: UUID(), chatId: chatId,
             senderId: userId,
             content: content,
             createdAt: Date()
@@ -199,8 +192,7 @@ final class ChatStore {
         guard let parentIndex = chats.firstIndex(where: { $0.id == parentId }) else { return }
         let parent = chats[parentIndex]
         
-        let newChat = Chat(
-            type: .event,
+        let newChat = Chat(id: UUID(), type: .event,
             createdBy: userId,
             clubId: parent.clubId,
             createdAt: Date(),
@@ -219,8 +211,7 @@ final class ChatStore {
     func createIndividualChat(with user: User) {
         if chats.contains(where: { $0.type == .individual && $0.name == user.name }) { return }
         
-        let newChat = Chat(
-            type: .individual,
+        let newChat = Chat(id: UUID(), type: .individual,
             createdBy: userId,
             clubId: nil,
             createdAt: Date(),
@@ -234,8 +225,7 @@ final class ChatStore {
     }
     
     func createGroupChat(name: String, description: String, icon: String?, memberIds: [UUID]) {
-        let newChat = Chat(
-            type: .group,
+        let newChat = Chat(id: UUID(), type: .group,
             createdBy: userId,
             clubId: nil,
             createdAt: Date(),
@@ -250,8 +240,7 @@ final class ChatStore {
     }
     
     func createEventChat(name: String, clubId: UUID, icon: String?, memberIds: [UUID]) {
-        let newChat = Chat(
-            type: .event,
+        let newChat = Chat(id: UUID(), type: .event,
             createdBy: userId,
             clubId: clubId,
             createdAt: Date(),

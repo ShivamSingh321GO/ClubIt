@@ -9,8 +9,7 @@ final class ClubAnnouncementStore {
         let clubId = UUID()
         let userId = UUID()
         announcements = [
-            Announcement(
-                clubId: clubId,
+            Announcement(id: UUID(), clubId: clubId,
                 date: Date(),
                 title: "Welcome to our new members!",
                 content: "We're excited to have 20 new members join the club this week. Looking forward to our first meeting together.",
@@ -19,8 +18,7 @@ final class ClubAnnouncementStore {
                 target: .club,
                 createdAt: Date()
             ),
-            Announcement(
-                clubId: clubId,
+            Announcement(id: UUID(), clubId: clubId,
                 date: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(),
                 title: "Project phase 1 completed",
                 content: "Great job everyone on finishing the first phase of our main project. Next sprint starts Monday.",

@@ -28,7 +28,7 @@ struct ClubImage: Identifiable, Codable {
 
 // for media part
 struct ClubFile: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var clubId: UUID
     var name: String
     var size: String
@@ -38,7 +38,7 @@ struct ClubFile: Identifiable, Codable {
 }
 
 struct ClubLink: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var clubId: UUID
     var name: String
     var url: String

@@ -40,7 +40,7 @@ struct ClubCard: View {
                     HStack(spacing: 4) {
                         Image(systemName: "person.2.fill")
                             .font(.caption2)
-                        Text("\(club.memberCount) Members")
+                        Text("\(club.memberCount ?? 0) Members")
                             .font(.caption2)
                     }
                     .foregroundStyle(.secondary)
@@ -59,11 +59,11 @@ struct ClubCard: View {
             }
             
             VStack(alignment: .leading, spacing: 6) {
-                Text(club.tagLine)
+                Text(club.tagLine ?? "")
                     .font(.subheadline)
                     .fontWeight(.bold)
                 
-                Text(club.description)
+                Text(club.description ?? "")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)

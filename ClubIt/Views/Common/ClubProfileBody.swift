@@ -49,7 +49,7 @@ struct ClubProfileBody: View {
                         Text(club.name)
                             .font(.title3.bold())
                             .foregroundColor(.primary)
-                        Text(club.tagLine)
+                        Text(club.tagLine ?? "")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .lineLimit(2)
@@ -76,7 +76,7 @@ struct ClubProfileBody: View {
                             .font(.headline.bold())
                             .foregroundColor(.primary)
                         
-                        Text(club.description)
+                        Text(club.description ?? "No description available.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .lineSpacing(4)
@@ -111,7 +111,7 @@ struct ClubProfileBody: View {
                             
                             HStack(spacing: 20) {
                                 let platforms = ["whatsapp", "instagram", "facebook", "linkedin", "discord"]
-                                let available = platforms.filter { club.socials.keys.contains($0) }
+                                let available = platforms.filter { (club.socials ?? [:]).keys.contains($0) }
                                 
                                 if available.isEmpty {
                                     Text("No social links provided")
@@ -120,7 +120,7 @@ struct ClubProfileBody: View {
                                         .italic()
                                 } else {
                                     ForEach(available, id: \.self) { platform in
-                                        if let urlString = club.socials[platform], let url = URL(string: urlString) {
+                                        if let urlString = (club.socials ?? [:])[platform], let url = URL(string: urlString) {
                                             Link(destination: url) {
                                                 SocialCircle(platform: platform)
                                             }

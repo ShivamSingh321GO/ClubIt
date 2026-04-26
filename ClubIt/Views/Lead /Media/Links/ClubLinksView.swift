@@ -61,7 +61,7 @@ struct ClubLinksView: View {
         }
         .sheet(isPresented: $showingAddSheet) {
             AddClubLinkView { name, url in
-                let newLink = ClubLink(
+                let newLink = ClubLink(id: UUID(), 
                     clubId: appSession.clubStore.club.id,
                     name: name,
                     url: url,

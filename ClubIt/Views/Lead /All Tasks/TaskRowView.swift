@@ -34,7 +34,7 @@ struct TaskRowView: View {
     }
     
     private var assignmentInfo: String {
-        if let delegatedName = task.delegatedToName {
+        if let delegatedId = task.delegatedToId, let delegatedName = MockData.allMockUsers.first(where: { $0.id == delegatedId })?.name {
             // Flow: Assigner -> Delegate (hiding the middleman as requested)
             return "\(assignerName) → \(delegatedName)"
         } else if task.assignedTo == task.assignedBy {
@@ -185,8 +185,7 @@ struct TaskRowView: View {
     
     session.eventStore.events.append(event)
     
-    let sampleTask = Tasks(
-        clubId: clubId,
+    let sampleTask = Tasks(id: UUID(), clubId: clubId,
         targetClubId: nil,
         eventId: eventId,
         title: "Sample Task",

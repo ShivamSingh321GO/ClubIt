@@ -106,8 +106,7 @@ private struct AnnouncementCard: View {
 #Preview {
     AnnouncementView(
         announcements: [
-            Announcement(
-                clubId: MockData.tj_id,
+            Announcement(id: UUID(), clubId: MockData.tj_id,
                 date: Date(),
                 title: "Sample Announcement",
                 content: "This is a sample announcement.",

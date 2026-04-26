@@ -1,0 +1,786 @@
+{
+  "" : {
+    "const-values" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubIt-primary.swiftconstvalues",
+    "dependencies" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubIt-primary.d",
+    "diagnostics" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubIt-primary.dia",
+    "emit-module-dependencies" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubIt-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubIt-primary-emit-module.dia",
+    "pch" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubIt-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubIt-primary.swiftdeps"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Auth/Manager/SupabaseAuthManager.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SupabaseAuthManager.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SupabaseAuthManager.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SupabaseAuthManager.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Auth/Service/SupabaseAuthService.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SupabaseAuthService.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SupabaseAuthService.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SupabaseAuthService.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/ClubItApp.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubItApp.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubItApp.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubItApp.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/ContentView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/AdminDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AdminDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AdminDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AdminDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/ClubLeadDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLeadDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLeadDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLeadDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/ClubMemberDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/EventManagementDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/FacultyDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/PresidentDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/StudentDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/VicePresidentDashboardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/VicePresidentDashboardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/VicePresidentDashboardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/VicePresidentDashboardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Keys/Constants.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Constants.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Constants.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Constants.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Achievement.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Achievement.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Achievement.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Achievement.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Activity.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Activity.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Activity.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Activity.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Announcement.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Announcement.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Announcement.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Announcement.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Approval.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Approval.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Approval.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Approval.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Chat.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Chat.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Chat.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Chat.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Club.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Club.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Club.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Club.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/ClubMedia.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMedia.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMedia.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMedia.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Event.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Event.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Event.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Event.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/EventRegistration.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventRegistration.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventRegistration.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventRegistration.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Institution.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Institution.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Institution.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Institution.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Notification.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Notification.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Notification.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Notification.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Role.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Role.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Role.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Role.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/SubscriptionPlan.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SubscriptionPlan.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SubscriptionPlan.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SubscriptionPlan.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/Tasks.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Tasks.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Tasks.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/Tasks.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Models/User.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/User.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/User.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/User.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Routing/AppRole.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AppRole.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AppRole.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AppRole.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Routing/AppSession.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AppSession.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AppSession.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AppSession.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Routing/DashboardRouter.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DashboardRouter.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DashboardRouter.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DashboardRouter.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Routing/MockAuthService.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MockAuthService.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MockAuthService.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MockAuthService.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Routing/RootView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RootView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RootView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RootView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Routing/SignInView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SignInView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SignInView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SignInView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Routing/SignInViewModel.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SignInViewModel.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SignInViewModel.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SignInViewModel.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/AchievementStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ActivityStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/AnnouncementStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AnnouncementStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AnnouncementStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AnnouncementStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ApprovalStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ChatStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubAnnouncementStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubAnnouncementStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubAnnouncementStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubAnnouncementStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubFileStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubFileStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubFileStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubFileStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubImageStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImageStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImageStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImageStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubLinkStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLinkStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLinkStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLinkStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/EventStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MockData.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MockData.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MockData.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/RegistrationStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RegistrationStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RegistrationStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RegistrationStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/StudentDashboardStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentDashboardStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentDashboardStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentDashboardStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/TaskStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Stores/VenueStore.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/VenueStore.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/VenueStore.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/VenueStore.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Calendar/CalendarEventCard.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CalendarEventCard.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CalendarEventCard.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CalendarEventCard.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Calendar/CalendarView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CalendarView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CalendarView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CalendarView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatBox.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatBox.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatBox.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatBox.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/ChatRow.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatRow.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatRow.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ChatRow.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/MessageBubble.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MessageBubble.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MessageBubble.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MessageBubble.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/PinnedChatItem.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PinnedChatItem.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PinnedChatItem.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PinnedChatItem.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/SubChatRow.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SubChatRow.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SubChatRow.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SubChatRow.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateChatView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateChatView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateChatView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateChatView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateEventChatView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateEventChatView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateEventChatView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateEventChatView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateGroupView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateGroupView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateGroupView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateGroupView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/SelectedUserBadge.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SelectedUserBadge.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SelectedUserBadge.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/SelectedUserBadge.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/ClubCommonComponents.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubCommonComponents.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubCommonComponents.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubCommonComponents.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/ClubProfileBody.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubProfileBody.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubProfileBody.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubProfileBody.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/CommonComponents.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CommonComponents.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CommonComponents.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CommonComponents.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/RemarkComponents.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RemarkComponents.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RemarkComponents.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/RemarkComponents.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalClubsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementApprovalClubsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementApprovalClubsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementApprovalClubsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementApprovalDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementApprovalDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementApprovalDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementHomeView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementHomeView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementHomeView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementHomeView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementTeamView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementTeamView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementTeamView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventManagementTeamView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/HomeVenuesModule.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeVenuesModule.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeVenuesModule.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeVenuesModule.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/AnnouncementView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AnnouncementView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AnnouncementView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AnnouncementView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/CreateAnnouncementView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateAnnouncementView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateAnnouncementView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateAnnouncementView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/AddBudgetItem.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddBudgetItem.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddBudgetItem.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddBudgetItem.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/AddResourceItem.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddResourceItem.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddResourceItem.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddResourceItem.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/CreateNewEventView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateNewEventView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateNewEventView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateNewEventView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView 2.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DynamicRegistrationFormView 2.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DynamicRegistrationFormView 2.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DynamicRegistrationFormView 2.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DynamicRegistrationFormView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DynamicRegistrationFormView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DynamicRegistrationFormView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/ExploreEventCard.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ExploreEventCard.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ExploreEventCard.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ExploreEventCard.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/TeamRegistrationFormView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TeamRegistrationFormView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TeamRegistrationFormView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TeamRegistrationFormView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/ExploreView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ExploreView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ExploreView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ExploreView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/ClubResourcesDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubResourcesDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubResourcesDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubResourcesDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalsListView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalsListView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalsListView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalsListView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalsModule.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalsModule.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalsModule.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyApprovalsModule.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyEventApprovalsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyEventApprovalsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyEventApprovalsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyEventApprovalsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyHomeView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyHomeView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyHomeView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyHomeView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyManagementView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyManagementView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyManagementView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyManagementView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyResourceClubsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyResourceClubsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyResourceClubsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyResourceClubsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyResourceManagementView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyResourceManagementView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyResourceManagementView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyResourceManagementView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyVenueListView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyVenueListView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyVenueListView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FacultyVenueListView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Achievements/AchievementCardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementCardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementCardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementCardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Achievements/AchievementsListView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementsListView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementsListView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AchievementsListView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Achievements/CreateAchievementView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateAchievementView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateAchievementView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateAchievementView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /ActivityCard.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityCard.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityCard.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityCard.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /ActivityDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /ActivityListView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityListView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityListView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ActivityListView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /AddActivityFormView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddActivityFormView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddActivityFormView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddActivityFormView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /All Tasks/AddTaskView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddTaskView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddTaskView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddTaskView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /All Tasks/DelegateTaskView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DelegateTaskView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DelegateTaskView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/DelegateTaskView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /All Tasks/HomeTasksModule.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeTasksModule.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeTasksModule.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeTasksModule.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /All Tasks/TaskDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /All Tasks/TaskRowView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskRowView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskRowView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TaskRowView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /All Tasks/TasksListView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TasksListView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TasksListView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/TasksListView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Approvals/ApprovalStatusTrack.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalStatusTrack.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalStatusTrack.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalStatusTrack.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Approvals/ApprovalSummaryCard.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalSummaryCard.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalSummaryCard.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalSummaryCard.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Approvals/ApprovalsListView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalsListView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalsListView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ApprovalsListView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Approvals/EditEventView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditEventView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditEventView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditEventView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Approvals/EventApprovalsDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventApprovalsDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventApprovalsDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventApprovalsDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Approvals/HomeApprovalCard.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeApprovalCard.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeApprovalCard.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/HomeApprovalCard.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Approvals/LeadEventApprovalDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadEventApprovalDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadEventApprovalDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadEventApprovalDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Club Announcements/ClubAnnouncementsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubAnnouncementsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubAnnouncementsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubAnnouncementsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Club Announcements/CreateClubAnnouncementView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateClubAnnouncementView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateClubAnnouncementView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/CreateClubAnnouncementView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /ClubMemberListView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberListView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberListView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberListView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /EditClubDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditClubDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditClubDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditClubDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /LeadApprovalEventCard.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadApprovalEventCard.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadApprovalEventCard.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadApprovalEventCard.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /LeadHomeView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadHomeView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadHomeView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadHomeView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /LeadMyClubView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadMyClubView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadMyClubView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadMyClubView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /LeadNotificationView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadNotificationView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadNotificationView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadNotificationView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /LeadProfileView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadProfileView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadProfileView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadProfileView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /ManageParticipantsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ManageParticipantsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ManageParticipantsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ManageParticipantsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Files/AddClubFileView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddClubFileView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddClubFileView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddClubFileView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Files/ClubFilesView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubFilesView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubFilesView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubFilesView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Images/AddImageSectionView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddImageSectionView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddImageSectionView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddImageSectionView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Images/ClubImageDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImageDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImageDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImageDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Images/ClubImagesView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImagesView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImagesView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubImagesView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Images/FullScreenGalleryView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FullScreenGalleryView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FullScreenGalleryView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/FullScreenGalleryView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Images/MediaImageView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MediaImageView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MediaImageView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MediaImageView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Links/AddClubLinkView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddClubLinkView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddClubLinkView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/AddClubLinkView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Media/Links/ClubLinksView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLinksView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLinksView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLinksView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /Onboarding/LeadOnboardingView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadOnboardingView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadOnboardingView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/LeadOnboardingView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead /UpcomingEventsModule.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/UpcomingEventsModule.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/UpcomingEventsModule.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/UpcomingEventsModule.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Member/ClubMemberHomeView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberHomeView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberHomeView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubMemberHomeView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Member/memberProfileView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/memberProfileView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/memberProfileView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/memberProfileView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/MemberClubsOverviewView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MemberClubsOverviewView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MemberClubsOverviewView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/MemberClubsOverviewView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentApprovalsModule.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentApprovalsModule.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentApprovalsModule.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentApprovalsModule.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentAssignClubView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentAssignClubView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentAssignClubView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentAssignClubView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentBudgetClubsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentBudgetClubsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentBudgetClubsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentBudgetClubsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubBudgetDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentClubBudgetDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentClubBudgetDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentClubBudgetDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubsView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentClubsView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentClubsView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentClubsView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentHomeView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentHomeView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentHomeView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentHomeView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentRemoveVPView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentRemoveVPView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentRemoveVPView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/PresidentRemoveVPView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/ClubHeaderView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubHeaderView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubHeaderView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubHeaderView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/ClubLogoView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLogoView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLogoView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubLogoView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/EditProfileView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditProfileView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditProfileView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EditProfileView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubCardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubCardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubCardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubCardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubDetailView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubDetailView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubDetailView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubDetailView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubSearchView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubSearchView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubSearchView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/ClubSearchView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/EventCardView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventCardView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventCardView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/EventCardView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/StudentHomeView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentHomeView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentHomeView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentHomeView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/StudentProfileView.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentProfileView.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentProfileView.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/StudentProfileView.o"
+  },
+  "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

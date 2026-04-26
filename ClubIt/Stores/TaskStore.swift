@@ -15,6 +15,7 @@ final class TaskStore {
         
         return [
             Tasks(
+                id: UUID(),
                 clubId: clubId,
                 targetClubId: nil,
                 eventId: eventId,
@@ -25,13 +26,13 @@ final class TaskStore {
                 assignedTo: leadId,
                 assignedToRole: .clubLead,
                 delegatedToId: nil,
-                delegatedToName: nil,
                 deadline: Date().addingTimeInterval(3600 * 24 * 2),
                 priority: .high,
                 status: .pending,
                 createdAt: Date()
             ),
             Tasks(
+                id: UUID(),
                 clubId: clubId,
                 targetClubId: nil,
                 eventId: eventId,
@@ -42,13 +43,13 @@ final class TaskStore {
                 assignedTo: memberId,
                 assignedToRole: .clubMember,
                 delegatedToId: nil,
-                delegatedToName: nil,
                 deadline: Date().addingTimeInterval(3600 * 24 * 5),
                 priority: .high,
                 status: .pending,
                 createdAt: Date()
             ),
             Tasks(
+                id: UUID(),
                 clubId: clubId,
                 targetClubId: lfClubId,
                 eventId: nil,
@@ -59,7 +60,6 @@ final class TaskStore {
                 assignedTo: lfLeadId,
                 assignedToRole: .clubLead,
                 delegatedToId: nil,
-                delegatedToName: nil,
                 deadline: Date().addingTimeInterval(3600 * 24 * 7),
                 priority: .low,
                 status: .pending,
@@ -70,6 +70,7 @@ final class TaskStore {
     
     func addTask(title: String, description: String, clubId: UUID, targetClubId: UUID? = nil, eventId: UUID?, assignedBy: UUID, assignedByRole: AppRole, assignedTo: UUID, assignedToRole: AppRole, priority: TaskPriority, deadline: Date) {
         let newTask = Tasks(
+            id: UUID(),
             clubId: clubId,
             targetClubId: targetClubId,
             eventId: eventId,
@@ -111,10 +112,9 @@ final class TaskStore {
         tasks.removeAll(where: { $0.id == id })
     }
     
-    func delegateTask(taskId: UUID, memberId: UUID, memberName: String) {
+    func delegateTask(taskId: UUID, memberId: UUID) {
         if let index = tasks.firstIndex(where: { $0.id == taskId }) {
             tasks[index].delegatedToId = memberId
-            tasks[index].delegatedToName = memberName
             // Optionally change status or add a note
         }
     }

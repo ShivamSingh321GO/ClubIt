@@ -68,21 +68,60 @@ final class AppSession {
         }
     }
 
-    func signIn(user: User, role: AppRole) {
+    @MainActor
+    func signIn(user: User, role: AppRole) async {
         currentUser = user
         currentRole = role
         isLoggedIn = true
         
-        // Sync registrations for the new user
-        let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
+        await refreshData()
+    }
+
+    @MainActor
+    func refreshData() async {
+        print("DEBUG: Starting Data Refresh...")
+        
+        // 1. Fetch Clubs
+        do {
+            try await clubStore.fetchAllClubs()
+            print("DEBUG: Clubs Fetched Successfully")
+        } catch {
+            print("DEBUG ERROR: Clubs Fetch Failed: \(error)")
+        }
+        
+        // 2. Fetch Users
+        do {
+            try await clubStore.fetchAllUsers()
+            print("DEBUG: Users Fetched Successfully")
+        } catch {
+            print("DEBUG ERROR: Users Fetch Failed: \(error)")
+        }
+        
+        // 3. Fetch Events
+        do {
+            try await eventStore.fetchAllEvents()
+            print("DEBUG: Events Fetched Successfully")
+        } catch {
+            print("DEBUG ERROR: Events Fetch Failed: \(error)")
+        }
+        
+        // 4. User Specific Data
+        if let clubId = currentUser?.clubId {
+            do {
+                try await clubStore.fetchClubDetails(id: clubId)
+                try await activityStore.fetchActivities(clubId: clubId)
+                print("DEBUG: User Specific Data Fetched")
+            } catch {
+                print("DEBUG ERROR: User Specific Fetch Failed: \(error)")
+            }
+        }
+        
+        // Sync registrations
+        let userRegistrations = registrationStore.registrations.filter { $0.userId == currentUser?.id }
         registeredEventIds = Set(userRegistrations.map { $0.eventId })
         studentDashboardStore.registeredEventIds = registeredEventIds
         
-        if let clubId = user.clubId {
-            if let userClub = clubStore.allClubs.first(where: { $0.id == clubId }) {
-                clubStore.club = userClub
-            }
-        }
+        print("DEBUG: Data Sync Sequence Complete")
     }
 
     func signOut() {

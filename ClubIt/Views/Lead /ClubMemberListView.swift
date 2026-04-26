@@ -21,8 +21,8 @@ struct ClubMemberListView: View {
                                     .scaledToFill()
                                     .frame(width: 50, height: 50)
                                     .clipShape(Circle())
-                            } else if !member.profileImg.isEmpty {
-                                Image(member.profileImg)
+                            } else if !(member.profileImg?.isEmpty ?? true) {
+                                Image(member.profileImg ?? "")
                                     .resizable()
                                     .scaledToFill()
                                     .frame(width: 50, height: 50)

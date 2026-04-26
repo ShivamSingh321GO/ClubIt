@@ -136,7 +136,7 @@ struct FacultyExpandableClubRow: View {
                         Text("About the Club")
                             .font(.headline)
                             .bold()
-                        Text(club.description)
+                        Text(club.description ?? "No description available.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .lineSpacing(4)
@@ -144,18 +144,18 @@ struct FacultyExpandableClubRow: View {
                     .padding(.horizontal)
                     
                     HStack(spacing: 12) {
-                        FacultyStatBadge(icon: "person.2.fill", count: "\(club.memberCount)", label: "Members", color: .green)
+                        FacultyStatBadge(icon: "person.2.fill", count: "\(club.memberCount ?? 0)", label: "Members", color: .green)
                         FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == club.id }.count)", label: "Achievements", color: .orange)
                     }
                     .padding(.horizontal)
                     
-                    if !club.socials.isEmpty {
+                    if let socials = club.socials, !socials.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Socials")
                                 .font(.headline)
                                 .bold()
                             HStack(spacing: 12) {
-                                ForEach(club.socials.sorted(by: { $0.key < $1.key }), id: \.key) { platform, urlString in
+                                ForEach(socials.sorted(by: { $0.key < $1.key }), id: \.key) { platform, urlString in
                                     if let url = URL(string: urlString) {
                                         Link(destination: url) {
                                             FacultySocialCircle(platform: platform)

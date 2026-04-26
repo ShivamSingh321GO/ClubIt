@@ -27,9 +27,9 @@ struct MemberClubsOverviewView: View {
                     }
                     
                     HStack(spacing: 20) {
-                        InfoStat(title: "Course", value: user.course)
+                        InfoStat(title: "Course", value: user.course ?? "N/A")
                         Divider().frame(height: 30)
-                        InfoStat(title: "Year", value: user.year)
+                        InfoStat(title: "Year", value: user.year ?? "N/A")
                     }
                     .padding()
                     .background(Color.secondary.opacity(0.05))

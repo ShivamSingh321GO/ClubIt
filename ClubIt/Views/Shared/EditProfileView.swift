@@ -16,12 +16,12 @@ struct EditProfileView: View {
     
     init(user: User) {
         _name = State(initialValue: user.name)
-        _bio = State(initialValue: user.bio)
-        _phoneNumber = State(initialValue: user.phoneNumber)
-        _course = State(initialValue: user.course)
-        _year = State(initialValue: user.year)
+        _bio = State(initialValue: user.bio ?? "")
+        _phoneNumber = State(initialValue: user.phoneNumber ?? "")
+        _course = State(initialValue: user.course ?? "")
+        _year = State(initialValue: user.year ?? "")
         _imageData = State(initialValue: user.imageData)
-        _profileImg = State(initialValue: user.profileImg)
+        _profileImg = State(initialValue: user.profileImg ?? "")
     }
     
     var body: some View {

@@ -61,5 +61,5 @@ struct FullScreenGalleryView: View {
             createdAt: Date()
         )
     }
-    return FullScreenGalleryView(images: images, selectedIndex: .constant(0))
+    FullScreenGalleryView(images: images, selectedIndex: .constant(0))
 }

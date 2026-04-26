@@ -1,0 +1,155 @@
+/Users/getsh/Desktop/ClubIt/ClubIt/Auth/Manager/SupabaseAuthManager.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Auth/Service/SupabaseAuthService.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/AdminDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/ClubLeadDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/ClubMemberDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/EventManagementDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/FacultyDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/PresidentDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/StudentDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/DashBoards/VicePresidentDashboardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Keys/Constants.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Achievement.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Activity.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Announcement.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Approval.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Chat.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Club.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/ClubMedia.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Event.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/EventRegistration.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Institution.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Notification.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Role.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/SubscriptionPlan.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/Tasks.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Models/User.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Routing/AppRole.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Routing/AppSession.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Routing/DashboardRouter.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Routing/MockAuthService.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Routing/RootView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Routing/SignInView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Routing/SignInViewModel.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/AchievementStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ActivityStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/AnnouncementStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ApprovalStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ChatStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubAnnouncementStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubFileStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubImageStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubLinkStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/ClubStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/EventStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/MockData.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/RegistrationStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/StudentDashboardStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/TaskStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Stores/VenueStore.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Calendar/CalendarEventCard.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Calendar/CalendarView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/ChatRow.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/MessageBubble.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/PinnedChatItem.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Components/SubChatRow.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateChatView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateEventChatView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/CreateGroupView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/Create/SelectedUserBadge.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatBox.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Chats/ChatsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/ClubCommonComponents.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/ClubProfileBody.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/CommonComponents.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Common/RemarkComponents.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalClubsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementApprovalDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementHomeView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/EventManagementTeamView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/EventManagement/HomeVenuesModule.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/AnnouncementView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Announcement/CreateAnnouncementView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/AddBudgetItem.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/AddResourceItem.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/CreateNewEventView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/DynamicRegistrationFormView\ 2.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/EventView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/ExploreEventCard.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/Event/TeamRegistrationFormView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Explore/ExploreView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/ClubResourcesDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalsListView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyApprovalsModule.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyEventApprovalsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyHomeView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyManagementView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyResourceClubsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyResourceManagementView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Faculty/FacultyVenueListView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/AchievementCardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/AchievementsListView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Achievements/CreateAchievementView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/AddTaskView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/DelegateTaskView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/HomeTasksModule.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/TaskDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/TaskRowView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /All\ Tasks/TasksListView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/ApprovalsListView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/ApprovalStatusTrack.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/ApprovalSummaryCard.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/EditEventView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/EventApprovalsDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/HomeApprovalCard.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Approvals/LeadEventApprovalDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Club\ Announcements/ClubAnnouncementsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Club\ Announcements/CreateClubAnnouncementView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Files/AddClubFileView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Files/ClubFilesView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/AddImageSectionView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImageDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/ClubImagesView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/FullScreenGalleryView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Images/MediaImageView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Links/AddClubLinkView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Media/Links/ClubLinksView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /Onboarding/LeadOnboardingView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityCard.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ActivityListView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /AddActivityFormView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ClubMemberListView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /EditClubDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadApprovalEventCard.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadHomeView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadMyClubView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadNotificationView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /LeadProfileView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /ManageParticipantsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Lead\ /UpcomingEventsModule.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Member/ClubMemberHomeView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Member/memberProfileView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/MemberClubsOverviewView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentApprovalsModule.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentAssignClubView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentBudgetClubsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubBudgetDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentClubsView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentHomeView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/President/PresidentRemoveVPView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/ClubHeaderView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/ClubLogoView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Shared/EditProfileView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubCardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubDetailView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/ClubSearchView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/EventCardView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/StudentHomeView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/Views/Student/StudentProfileView.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/ClubItApp.swift
+/Users/getsh/Desktop/ClubIt/ClubIt/ContentView.swift
+/Users/getsh/Desktop/ClubIt/build/ClubIt.build/Release-iphoneos/ClubIt.build/DerivedSources/GeneratedAssetSymbols.swift

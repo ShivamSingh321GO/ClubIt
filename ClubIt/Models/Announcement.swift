@@ -14,7 +14,7 @@ enum AnnouncementTarget: String, Codable {
 }
 
 struct Announcement: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var clubId: UUID
     var date: Date
     var title: String

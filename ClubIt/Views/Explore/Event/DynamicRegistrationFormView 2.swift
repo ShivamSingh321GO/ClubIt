@@ -192,9 +192,9 @@
 //        status: .upcoming,
 //        registrationDeadline: Date(),
 //        registrationForm: [
-//            RegistrationFormField(label: "What is your team name?", type: .text),
-//            RegistrationFormField(label: "Experience level", type: .multipleChoice, options: ["Beginner", "Intermediate", "Advanced"]),
-//            RegistrationFormField(label: "Technologies you use", type: .checkbox, options: ["Swift", "Python", "React", "Node.js"])
+//            RegistrationFormField(id: UUID(), label: "What is your team name?", type: .text),
+//            RegistrationFormField(id: UUID(), label: "Experience level", type: .multipleChoice, options: ["Beginner", "Intermediate", "Advanced"]),
+//            RegistrationFormField(id: UUID(), label: "Technologies you use", type: .checkbox, options: ["Swift", "Python", "React", "Node.js"])
 //        ],
 //        createdAt: Date()
 //    ))

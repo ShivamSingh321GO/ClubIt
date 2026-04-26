@@ -18,8 +18,7 @@ final class AnnouncementStore {
     
     
     func addAnnouncement(title: String, content: String, url: String, postedBy: UUID, clubId: UUID, target: AnnouncementTarget = .club) {
-        let newAnnouncement = Announcement(
-            clubId: clubId,
+        let newAnnouncement = Announcement(id: UUID(), clubId: clubId,
             date: Date(),
             title: title,
             content: content,

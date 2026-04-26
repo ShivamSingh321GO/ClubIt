@@ -159,7 +159,7 @@ struct EventManagementApprovalDetailView: View {
         }
         .sheet(item: $selectedEventApprovalForRemark) { approval in
             FacultyVenueRemarkSheet(approval: approval, onReject: { remark in
-                let newRemark = Remark(text: remark, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "EMT", createdAt: Date())
+                let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                 appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
                 appSession.eventStore.updateEventStatus(id: approval.eventId, status: .cancelled)
             })
@@ -466,7 +466,7 @@ struct EventApprovalRequestCard: View {
             
             if showingReply {
                 ReplyInputView(replyText: $replyText, onSend: {
-                    let newRemark = Remark(text: replyText, authorId: appSession.currentUser?.id ?? UUID(), authorName: appSession.currentUser?.name ?? "Faculty", createdAt: Date())
+                    let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
                     appSession.approvalStore.addRemarkToApproval(id: approval.id, remark: newRemark)
                     replyText = ""
                     showingReply = false

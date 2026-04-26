@@ -68,7 +68,7 @@ struct DelegateTaskView: View {
                     Button {
                         if let memberId = selectedMemberId,
                            let member = clubMembers.first(where: { $0.id == memberId }) {
-                            appSession.taskStore.delegateTask(taskId: task.id, memberId: memberId, memberName: member.name)
+                            appSession.taskStore.delegateTask(taskId: task.id, memberId: memberId)
                             dismiss()
                         }
                     } label: {
@@ -86,8 +86,7 @@ struct DelegateTaskView: View {
     let session = AppSession()
     session.currentUser = MockData.clubLeadUser
     
-    let sampleTask = Tasks(
-        clubId: MockData.tj_id,
+    let sampleTask = Tasks(id: UUID(), clubId: MockData.tj_id,
         targetClubId: nil,
         eventId: nil,
         title: "Test Task",

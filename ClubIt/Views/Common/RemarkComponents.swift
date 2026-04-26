@@ -11,6 +11,7 @@ struct RemarkConversationView: View {
             
             ForEach(displayedRemarks) { remark in
                 let isCurrentUser = remark.authorId == appSession.currentUser?.id
+                let authorName = appSession.clubStore.allUsers.first(where: { $0.id == remark.authorId })?.name ?? "Unknown"
                 
                 VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 6) {
                     HStack {
@@ -19,12 +20,12 @@ struct RemarkConversationView: View {
                                 .fill(Color.orange.opacity(0.1))
                                 .frame(width: 24, height: 24)
                                 .overlay(
-                                    Text(String(remark.authorName.prefix(1)))
+                                    Text(String(authorName.prefix(1)))
                                         .font(.system(size: 10, weight: .bold))
                                         .foregroundColor(.orange)
                                 )
                             
-                            Text(remark.authorName)
+                            Text(authorName)
                                 .font(.caption.bold())
                                 .foregroundColor(.primary)
                         }

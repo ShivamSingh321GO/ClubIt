@@ -16,7 +16,7 @@ enum ChatType: String, Codable {
 }
 
 struct Chat: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var type: ChatType
     var createdBy: UUID
     var clubId: UUID?
@@ -33,14 +33,14 @@ struct Chat: Identifiable, Codable {
 }
 
 struct ChatParticipant: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var chatId: UUID
     var userId: UUID
     var joinedAt: Date
 }
 
 struct Message: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var chatId: UUID
     var senderId: UUID
     var content: String

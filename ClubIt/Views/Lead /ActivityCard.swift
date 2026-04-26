@@ -71,7 +71,7 @@ struct ActivityCard: View {
                 
                 // Footer: Posted By and Date
                 HStack {
-                    if let postedByName = activity.postedByName {
+                    if let postedByName = MockData.allMockUsers.first(where: { $0.id == activity.postedBy })?.name {
                         Label(postedByName, systemImage: "person.circle.fill")
                             .font(.caption2.bold())
                             .foregroundColor(.primary.opacity(0.8))
@@ -125,8 +125,7 @@ struct ActivityCard: View {
 }
 
 #Preview {
-    ActivityCard(activity: Activity(
-        type: .workshop,
+    ActivityCard(activity: Activity(id: UUID(), type: .workshop,
         title: "Deep Dive into SwiftUI 5.0",
         description: "Explaining the new observation framework and animation systems with practical examples.",
         date: Date(),

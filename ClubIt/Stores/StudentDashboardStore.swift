@@ -18,7 +18,9 @@ final class StudentDashboardStore {
     
     var filteredClubs: [Club] {
         clubStore.allClubs.filter { club in
-            let matchesSearch = searchText.isEmpty || club.name.localizedCaseInsensitiveContains(searchText) || club.description.localizedCaseInsensitiveContains(searchText)
+            let matchesSearch = searchText.isEmpty || 
+                                club.name.localizedCaseInsensitiveContains(searchText) || 
+                                (club.description ?? "").localizedCaseInsensitiveContains(searchText)
             let matchesCategory = selectedCategory == nil || club.category == selectedCategory
             return matchesSearch && matchesCategory
         }

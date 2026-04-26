@@ -134,6 +134,7 @@ struct AddClubFileView: View {
         }
         
         let newFile = ClubFile(
+            id: UUID(),
             clubId: UUID(), // Placeholder, will be updated in onSave
             name: trimmedName,
             size: fileSize,

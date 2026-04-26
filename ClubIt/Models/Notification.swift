@@ -16,7 +16,7 @@ enum NotificationType: String, Codable {
 }
 
 struct Notification: Identifiable, Codable {
-    var id = UUID()
+    var id: UUID
     var userId: UUID
     var title: String
     var message: String

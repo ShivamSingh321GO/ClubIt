@@ -122,7 +122,7 @@ struct StatBox: View {
 #Preview {
     let session = AppSession()
     
-    return NavigationStack {
+    NavigationStack {
         AchievementsListView()
             .environment(session)
     }

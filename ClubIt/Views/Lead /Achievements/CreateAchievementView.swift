@@ -44,8 +44,7 @@ struct CreateAchievementView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        let newAchievement = Achievement(
-                            clubId: appSession.clubStore.club.id,
+                        let newAchievement = Achievement(id: UUID(), clubId: appSession.clubStore.club.id,
                             title: title,
                             description: description,
                             type: selectedType,
@@ -65,6 +64,6 @@ struct CreateAchievementView: View {
 
 #Preview {
     let session = AppSession()
-    return CreateAchievementView()
+    CreateAchievementView()
         .environment(session)
 }

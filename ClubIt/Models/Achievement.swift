@@ -32,7 +32,7 @@ enum AchievementType: String, Codable, CaseIterable, Identifiable {
 }
 
 struct Achievement: Identifiable, Codable {
-    var id = UUID()
+    var id: UUID
     var clubId: UUID
     var title: String
     var description: String

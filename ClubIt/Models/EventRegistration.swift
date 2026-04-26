@@ -16,7 +16,7 @@ enum RegistrationStatus: String, Codable {
 }
 
 struct IndividualRegistration: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var eventId: UUID
     var userId: UUID
     var status: RegistrationStatus
@@ -40,7 +40,7 @@ enum AssignmentStatus: String, Codable {
 }
 
 struct EventRoleAssignment: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     
     var eventId: UUID
     var role: EventRole
@@ -57,7 +57,7 @@ struct EventRoleAssignment: Identifiable, Codable {
 
 
 struct RegistrationAnswer: Identifiable, Codable {
-    var id: UUID = UUID()
+    var id: UUID
     var questionId: UUID
     var userId: UUID
     var answer: String

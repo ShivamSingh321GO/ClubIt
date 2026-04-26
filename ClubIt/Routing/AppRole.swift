@@ -9,13 +9,13 @@
 import Foundation
 
 enum AppRole: String, Codable, CaseIterable, Identifiable {
-    case admin = "Admin"
-    case faculty = "Faculty Advisor"
-    case president = "President"
-    case vicePresident = "Vice President"
-    case clubLead = "Club Lead"
-    case clubMember = "Club Member"
-    case student = "Student"
+    case admin = "admin"
+    case faculty = "faculty"
+    case president = "president"
+    case vicePresident = "vicePresident"
+    case clubLead = "clubLead"
+    case clubMember = "clubMember"
+    case student = "student"
 
     var id: String { rawValue }
 }

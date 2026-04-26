@@ -8,13 +8,23 @@
 
 import Foundation
 import Observation
+import Supabase
 
 @Observable
 final class EventStore {
-    
-    var events: [Event] = MockData.sampleEvents
+    private var client: SupabaseClient { SupabaseManager.shared.client }
+    var events: [Event] = []
     
     init() {}
+    
+    @MainActor
+    func fetchAllEvents() async throws {
+        self.events = try await client
+            .from("events")
+            .select()
+            .execute()
+            .value
+    }
     
     func addEvent(_ event: Event) {
         events.insert(event, at: 0)

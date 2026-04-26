@@ -7,7 +7,7 @@ struct SelectedUserBadge: View {
     var body: some View {
         VStack(spacing: 4) {
             ZStack(alignment: .topTrailing) {
-                AsyncImage(url: URL(string: user.profileImg)) { image in
+                AsyncImage(url: URL(string: user.profileImg ?? "")) { image in
                     image
                         .resizable()
                         .scaledToFill()
@@ -42,7 +42,7 @@ struct UserSelectionGridItem: View {
         Button(action: onToggle) {
             VStack(spacing: 8) {
                 ZStack(alignment: .bottomTrailing) {
-                    AsyncImage(url: URL(string: user.profileImg)) { image in
+                    AsyncImage(url: URL(string: user.profileImg ?? "")) { image in
                         image
                             .resizable()
                             .scaledToFill()
@@ -97,7 +97,7 @@ struct UserGridItem: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            AsyncImage(url: URL(string: user.profileImg)) { image in
+            AsyncImage(url: URL(string: user.profileImg ?? "")) { image in
                 image
                     .resizable()
                     .scaledToFill()

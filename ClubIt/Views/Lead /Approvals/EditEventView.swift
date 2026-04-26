@@ -43,7 +43,7 @@ struct EditEventView: View {
         _selectedCategory = State(initialValue: event.category)
         _eventDescription = State(initialValue: event.description)
         _agenda = State(initialValue: event.agenda ?? "")
-        _registrationType = State(initialValue: event.registrationType)
+        _registrationType = State(initialValue: event.registrationType ?? .individual)
         _startDate = State(initialValue: event.startDate)
         _endDate = State(initialValue: event.endDate)
         _venue = State(initialValue: event.location)
@@ -388,7 +388,7 @@ struct EditEventView: View {
         if let venueApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .venue }) {
             if venueApproval.status == .rejected || event.location != venue {
                 appSession.approvalStore.updateApprovalStatus(id: venueApproval.id, status: .pending)
-                appSession.approvalStore.addRemarkToApproval(id: venueApproval.id, remark: Remark(text: "Venue details updated: \(venue). Resubmitted for approval.", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date()))
+                appSession.approvalStore.addRemarkToApproval(id: venueApproval.id, remark: Remark(id: UUID(), text: "Venue details updated: \(venue). Resubmitted for approval.", authorId: currentUser.id, createdAt: Date()))
             }
         }
 
@@ -406,7 +406,7 @@ struct EditEventView: View {
             }
             if hasChanges {
                 appSession.approvalStore.updateApprovalStatus(id: budgetApproval.id, status: .pending)
-                appSession.approvalStore.addRemarkToApproval(id: budgetApproval.id, remark: Remark(text: "Budget updated/items added. Resubmitted.", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date()))
+                appSession.approvalStore.addRemarkToApproval(id: budgetApproval.id, remark: Remark(id: UUID(), text: "Budget updated/items added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
             }
         }
 
@@ -421,7 +421,6 @@ struct EditEventView: View {
                 updated.itemName = draft.name
                 updated.unitPrice = Double(draft.price) ?? 0
                 updated.quantity = draft.quantity
-                updated.totalAmount = updated.unitPrice * Double(updated.quantity)
                 
                 if updated.status == .rejected || dataChanged {
                     updated.status = .pending
@@ -430,12 +429,11 @@ struct EditEventView: View {
                     appSession.approvalStore.updateBudget(updated)
                 }
             } else {
-                let newBudget = Budget(
+                let newBudget = Budget(id: UUID(),
                     eventId: event.id,
                     itemName: draft.name,
                     unitPrice: Double(draft.price) ?? 0,
                     quantity: draft.quantity,
-                    totalAmount: (Double(draft.price) ?? 0) * Double(draft.quantity),
                     status: .pending,
                     addedBy: currentUser.id,
                     remarks: [],
@@ -458,7 +456,7 @@ struct EditEventView: View {
             }
             if hasChanges {
                 appSession.approvalStore.updateApprovalStatus(id: resourceApproval.id, status: .pending)
-                appSession.approvalStore.addRemarkToApproval(id: resourceApproval.id, remark: Remark(text: "Resources updated/added. Resubmitted.", authorId: currentUser.id, authorName: currentUser.name, createdAt: Date()))
+                appSession.approvalStore.addRemarkToApproval(id: resourceApproval.id, remark: Remark(id: UUID(), text: "Resources updated/added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
             }
         }
 
@@ -479,6 +477,7 @@ struct EditEventView: View {
                 }
             } else {
                 let newRes = Resource(
+                    id: UUID(),
                     eventId: event.id,
                     name: draft.name,
                     quantity: draft.quantity,
@@ -513,6 +512,7 @@ struct EditEventView: View {
                 }
             } else {
                 let newRes = Resource(
+                    id: UUID(),
                     eventId: event.id,
                     name: draft.name,
                     quantity: draft.quantity,

@@ -518,12 +518,12 @@ struct EventDetailView: View {
     }
     
     private var organizerName: String {
-        appSession.clubStore.allClubs.first { $0.id == event.clubId }?.name ?? "Technojam"
+        appSession.clubStore.allClubs.first { $0.id == event.clubId }?.name ?? "Event Organizer"
     }
     
     private var registrationProgress: Double {
         guard event.maxParticipants > 0 else { return 0 }
-        return min(Double(event.numberOfRegistrations) / Double(event.maxParticipants), 1.0)
+        return min(Double(event.numberOfRegistrations ?? 0) / Double(event.maxParticipants), 1.0)
     }
     
     private var buttonColor: Color {

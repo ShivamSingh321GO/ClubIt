@@ -80,6 +80,6 @@ struct PresidentHomeView: View {
 
 #Preview {
     let session = MockData.session(for: .president)
-    return PresidentHomeView()
+    PresidentHomeView()
         .environment(session)
 }
