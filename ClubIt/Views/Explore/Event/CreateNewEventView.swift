@@ -116,10 +116,12 @@ struct CreateNewEventView: View {
             
             Section {
                 Picker("Type", selection: $registrationType) {
-                    Text("Individual").tag(RegistrationType.individual)
-                    Text("Team").tag(RegistrationType.team)
+                    Text("Individual")
+                        .tag(RegistrationType.individual)
+                    Text("Team")
+                        .tag(RegistrationType.team)
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.menu)
                 
                 if registrationType == .team {
                     NavigationLink {

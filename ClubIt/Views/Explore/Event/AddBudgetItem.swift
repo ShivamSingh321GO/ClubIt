@@ -38,7 +38,7 @@ struct AddBudgetItemView: View {
                     }
                     .padding(.vertical, 4)
                     
-                    TextField("Price", text: $item.price)
+                    TextField("Price per unit", text: $item.price)
                         .keyboardType(.decimalPad)
                         .padding(.vertical, 4)
                 }
