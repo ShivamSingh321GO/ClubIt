@@ -71,8 +71,8 @@ struct CreateNewEventView: View {
             }
             
             Section {
-                HStack(spacing: 15) {
-                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                PhotosPicker(selection: $selectedItem, matching: .images) {
+                    HStack(spacing: 15) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.secondarySystemBackground))
@@ -90,24 +90,24 @@ struct CreateNewEventView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Event Image")
-                            .font(.subheadline.weight(.semibold))
-                        Text("Add a cover image for the event")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                         
-                        PhotosPicker(selection: $selectedItem, matching: .images) {
-                            Text("Choose Photo")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Event Image")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            Text("Add a cover image for the event")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            Text(imageData == nil ? "Choose Photo" : "Change Photo")
                                 .font(.subheadline)
                                 .foregroundStyle(.blue)
                         }
+                        
+                        Spacer()
                     }
-                    
-                    Spacer()
                 }
+                .buttonStyle(.plain)
             } header: {
                 Text("Event Image")
             }
@@ -158,7 +158,7 @@ struct CreateNewEventView: View {
             
             Section {
                 DatePicker("Starts", selection: $startDate)
-                DatePicker("Ends", selection: $endDate)
+                DatePicker("Ends", selection: $endDate, in: startDate...)
             } header: {
                 Text("Date & Time")
             }

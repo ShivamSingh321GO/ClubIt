@@ -95,6 +95,7 @@ struct FieldEditorView: View {
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
+                .buttonStyle(.borderless)
             }
             
             if let options = field.options {
@@ -116,6 +117,7 @@ struct FieldEditorView: View {
                                     Image(systemName: "xmark.circle.fill")
                                         .foregroundStyle(.secondary)
                                 }
+                                .buttonStyle(.borderless)
                             }
                         }
                     }
@@ -130,6 +132,7 @@ struct FieldEditorView: View {
                         .font(.subheadline)
                         .foregroundStyle(.blue)
                     }
+                    .buttonStyle(.borderless)
                     .padding(.leading, 24)
                 }
             } else {
@@ -160,6 +163,7 @@ struct FieldEditorView: View {
                     Image(systemName: "trash")
                         .foregroundStyle(.red)
                 }
+                .buttonStyle(.borderless)
             }
         }
         .padding(.vertical, 8)
