@@ -26,9 +26,6 @@ struct StudentProfileView: View {
                 // Requested Clubs
                 requestedClubsSection
                 
-                // Saved Events
-                savedEventsSection
-                
                 // Clubs Followed
                 clubsFollowedSection
                 
@@ -147,57 +144,7 @@ struct StudentProfileView: View {
         }
     }
     
-    private var savedEventsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Saved Events")
-                    .font(.headline)
-                Spacer()
-                if !appSession.favouritedEventIds.isEmpty {
-                    Text("\(appSession.favouritedEventIds.count)")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.orange.gradient)
-                        .clipShape(Capsule())
-                }
-            }
-            .padding(.leading, 4)
-            
-            let savedEvents = MockData.sampleEvents.filter { appSession.favouritedEventIds.contains($0.id) }
-            
-            if savedEvents.isEmpty {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 8) {
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 24))
-                            .foregroundStyle(.secondary.opacity(0.3))
-                        Text("No saved events yet")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 32)
-                    Spacer()
-                }
-                .glassEffect(in: .rect(cornerRadius: 20))
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(savedEvents) { event in
-                            NavigationLink(destination: EventDetailView(event: event, isMyEvent: false)) {
-                                ExploreEventCard(event: event, isMyEvent: false)
-                                    .frame(width: 300) // Slightly smaller for profile
-                                    .scaleEffect(0.9)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-            }
-        }
-    }
+
     
     private var clubsFollowedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -205,10 +152,10 @@ struct StudentProfileView: View {
                 .font(.headline)
                 .padding(.leading, 4)
             
-            VStack(spacing: 0) {
-                let followed = appSession.clubStore.allClubs.filter { appSession.clubStore.followedClubIds.contains($0.id) }
-                
-                if followed.isEmpty {
+            let followed = appSession.clubStore.allClubs.filter { appSession.clubStore.followedClubIds.contains($0.id) }
+            
+            if followed.isEmpty {
+                VStack {
                     HStack {
                         Spacer()
                         Text("No clubs followed")
@@ -217,18 +164,44 @@ struct StudentProfileView: View {
                             .padding()
                         Spacer()
                     }
-                } else {
+                }
+                .glassEffect(in: .rect(cornerRadius: 20))
+            } else {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     ForEach(followed) { club in
-                        clubRow(club: club)
-                        if club.id != followed.last?.id {
-                            Divider().padding(.leading, 56).opacity(0.5)
+                        NavigationLink(destination: ClubDetailView(club: club)) {
+                            clubGridItem(club: club)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
-            .glassEffect(in: .rect(cornerRadius: 20))
         }
     }
+    
+    private func clubGridItem(club: Club) -> some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                Image(club.logo)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .clipShape(Circle())
+            }
+            .frame(width: 32, height: 32)
+            
+            Text(club.name)
+                .font(.caption.bold())
+                .lineLimit(1)
+            
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .glassEffect(in: .rect(cornerRadius: 16))
+    }
+
     
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: 16) {

@@ -34,16 +34,19 @@ struct ManageParticipantsView: View {
                     ForEach(ParticipantFilterRole.allCases) { role in
                         let isSelected = selectedRole == role
                         Button {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 selectedRole = role
                             }
                         } label: {
                             Text(role.rawValue)
-                                .font(.footnote.bold())
-                                .padding(.horizontal, 16)
+                                .font(.footnote)
+                                .fontWeight(.medium)
+                                .padding(.horizontal, 18)
                                 .padding(.vertical, 8)
-                                .background(isSelected ? Color.orange : Color.orange.opacity(0.1))
-                                .foregroundStyle(isSelected ? .white : .orange)
+                                .frame(minWidth: 65)
+                                .background(isSelected ? Color.orange : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                                .foregroundStyle(isSelected ? .white : .primary)
+                                .glassEffect(in: .capsule)
                                 .clipShape(Capsule())
                         }
                         .buttonStyle(.plain)
@@ -62,8 +65,8 @@ struct ManageParticipantsView: View {
                             Image(systemName: "person.crop.circle.badge.exclamationmark")
                                 .font(.system(size: 44))
                                 .foregroundColor(.secondary.opacity(0.5))
-                            Text("No \(selectedRole.rawValue.lowercased()) found")
-                                .font(.subheadline)
+                            Text(selectedRole == .all ? "No participants have joined yet" : "No \(selectedRole.rawValue.lowercased()) have registered yet")
+                                .font(.subheadline.bold())
                                 .foregroundColor(.secondary)
                         }
                         .frame(maxWidth: .infinity)

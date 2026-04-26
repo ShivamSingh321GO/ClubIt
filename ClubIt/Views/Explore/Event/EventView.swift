@@ -9,7 +9,7 @@ import SwiftUI
 
 enum EventScope {
     case allEvents
-    case myEvents
+    case followed
 }
 
 enum EventFilterCategory: String, CaseIterable, Identifiable {
@@ -41,7 +41,7 @@ struct EventView: View {
         
         // Brief delay to simulate a real refresh
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 action()
                 isRefreshing = false
             }
@@ -67,8 +67,8 @@ struct EventView: View {
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 8)
                                     .frame(minWidth: 65)
-                                    .background(isSelected ? Color(.secondarySystemFill) : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
-                                    .foregroundStyle(.primary)
+                                    .background(isSelected ? Color.orange : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                                    .foregroundStyle(isSelected ? .white : .primary)
                                     .glassEffect(in: .capsule)
                                     .clipShape(Capsule())
                             }
@@ -90,17 +90,17 @@ struct EventView: View {
                 )
                 
                 VStack(spacing: -3) {
-                    Text("MY EVENTS")
+                    Text("CLUB\nFOLLOWED")
                         .multilineTextAlignment(.center)
                         .font(.system(size: 9, weight: .black))
                         .lineLimit(2)
-                        .foregroundStyle(scope == .myEvents ? .orange : .secondary)
+                        .foregroundStyle(scope == .followed ? .orange : .secondary)
                     
                     Toggle("", isOn: Binding(
-                        get: { scope == .myEvents },
+                        get: { scope == .followed },
                         set: { newValue in
                             triggerRefresh {
-                                scope = newValue ? .myEvents : .allEvents
+                                scope = newValue ? .followed : .allEvents
                             }
                         }
                     ))
@@ -182,8 +182,8 @@ struct EventView: View {
             switch scope {
             case .allEvents:
                 matchesScope = true
-            case .myEvents:
-                matchesScope = isMyEvent(event)
+            case .followed:
+                matchesScope = appSession.clubStore.followedClubIds.contains(event.clubId)
             }
             
             let matchesCategory: Bool

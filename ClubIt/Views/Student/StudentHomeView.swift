@@ -140,19 +140,15 @@ struct StudentHomeView: View {
             action()
         } label: {
             Text(title)
-                .font(.subheadline)
+                .font(.footnote)
                 .fontWeight(.medium)
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 14)
+                .padding(.horizontal, 18)
                 .padding(.vertical, 8)
-                .background(
-                    Capsule()
-                        .fill(isSelected ? Color(.secondarySystemBackground) : Color(.systemBackground))
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(Color(.separator), lineWidth: 1)
-                )
+                .frame(minWidth: 65)
+                .background(isSelected ? Color.orange : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                .foregroundStyle(isSelected ? .white : .primary)
+                .glassEffect(in: .capsule)
+                .clipShape(Capsule())
         }
         .buttonStyle(.plain)
     }
