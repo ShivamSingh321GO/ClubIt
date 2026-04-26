@@ -23,6 +23,7 @@ struct ClubCard: View {
                 // Club Logo
                 ZStack {
                     Circle()
+                        .fill(.ultraThinMaterial)
                     
                     Image(club.logo)
                         .resizable()
@@ -36,43 +37,25 @@ struct ClubCard: View {
                         .font(.headline)
                         .fontWeight(.bold)
                     
-                    HStack(spacing: 8) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "person.2.fill")
-                                .font(.caption2)
-                            Text("\(club.memberCount) Members")
-                                .font(.caption2)
-                        }
-                        
-                        Circle()
-                            .fill(.secondary.opacity(0.5))
-                            .frame(width: 3, height: 3)
-                        
-                        Text(club.category.rawValue.capitalized)
+                    HStack(spacing: 4) {
+                        Image(systemName: "person.2.fill")
                             .font(.caption2)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.blue)
+                        Text("\(club.memberCount) Members")
+                            .font(.caption2)
                     }
                     .foregroundStyle(.secondary)
                 }
                 
                 Spacer()
                 
-                // Follow Button
-                Button {
-                    appSession.clubStore.toggleFollow(for: club.id)
-                } label: {
-                    Text(isFollowing ? "Following" : "Follow")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(.plain)
-                .glassEffect(in: .capsule)
-                .scaleEffect(isFollowing ? 0.98 : 1)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isFollowing)
-                .foregroundStyle(isFollowing ? .blue : .primary)
+                // Top Right Category Badge
+                Text(club.category.rawValue.capitalized)
+                    .font(.system(size: 10, weight: .bold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.blue.opacity(0.1))
+                    .foregroundStyle(.blue)
+                    .clipShape(Capsule())
             }
             
             VStack(alignment: .leading, spacing: 6) {
@@ -89,8 +72,8 @@ struct ClubCard: View {
         .padding(14)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 120, alignment: .topLeading)
+        .contentShape(Rectangle()) // Makes the entire area tappable
         .glassEffect(in: .rect(cornerRadius: 20))
-        
     }
 }
 
