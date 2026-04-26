@@ -63,11 +63,10 @@ struct ClubProfileBody: View {
                         }
                     } label: {
                         Image(systemName: isAboutExpanded ? "chevron.up" : "chevron.down")
-                            .font(.headline.bold())
-                            .foregroundColor(.orange)
-                            .padding(12)
-                            .background(Color.white.opacity(0.05))
-                            .clipShape(Circle())
+                            .font(.headline)
+                            .bold()
+                            .padding()
+                            .glassEffect(in: .circle)
                     }
                 }
                 
@@ -82,7 +81,7 @@ struct ClubProfileBody: View {
                             .foregroundColor(.secondary)
                             .lineSpacing(4)
                         
-                        HStack(spacing: 16) {
+                        HStack(spacing: 20) {
                             NavigationLink(destination: ClubMemberListView(club: club)) {
                                 StatBadge(
                                     icon: "person.2.fill",
@@ -92,6 +91,7 @@ struct ClubProfileBody: View {
                                 )
                             }
                             .buttonStyle(.plain)
+                            Spacer()
                             
                             NavigationLink(destination: AchievementsListView()) {
                                 StatBadge(
@@ -167,11 +167,12 @@ struct ClubProfileBody: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         Text("Activities")
-                            .font(.title2.bold())
                         NavigationLink(destination: ActivityListView()) {
                             Image(systemName: "chevron.right")
                         }
                     }
+                    .font(.title2)
+                    .bold()
                     .padding(.horizontal, 16)
                     
                     VStack(spacing: 12) {
@@ -182,15 +183,14 @@ struct ClubProfileBody: View {
                                 .foregroundColor(.secondary)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(Color.white.opacity(0.05))
-                                .cornerRadius(20)
+                                .glassEffect(in: .rect(cornerRadius: 20))
                                 .padding(.horizontal, 16)
                         } else {
                             ForEach(activities) { activity in
                                 ActivityCard(activity: activity) { tappedActivity in
                                     selectedActivity = tappedActivity
                                 }
-                                .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
                             }
                         }
                     }
@@ -202,9 +202,10 @@ struct ClubProfileBody: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         Text("Media")
-                            .font(.title2.bold())
                         Spacer()
                     }
+                    .font(.title2)
+                    .bold()
                     .padding(.horizontal, 16)
                     
                     HStack(spacing: 16) {
@@ -227,7 +228,7 @@ struct ClubProfileBody: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 12)
                 }
             }
         }
