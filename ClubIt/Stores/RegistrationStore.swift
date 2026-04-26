@@ -6,23 +6,7 @@ final class RegistrationStore {
     var registrations: [IndividualRegistration] = []
     
     init() {
-        // Create mock registrations for all sample events
-        let allEvents = MockData.sampleEvents
-        let sampleUsers = MockData.allMockUsers.filter { $0.role == .clubMember || $0.role == .student || $0.role == .clubLead }
-        
-        for event in allEvents {
-            // Pick a random subset of users for each event
-            let participants = sampleUsers.shuffled().prefix(Int.random(in: 3...allRegistrationsCount(for: event)))
-            
-            for user in participants {
-                registrations.append(IndividualRegistration(
-                    eventId: event.id,
-                    userId: user.id,
-                    status: .confirmed,
-                    registeredAt: Date().addingTimeInterval(-Double.random(in: 3600...172800))
-                ))
-            }
-        }
+        // Start with empty registrations for testing
     }
     
     private func allRegistrationsCount(for event: Event) -> Int {
@@ -36,6 +20,19 @@ final class RegistrationStore {
     
     func getRegistrations(for eventId: UUID) -> [IndividualRegistration] {
         registrations.filter { $0.eventId == eventId }
+    }
+    
+    func toggleRegistration(eventId: UUID, userId: UUID) {
+        if let index = registrations.firstIndex(where: { $0.eventId == eventId && $0.userId == userId }) {
+            registrations.remove(at: index)
+        } else {
+            registrations.append(IndividualRegistration(
+                eventId: eventId,
+                userId: userId,
+                status: .confirmed,
+                registeredAt: Date()
+            ))
+        }
     }
     
     func updateStatus(registrationId: UUID, status: RegistrationStatus) {

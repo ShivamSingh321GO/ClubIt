@@ -22,13 +22,9 @@ struct ManageParticipantsView: View {
             // Filter Header
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Participants")
-                            .font(.title2.bold())
-                        Text("\(allRegistrations.count) Total Registered")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text("\(allRegistrations.count) Total Registered")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.secondary)
                     
                     Spacer()
                 }
@@ -90,6 +86,7 @@ struct ManageParticipantsView: View {
                 .padding(.bottom, 20)
             }
         }
+        .navigationTitle("Participants")
         .navigationBarTitleDisplayMode(.inline)
     }
     

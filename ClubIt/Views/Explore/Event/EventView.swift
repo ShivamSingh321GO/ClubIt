@@ -204,7 +204,13 @@ struct EventView: View {
                 matchesCategory = event.category == .sports
             }
             
-            return matchesScope && matchesCategory
+            let matchesStatus: Bool = {
+                if isMyEvent(event) { return true }
+                if appSession.currentRole == .faculty { return true }
+                return event.status == .published || event.status == .ongoing || event.status == .completed
+            }()
+            
+            return matchesScope && matchesCategory && matchesStatus
         }
     }
     
