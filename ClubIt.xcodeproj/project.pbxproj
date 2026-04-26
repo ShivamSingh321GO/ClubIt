@@ -6,6 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B30BF7A32F9E1DAB00B9730A /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7A22F9E1DAB00B9730A /* Auth */; };
+		B30BF7A52F9E1DAB00B9730A /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7A42F9E1DAB00B9730A /* Functions */; };
+		B30BF7A72F9E1DAB00B9730A /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7A62F9E1DAB00B9730A /* PostgREST */; };
+		B30BF7A92F9E1DAB00B9730A /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7A82F9E1DAB00B9730A /* Realtime */; };
+		B30BF7AB2F9E1DAB00B9730A /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7AA2F9E1DAB00B9730A /* Storage */; };
+		B30BF7AD2F9E1DAB00B9730A /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7AC2F9E1DAB00B9730A /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B3C35E912F9A30AC00D86333 /* ClubIt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClubIt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +32,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B30BF7A72F9E1DAB00B9730A /* PostgREST in Frameworks */,
+				B30BF7A52F9E1DAB00B9730A /* Functions in Frameworks */,
+				B30BF7AD2F9E1DAB00B9730A /* Supabase in Frameworks */,
+				B30BF7A32F9E1DAB00B9730A /* Auth in Frameworks */,
+				B30BF7AB2F9E1DAB00B9730A /* Storage in Frameworks */,
+				B30BF7A92F9E1DAB00B9730A /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +80,12 @@
 			);
 			name = ClubIt;
 			packageProductDependencies = (
+				B30BF7A22F9E1DAB00B9730A /* Auth */,
+				B30BF7A42F9E1DAB00B9730A /* Functions */,
+				B30BF7A62F9E1DAB00B9730A /* PostgREST */,
+				B30BF7A82F9E1DAB00B9730A /* Realtime */,
+				B30BF7AA2F9E1DAB00B9730A /* Storage */,
+				B30BF7AC2F9E1DAB00B9730A /* Supabase */,
 			);
 			productName = ClubIt;
 			productReference = B3C35E912F9A30AC00D86333 /* ClubIt.app */;
@@ -94,6 +115,9 @@
 			);
 			mainGroup = B3C35E882F9A30AC00D86333;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B3C35E922F9A30AC00D86333 /* Products */;
 			projectDirPath = "";
@@ -332,6 +356,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B30BF7A22F9E1DAB00B9730A /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		B30BF7A42F9E1DAB00B9730A /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		B30BF7A62F9E1DAB00B9730A /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		B30BF7A82F9E1DAB00B9730A /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		B30BF7AA2F9E1DAB00B9730A /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		B30BF7AC2F9E1DAB00B9730A /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B3C35E892F9A30AC00D86333 /* Project object */;
 }
