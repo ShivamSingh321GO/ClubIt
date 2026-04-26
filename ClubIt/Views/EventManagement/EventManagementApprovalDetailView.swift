@@ -97,6 +97,7 @@ struct EventManagementApprovalDetailView: View {
                 if let resource = resourceToApprove {
                     withAnimation {
                         appSession.approvalStore.updateResourceStatus(id: resource.id, status: .approved)
+                        appSession.checkAndAutoApproveEvent(eventId: event.id)
                     }
                 }
             }
@@ -112,6 +113,7 @@ struct EventManagementApprovalDetailView: View {
                 if let approval = venueToApprove {
                     withAnimation {
                         appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                        appSession.checkAndAutoApproveEvent(eventId: event.id)
                     }
                 }
             }
@@ -279,7 +281,6 @@ struct EventManagementApprovalDetailView: View {
                 onApprove: { resource in
                     resourceToApprove = resource
                     showingResourceApprovalAlert = true
-                    appSession.checkAndAutoApproveEvent(eventId: event.id)
                 }
             )
         }
@@ -295,7 +296,6 @@ struct EventManagementApprovalDetailView: View {
             onApprove: { approval in
                 venueToApprove = approval
                 showingVenueApprovalAlert = true
-                appSession.checkAndAutoApproveEvent(eventId: event.id)
             }
         )
     }

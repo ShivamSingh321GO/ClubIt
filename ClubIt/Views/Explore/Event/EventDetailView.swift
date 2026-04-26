@@ -361,9 +361,16 @@ struct EventDetailView: View {
                     Text("Registrations")
                         .font(.headline)
                     
-                    Text("\(event.status == .upcoming ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) Registered / \(event.maxParticipants) total")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Group {
+                        Text("\(event.status == .upcoming ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) Registered / ")
+                        + Text("\(event.maxParticipants)")
+                            .font(.subheadline)
+                            .bold()
+                            .foregroundColor(.primary)
+                        + Text(" total")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 }
                 
                 Spacer()
@@ -394,49 +401,7 @@ struct EventDetailView: View {
                     }
                 }
             }
-            
-            if event.status != .upcoming {
-                // Avatar Stack (Face Pile)
-                HStack(spacing: -12) {
-                    // Show up to 5 avatars
-                    let previewRegistrations = registrations.prefix(5)
-                    ForEach(Array(previewRegistrations.enumerated()), id: \.element.id) { index, reg in
-                        if let user = appSession.clubStore.allUsers.first(where: { $0.id == reg.userId }) {
-                            Circle()
-                                .fill(Color.orange.gradient.opacity(0.2))
-                                .frame(width: 32, height: 32)
-                                .overlay(
-                                    Text(String(user.name.prefix(1)))
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(.orange)
-                                )
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color(.systemBackground), lineWidth: 2)
-                                )
-                                .zIndex(Double(5 - index))
-                        }
-                    }
-                    
-                    if registrations.count > 5 {
-                        Circle()
-                            .fill(Color.secondary.opacity(0.1))
-                            .frame(width: 32, height: 32)
-                            .overlay(
-                                Text("+\(registrations.count - 5)")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.secondary)
-                            )
-                            .overlay(
-                                Circle()
-                                    .stroke(Color(.systemBackground), lineWidth: 2)
-                            )
-                            .zIndex(0)
-                    }
-                    
-                }
-                .padding(.leading, 52)
-            } else {
+            if event.status == .upcoming {
                 HStack(spacing: 8) {
                     Image(systemName: "info.circle")
                         .font(.caption)

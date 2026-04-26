@@ -144,9 +144,9 @@ final class AppSession {
         let allVenues = approvalStore.approvals.filter { $0.eventId == eventId && $0.type == .venue }
         let allBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
         
-        let isFullyApproved = !allResources.isEmpty && allResources.allSatisfy { $0.status == .approved } &&
-                             !allVenues.isEmpty && allVenues.allSatisfy { $0.status == .approved } &&
-                             !allBudgets.isEmpty && allBudgets.allSatisfy { $0.status == .approved }
+        let isFullyApproved = allResources.allSatisfy { $0.status == .approved } &&
+                             allVenues.allSatisfy { $0.status == .approved } &&
+                             allBudgets.allSatisfy { $0.status == .approved }
         
         if isFullyApproved {
             if let eventApproval = approvalStore.approvals.first(where: { $0.eventId == eventId && $0.type == .event && $0.status == .pending }) {
