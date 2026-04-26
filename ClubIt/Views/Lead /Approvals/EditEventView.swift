@@ -25,7 +25,6 @@ struct EditEventView: View {
     @State private var endDate: Date
     
     @State private var venue: String
-    @State private var volunteers: String
     @State private var participants: String
     
     @State private var isShowingAddBudgetItems = false
@@ -48,18 +47,12 @@ struct EditEventView: View {
         _startDate = State(initialValue: event.startDate)
         _endDate = State(initialValue: event.endDate)
         _venue = State(initialValue: event.location)
-        _volunteers = State(initialValue: "\(event.numberOfVolunteers)")
         _participants = State(initialValue: "\(event.maxParticipants)")
         _imageData = State(initialValue: event.imageData)
         _customFormFields = State(initialValue: event.registrationForm ?? [])
     }
     
-    private let venues = [
-        "C-Block Auditorium",
-        "Main Library",
-        "Sports Complex",
-        "Online"
-    ]
+    // Venues are now fetched from VenueStore
     
     var body: some View {
         Form {
@@ -168,9 +161,29 @@ struct EditEventView: View {
             }
             
             Section {
+                let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
+                let conflictingEvents = appSession.eventStore.events.filter { e in
+                    e.id != event.id && // Don't check against self
+                    e.status != .cancelled && 
+                    e.status != .completed && 
+                    e.status != .pastEvent &&
+                    (startDate < e.endDate) && (e.startDate < endDate)
+                }
+                
                 Picker("Location", selection: $venue) {
-                    ForEach(venues, id: \.self) { v in
-                        Text(v).tag(v)
+                    ForEach(sortedVenues) { v in
+                        let isBooked = conflictingEvents.contains { $0.location == v.name }
+                        HStack {
+                            Text(v.name)
+                            if isBooked {
+                                Spacer()
+                                Text("Unavailable")
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                        .tag(v.name)
+                        .disabled(isBooked)
                     }
                 }
                 .pickerStyle(.menu)
@@ -244,9 +257,6 @@ struct EditEventView: View {
             }
 
             Section {
-                TextField("Number of Volunteers", text: $volunteers)
-                    .keyboardType(.numberPad)
-                
                 TextField("Expected Participants", text: $participants)
                     .keyboardType(.numberPad)
             } header: {
@@ -260,7 +270,21 @@ struct EditEventView: View {
                 }
             }
             
-
+            Section {
+                let isVenueBooked = appSession.eventStore.events.contains { e in
+                    e.id != event.id && 
+                    e.status != .cancelled && e.status != .completed && e.status != .pastEvent &&
+                    e.location == venue &&
+                    (startDate < e.endDate) && (e.startDate < endDate)
+                }
+                
+                if isVenueBooked {
+                    Text("Selected venue is unavailable for this time slot")
+                        .font(.caption2)
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
         }
         .onAppear {
             loadExistingItems()
@@ -272,12 +296,21 @@ struct EditEventView: View {
                 Button("Cancel") { dismiss() }
             }
             ToolbarItem(placement: .topBarTrailing) {
+                let isVenueBooked = appSession.eventStore.events.contains { e in
+                    e.id != event.id && // Don't check against self
+                    e.status != .cancelled && e.status != .completed && e.status != .pastEvent &&
+                    e.location == venue &&
+                    (startDate < e.endDate) && (e.startDate < endDate)
+                }
+
                 Button("Update") {
                     updateEvent()
                 }
                 .fontWeight(.bold)
+                .disabled(isVenueBooked)
             }
         }
+
         .sheet(isPresented: $isShowingAddBudgetItems) {
             NavigationStack {
                 AddBudgetItemView(initialItems: budgetItems) { items in
@@ -339,7 +372,7 @@ struct EditEventView: View {
         updatedEvent.startDate = startDate
         updatedEvent.endDate = endDate
         updatedEvent.location = venue
-        updatedEvent.numberOfVolunteers = Int(volunteers) ?? 0
+        updatedEvent.numberOfVolunteers = 0
         updatedEvent.maxParticipants = Int(participants) ?? 0
         updatedEvent.imageData = imageData
         updatedEvent.registrationForm = customFormFields

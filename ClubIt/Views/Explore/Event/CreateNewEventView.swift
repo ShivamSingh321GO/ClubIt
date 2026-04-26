@@ -33,8 +33,7 @@ struct CreateNewEventView: View {
     @State private var startDate = Date()
     @State private var endDate = Date().addingTimeInterval(3600)
     
-    @State private var venue = "C-Block Auditorium"
-    @State private var volunteers = ""
+    @State private var venue = "New Auditorium"
     @State private var participants = ""
     
     @State private var isShowingAddBudgetItems = false
@@ -47,12 +46,7 @@ struct CreateNewEventView: View {
 
 
     
-    private let venues = [
-        "C-Block Auditorium",
-        "Main Library",
-        "Sports Complex",
-        "Online"
-    ]
+    // Venues are now fetched from VenueStore
     
     var body: some View {
         Form {
@@ -157,19 +151,36 @@ struct CreateNewEventView: View {
             }
             
             Section {
-                DatePicker("Starts", selection: $startDate)
+                DatePicker("Starts", selection: $startDate, in: Date()...)
                 DatePicker("Ends", selection: $endDate, in: startDate...)
             } header: {
                 Text("Date & Time")
             }
             
             Section {
+                let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
+                let conflictingEvents = appSession.eventStore.events.filter { event in
+                    guard event.status != .cancelled && event.status != .completed && event.status != .pastEvent else { return false }
+                    return (startDate < event.endDate) && (event.startDate < endDate)
+                }
+                
                 Picker("Location", selection: $venue) {
-                    ForEach(venues, id: \.self) { v in
-                        Text(v).tag(v)
+                    ForEach(sortedVenues) { v in
+                        let isBooked = conflictingEvents.contains { $0.location == v.name }
+                        HStack {
+                            Text(v.name)
+                            if isBooked {
+                                Spacer()
+                                Text("Unavailable")
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                        .tag(v.name)
+                        .disabled(isBooked)
                     }
                 }
-                .pickerStyle(.menu)
+                .pickerStyle(.navigationLink)
             } header: {
                 Text("Venue")
             }
@@ -241,9 +252,6 @@ struct CreateNewEventView: View {
             }
 
             Section {
-                TextField("Number of Volunteers", text: $volunteers)
-                    .keyboardType(.numberPad)
-                
                 TextField("Expected Participants", text: $participants)
                     .keyboardType(.numberPad)
             } header: {
@@ -255,10 +263,17 @@ struct CreateNewEventView: View {
                 Section {
                     Text(errorMessage)
                         .foregroundStyle(.red)
+                        .font(.caption)
                 }
             }
             
             Section {
+                let isVenueBooked = appSession.eventStore.events.contains { e in
+                    e.status != .cancelled && e.status != .completed && e.status != .pastEvent &&
+                    e.location == venue &&
+                    (startDate < e.endDate) && (e.startDate < endDate)
+                }
+                
                 Button {
                     saveEvent()
                 } label: {
@@ -269,8 +284,17 @@ struct CreateNewEventView: View {
                         .padding(.vertical, 8)
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(isVenueBooked)
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
+                
+                if isVenueBooked {
+                    Text("Selected venue is unavailable for this time slot")
+                        .font(.caption2)
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .listRowBackground(Color.clear)
+                }
             }
         }
         .navigationTitle("Create an Event")
@@ -331,7 +355,7 @@ struct CreateNewEventView: View {
             endDate: endDate,
             startTime: startDate,
             endTime: endDate,
-            numberOfVolunteers: Int(volunteers) ?? 0,
+            numberOfVolunteers: 0,
             numberOfRegistrations: 0,
             maxParticipants: Int(participants) ?? 0,
             registrationType: registrationType,
