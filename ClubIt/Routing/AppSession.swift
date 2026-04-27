@@ -56,8 +56,8 @@ final class AppSession {
         
         self.clubAchievementStore = AchievementStore(clubId: clubStore.club.id)
         self.announcementStore = AnnouncementStore()
-        self.clubLinkStore = ClubLinkStore(clubId: clubStore.club.id)
-        self.clubFileStore = ClubFileStore(clubId: clubStore.club.id)
+        self.clubLinkStore = ClubLinkStore()
+        self.clubFileStore = ClubFileStore()
         self.clubImageStore = ClubImageStore(clubId: clubStore.club.id)
         self.studentDashboardStore = StudentDashboardStore(clubStore: clubStore, eventStore: eventStore)
         self.chatStore = ChatStore()
@@ -127,6 +127,8 @@ final class AppSession {
             do {
                 try await clubStore.fetchClubDetails(id: clubId)
                 try await activityStore.fetchActivities(clubId: clubId)
+                try await clubFileStore.fetchFiles(clubId: clubId)
+                try await clubLinkStore.fetchLinks(clubId: clubId)
                 print("DEBUG: User Specific Data Fetched")
             } catch {
                 print("DEBUG ERROR: User Specific Fetch Failed: \(error)")

@@ -32,8 +32,8 @@ struct ClubLinksView: View {
                                 .contextMenu {
                                     if appSession.currentRole == .clubLead {
                                         Button(role: .destructive) {
-                                            withAnimation {
-                                                appSession.clubLinkStore.deleteLink(link)
+                                            Task {
+                                                try? await appSession.clubLinkStore.deleteLink(link)
                                             }
                                         } label: {
                                             Label("Delete Link", systemImage: "trash")
@@ -60,15 +60,14 @@ struct ClubLinksView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            AddClubLinkView { name, url in
-                let newLink = ClubLink(id: UUID(), 
-                    clubId: appSession.clubStore.club.id,
-                    name: name,
-                    url: url,
-                    uploadedBy: appSession.currentUser?.name ?? "Lead",
-                    date: Date().formatted(date: .abbreviated, time: .omitted)
-                )
-                appSession.clubLinkStore.addLink(newLink)
+            AddClubLinkView { newLink in
+                var link = newLink
+                link.clubId = appSession.clubStore.club.id
+                link.uploadedBy = appSession.currentUser?.name ?? "Lead"
+                
+                Task {
+                    try? await appSession.clubLinkStore.addLink(link)
+                }
             }
             .presentationDetents([.medium, .large])
         }
@@ -100,7 +99,7 @@ struct LinkCard: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     
-                    Text(link.date)
+                    Text(link.createdAt.formatted(date: .abbreviated, time: .omitted))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -108,12 +107,21 @@ struct LinkCard: View {
             }
             
             HStack {
-                // URL Label
-                Text(link.url)
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
-                    .lineLimit(2)
-                    .padding(.trailing, 20)
+                // URL Label (Clickable)
+                if let url = verifiedURL {
+                    Link(destination: url) {
+                        Text(link.url)
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                    }
+                } else {
+                    Text(link.url)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
                 
                 Spacer()
                 
@@ -133,6 +141,15 @@ struct LinkCard: View {
         }
         .padding()
         .glassEffect(in: .rect(cornerRadius: 20))
+    }
+    
+    private var verifiedURL: URL? {
+        let trimmed = link.url.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        if trimmed.lowercased().hasPrefix("http://") || trimmed.lowercased().hasPrefix("https://") {
+            return URL(string: trimmed)
+        }
+        return URL(string: "https://\(trimmed)")
     }
     
     private func copyToClipboard() {

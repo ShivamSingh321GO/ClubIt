@@ -1,25 +1,43 @@
 import Foundation
 import Observation
+import Supabase
 
 @Observable
 final class ClubFileStore {
+    private var client: SupabaseClient { SupabaseManager.shared.client }
     var files: [ClubFile] = []
     
-    init(clubId: UUID? = nil) {
-        let mockClubId = clubId ?? UUID()
-        // Mock data
-        files = [
-            ClubFile(id: UUID(), clubId: mockClubId, name: "Event_TechSummit.doc", size: "2.4 MB", uploadedBy: "Atharv Shetty", date: "Nov 28, 2024"),
-            ClubFile(id: UUID(), clubId: mockClubId, name: "Budget_Sheet_Q1.xlsx", size: "1.2 MB", uploadedBy: "Shivam Singh", date: "Dec 05, 2024"),
-            ClubFile(id: UUID(), clubId: mockClubId, name: "Marketing_Plan.pdf", size: "4.8 MB", uploadedBy: "Kamakshi Gupta", date: "Jan 12, 2025")
-        ]
+    init() {}
+    
+    @MainActor
+    func fetchFiles(clubId: UUID) async throws {
+        self.files = try await client
+            .from("club_files")
+            .select()
+            .eq("club_id", value: clubId)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
     }
     
-    func addFile(_ file: ClubFile) {
-        files.insert(file, at: 0)
+    @MainActor
+    func addFile(_ file: ClubFile) async throws {
+        try await client
+            .from("club_files")
+            .insert(file)
+            .execute()
+        
+        try await fetchFiles(clubId: file.clubId)
     }
     
-    func deleteFile(_ file: ClubFile) {
-        files.removeAll { $0.id == file.id }
+    @MainActor
+    func deleteFile(_ file: ClubFile) async throws {
+        try await client
+            .from("club_files")
+            .delete()
+            .eq("id", value: file.id)
+            .execute()
+        
+        try await fetchFiles(clubId: file.clubId)
     }
 }

@@ -13,14 +13,15 @@ struct StatBadge: View {
                 .foregroundColor(color)
                 .frame(width: 32)
 
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .center, spacing: 0) {
                 Text(count)
                     .font(.title3.bold())
                     .foregroundColor(.primary)
                 Text(label)
                     .font(.caption2)
                     .foregroundColor(.secondary)
-                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
         }
         .padding(.horizontal, 12)

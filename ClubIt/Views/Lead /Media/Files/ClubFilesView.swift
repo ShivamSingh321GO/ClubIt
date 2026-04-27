@@ -27,8 +27,8 @@ struct ClubFilesView: View {
                                 .contextMenu {
                                     if appSession.currentRole == .clubLead {
                                         Button(role: .destructive) {
-                                            withAnimation {
-                                                appSession.clubFileStore.deleteFile(file)
+                                            Task {
+                                                try? await appSession.clubFileStore.deleteFile(file)
                                             }
                                         } label: {
                                             Label("Delete File", systemImage: "trash")
@@ -59,7 +59,9 @@ struct ClubFilesView: View {
                 var file = newFile
                 file.clubId = appSession.clubStore.club.id
                 file.uploadedBy = appSession.currentUser?.name ?? "Lead"
-                appSession.clubFileStore.addFile(file)
+                Task {
+                    try? await appSession.clubFileStore.addFile(file)
+                }
             }
         }
     }
@@ -74,7 +76,7 @@ struct FileCard: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.orange.opacity(0.1))
                     .frame(width: 50, height: 50)
-                Image(systemName: fileIcon(for: file.name))
+                Image(systemName: fileIcon(for: file))
                     .font(.title3)
                     .foregroundColor(.orange)
             }
@@ -94,7 +96,7 @@ struct FileCard: View {
                 .foregroundColor(.secondary)
                 .lineLimit(1)
                 
-                Text(file.date)
+                Text(file.createdAt.formatted(date: .abbreviated, time: .omitted))
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
@@ -117,8 +119,12 @@ struct FileCard: View {
         .glassEffect(in: .rect(cornerRadius: 20))
     }
     
-    private func fileIcon(for filename: String) -> String {
+    private func fileIcon(for file: ClubFile) -> String {
+        let source = file.fileURL ?? file.name
+        // Use URL to get the actual filename from the path
+        let filename = URL(string: source)?.lastPathComponent ?? source
         let ext = filename.lowercased().split(separator: ".").last ?? ""
+        
         switch ext {
         case "pdf": return "richtext.page.fill"
         case "doc", "docx": return "text.document.fill"

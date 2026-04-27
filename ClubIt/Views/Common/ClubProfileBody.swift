@@ -80,7 +80,7 @@ struct ClubProfileBody: View {
                             .foregroundColor(.secondary)
                             .lineSpacing(4)
                         
-                        HStack(spacing: 20) {
+                        HStack(spacing: 12) {
                             NavigationLink(destination: ClubMemberListView(club: club)) {
                                 StatBadge(
                                     icon: "person.2.fill",

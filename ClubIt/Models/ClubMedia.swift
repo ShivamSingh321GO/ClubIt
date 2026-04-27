@@ -28,20 +28,35 @@ struct ClubImage: Identifiable, Codable {
 
 // for media part
 struct ClubFile: Identifiable, Codable {
-    var id: UUID
+    var id: UUID = UUID()
     var clubId: UUID
     var name: String
     var size: String
     var uploadedBy: String
-    var date: String
-    var fileURL: URL?
+    var fileURL: String?
+    var createdAt: Date = Date()
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, size
+        case clubId = "club_id"
+        case uploadedBy = "uploaded_by"
+        case fileURL = "file_url"
+        case createdAt = "created_at"
+    }
 }
 
 struct ClubLink: Identifiable, Codable {
-    var id: UUID
+    var id: UUID = UUID()
     var clubId: UUID
     var name: String
     var url: String
     var uploadedBy: String
-    var date: String
+    var createdAt: Date = Date()
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, url
+        case clubId = "club_id"
+        case uploadedBy = "uploaded_by"
+        case createdAt = "created_at"
+    }
 }

@@ -139,8 +139,8 @@ struct AddClubFileView: View {
             name: trimmedName,
             size: fileSize,
             uploadedBy: "Lead",
-            date: Date().formatted(date: .abbreviated, time: .omitted),
-            fileURL: url
+            fileURL: url.absoluteString,
+            createdAt: Date()
         )
         
         onSave(newFile)

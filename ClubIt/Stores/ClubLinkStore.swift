@@ -1,25 +1,43 @@
 import Foundation
 import Observation
+import Supabase
 
 @Observable
 final class ClubLinkStore {
+    private var client: SupabaseClient { SupabaseManager.shared.client }
     var links: [ClubLink] = []
     
-    init(clubId: UUID? = nil) {
-        let mockClubId = clubId ?? UUID()
-        // Mock data
-        links = [
-            ClubLink(id: UUID(), clubId: mockClubId, name: "Event_TechSummit", url: "https://drive.google.com/drive/folders/1DemoFolderID", uploadedBy: "Atharv Shetty", date: "Nov 28, 2024"),
-            ClubLink(id: UUID(), clubId: mockClubId, name: "Registration_Form", url: "https://forms.gle/xyz789", uploadedBy: "Shivam Singh", date: "Dec 10, 2024"),
-            ClubLink(id: UUID(), clubId: mockClubId, name: "Design_Assets", url: "https://figma.com/file/etc", uploadedBy: "Kamakshi Gupta", date: "Jan 05, 2025")
-        ]
+    init() {}
+    
+    @MainActor
+    func fetchLinks(clubId: UUID) async throws {
+        self.links = try await client
+            .from("club_links")
+            .select()
+            .eq("club_id", value: clubId)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
     }
     
-    func addLink(_ link: ClubLink) {
-        links.insert(link, at: 0)
+    @MainActor
+    func addLink(_ link: ClubLink) async throws {
+        try await client
+            .from("club_links")
+            .insert(link)
+            .execute()
+        
+        try await fetchLinks(clubId: link.clubId)
     }
     
-    func deleteLink(_ link: ClubLink) {
-        links.removeAll { $0.id == link.id }
+    @MainActor
+    func deleteLink(_ link: ClubLink) async throws {
+        try await client
+            .from("club_links")
+            .delete()
+            .eq("id", value: link.id)
+            .execute()
+        
+        try await fetchLinks(clubId: link.clubId)
     }
 }

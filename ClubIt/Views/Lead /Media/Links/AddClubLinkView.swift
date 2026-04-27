@@ -7,7 +7,7 @@ struct AddClubLinkView: View {
     @State private var url = ""
     @State private var errorMessage: String?
     
-    var onSave: (String, String) -> Void
+    var onSave: (ClubLink) -> Void
     
     var body: some View {
         NavigationStack {
@@ -73,11 +73,20 @@ struct AddClubLinkView: View {
             return
         }
         
-        onSave(trimmedName, trimmedUrl)
+        let newLink = ClubLink(
+            id: UUID(),
+            clubId: UUID(), // Placeholder, updated by caller
+            name: trimmedName,
+            url: trimmedUrl,
+            uploadedBy: "Lead",
+            createdAt: Date()
+        )
+        
+        onSave(newLink)
         dismiss()
     }
 }
 
 #Preview {
-    AddClubLinkView { _, _ in }
+    AddClubLinkView { _ in }
 }

@@ -79,14 +79,32 @@ private struct AnnouncementCard: View {
                 .fixedSize(horizontal: false, vertical: true)
             
             if !announcement.url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text(announcement.url)
-                    .font(.callout)
-                    .foregroundStyle(.blue)
-                    .lineLimit(1)
+                if let url = verifiedURL {
+                    Link(destination: url) {
+                        Text(announcement.url)
+                            .font(.callout)
+                            .foregroundStyle(.blue)
+                            .lineLimit(1)
+                    }
+                } else {
+                    Text(announcement.url)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
         }
         .padding()
         .glassEffect(in: .rect(cornerRadius: 20))
+    }
+    
+    private var verifiedURL: URL? {
+        let trimmed = announcement.url.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        if trimmed.lowercased().hasPrefix("http://") || trimmed.lowercased().hasPrefix("https://") {
+            return URL(string: trimmed)
+        }
+        return URL(string: "https://\(trimmed)")
     }
     
     private func relativeTimeText(from date: Date) -> String {
