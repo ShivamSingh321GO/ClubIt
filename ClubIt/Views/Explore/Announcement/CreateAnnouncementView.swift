@@ -13,7 +13,7 @@ struct CreateAnnouncementView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSession.self) private var appSession
     
-    let onSave: (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ clubId: UUID) -> Void
+    let onSave: (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ clubId: UUID?) -> Void
     
     @State private var title = ""
     @State private var content = ""
@@ -91,7 +91,7 @@ struct CreateAnnouncementView: View {
             trimmedContent,
             trimmedURL,
             currentUser.id,
-            currentUser.clubId ?? UUID()
+            currentUser.clubId
         )
         
         dismiss()

@@ -42,7 +42,7 @@ struct ExploreView: View {
                         Group {
                             switch selectedTab {
                             case .announcement:
-                                AnnouncementView(announcements: appSession.globalAnnouncementStore.announcements)
+                                AnnouncementView(announcements: appSession.announcementStore.announcements)
                             case .events:
                                 EventView(scope: $scope, eventStore: appSession.eventStore)
                             }
@@ -91,13 +91,15 @@ struct ExploreView: View {
             }
             .sheet(isPresented: $showCreateAnnouncementSheet) {
                 CreateAnnouncementView { title, content, url, postedBy, clubId in
-                    appSession.globalAnnouncementStore.addAnnouncement(
-                        title: title,
-                        content: content,
-                        url: url,
-                        postedBy: postedBy,
-                        clubId: clubId
-                    )
+                    Task {
+                        try? await appSession.announcementStore.addAnnouncement(
+                            title: title,
+                            content: content,
+                            url: url,
+                            postedBy: postedBy,
+                            clubId: clubId
+                        )
+                    }
                 }
             }
         }

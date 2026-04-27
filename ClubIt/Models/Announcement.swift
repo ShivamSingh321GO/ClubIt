@@ -8,19 +8,24 @@
 import Foundation
 
 
-enum AnnouncementTarget: String, Codable {
-    case global
-    case club
-}
-
 struct Announcement: Identifiable, Codable {
     var id: UUID
-    var clubId: UUID
+    var clubId: UUID?
     var date: Date
     var title: String
     var content: String
     var url: String
     var postedBy: UUID
-    var target: AnnouncementTarget
     var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case clubId = "club_id"
+        case date
+        case title
+        case content
+        case url
+        case postedBy = "posted_by"
+        case createdAt = "created_at"
+    }
 }

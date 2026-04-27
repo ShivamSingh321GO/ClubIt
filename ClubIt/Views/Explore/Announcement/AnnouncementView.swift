@@ -54,8 +54,13 @@ private struct AnnouncementCard: View {
                         .fontWeight(.semibold)
                         .lineLimit(1)
                     
-                    if let club = appSession.clubStore.allClubs.first(where: { $0.id == announcement.clubId }) {
+                    if let clubId = announcement.clubId,
+                       let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
                         Text(club.name)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    } else {
+                        Text("Event Management Team")
                             .font(.caption)
                             .fontWeight(.semibold)
                     }
@@ -112,7 +117,6 @@ private struct AnnouncementCard: View {
                 content: "This is a sample announcement.",
                 url: "https://example.com",
                 postedBy: UUID(),
-                target: .club,
                 createdAt: Date()
             )
         ]

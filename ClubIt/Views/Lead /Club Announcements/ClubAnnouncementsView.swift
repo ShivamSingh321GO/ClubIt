@@ -12,7 +12,7 @@ struct ClubAnnouncementsView: View {
     @State private var showCreateSheet = false
     
     var body: some View {
-        let clubAnnouncements = appSession.clubAnnouncementStore.announcements
+        let clubAnnouncements = appSession.announcementStore.announcements
             .filter { $0.clubId == appSession.clubStore.club.id }
         
         Group {
@@ -31,8 +31,8 @@ struct ClubAnnouncementsView: View {
                                 .contextMenu {
                                     if appSession.currentRole == .clubLead {
                                         Button(role: .destructive) {
-                                            withAnimation {
-                                                appSession.clubAnnouncementStore.deleteAnnouncement(announcement)
+                                            Task {
+                                                try? await appSession.announcementStore.deleteAnnouncement(announcement)
                                             }
                                         } label: {
                                             Label("Delete", systemImage: "trash")
@@ -63,16 +63,15 @@ struct ClubAnnouncementsView: View {
         }
         .sheet(isPresented: $showCreateSheet) {
             CreateClubAnnouncementView { title, content, url in
-                let newAnnouncement = Announcement(id: UUID(), clubId: appSession.clubStore.club.id,
-                    date: Date(),
-                    title: title,
-                    content: content,
-                    url: url,
-                    postedBy: appSession.currentUser?.id ?? UUID(),
-                    target: .club,
-                    createdAt: Date()
-                )
-                appSession.clubAnnouncementStore.addAnnouncement(newAnnouncement)
+                Task {
+                    try? await appSession.announcementStore.addAnnouncement(
+                        title: title,
+                        content: content,
+                        url: url,
+                        postedBy: appSession.currentUser?.id ?? UUID(),
+                        clubId: appSession.clubStore.club.id
+                    )
+                }
             }
         }
     }

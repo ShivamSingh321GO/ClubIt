@@ -75,7 +75,7 @@ struct MockData {
         ]
         
         let announcements = [
-            Announcement(id: UUID(), clubId: clubId, date: Date(), title: "Tech Summit 2024", content: "Registration for our annual Tech Summit is now open.", url: "https://technojam.com/summit", postedBy: leadId, target: .club, createdAt: Date().addingTimeInterval(-7200))
+            Announcement(id: UUID(), clubId: clubId, date: Date(), title: "Tech Summit 2024", content: "Registration for our annual Tech Summit is now open.", url: "https://technojam.com/summit", postedBy: leadId, createdAt: Date().addingTimeInterval(-7200))
         ]
         
         return MockClubBundle(club: club, users: users, events: events, announcements: announcements)

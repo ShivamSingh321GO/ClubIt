@@ -12,16 +12,19 @@ struct AddTaskView: View {
         var id: String { self.rawValue }
     }
     
+    // State properties
     @State private var assignmentType: AssignmentType = .myself
     @State private var selectedOtherClubId: UUID? = nil
     @State private var selectedMemberId: UUID? = nil
     @State private var selectedClubLeadId: UUID? = nil
     @State private var title: String = ""
     @State private var description: String = ""
-
     @State private var priority: TaskPriority = .low
     @State private var deadline: Date = Date()
     @State private var selectedEventId: UUID? = nil
+    
+    // Track initialization to avoid infinite loops
+    @State private var isFirstAppear = true
     
     private var clubMembers: [User] {
         guard let clubId = appSession.currentUser?.clubId else { return [] }
@@ -31,30 +34,6 @@ struct AddTaskView: View {
     private var availableClubLeads: [User] {
         guard let clubId = selectedOtherClubId else { return [] }
         return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
-    }
-    
-    init(initialTask: Tasks? = nil) {
-        self.initialTask = initialTask
-        if let task = initialTask {
-            _title = State(initialValue: task.title)
-            _description = State(initialValue: task.description)
-
-            _priority = State(initialValue: task.priority)
-            _deadline = State(initialValue: task.deadline)
-            _selectedEventId = State(initialValue: task.eventId)
-            
-            // Map back assignment type
-            if let targetId = task.targetClubId {
-                _assignmentType = State(initialValue: .club)
-                _selectedOtherClubId = State(initialValue: targetId)
-                _selectedClubLeadId = State(initialValue: task.assignedTo)
-            } else if task.assignedToRole == .clubMember {
-                _assignmentType = State(initialValue: .clubMember)
-                _selectedMemberId = State(initialValue: task.assignedTo)
-            } else {
-                _assignmentType = State(initialValue: .myself)
-            }
-        }
     }
     
     var body: some View {
@@ -76,17 +55,14 @@ struct AddTaskView: View {
                 }
                 
                 Section("Event Context") {
+                    // Using .menu style for better response in sheets
                     Picker("Related Event", selection: $selectedEventId) {
                         Text("None / General Task").tag(UUID?.none)
-                        
-                        let activeEvents = appSession.eventStore.events.filter { 
-                            $0.status == .upcoming || $0.status == .ongoing 
-                        }
-                        
-                        ForEach(activeEvents) { event in
+                        ForEach(appSession.eventStore.events) { event in
                             Text(event.name).tag(UUID?.some(event.id))
                         }
                     }
+                    .pickerStyle(.menu)
                 }
                 
                 Section("Assignment") {
@@ -106,12 +82,10 @@ struct AddTaskView: View {
                                 }
                             }
                         }
-                        .onChange(of: selectedOtherClubId) { oldId, newId in
-                            if let newId = newId,
-                               let club = appSession.clubStore.allClubs.first(where: { $0.id == newId }) {
-                                selectedClubLeadId = club.clubLeadId
-                            } else {
-                                selectedClubLeadId = nil
+                        .pickerStyle(.menu)
+                        .onChange(of: selectedOtherClubId) { _, newValue in
+                            if let clubId = newValue {
+                                selectedClubLeadId = appSession.clubStore.allClubs.first(where: { $0.id == clubId })?.clubLeadId
                             }
                         }
                         
@@ -122,6 +96,7 @@ struct AddTaskView: View {
                                     Text(lead.name).tag(UUID?.some(lead.id))
                                 }
                             }
+                            .pickerStyle(.menu)
                         }
                     }
                     
@@ -132,48 +107,68 @@ struct AddTaskView: View {
                                 Text(member.name).tag(UUID?.some(member.id))
                             }
                         }
+                        .pickerStyle(.menu)
                     }
                 }
                 
                 Section("Priority & Schedule") {
                     Picker("Priority", selection: $priority) {
-                        ForEach(TaskPriority.allCases, id: \.self) { priority in
-                            Text(priority.rawValue.capitalized).tag(priority)
+                        ForEach(TaskPriority.allCases, id: \.self) { p in
+                            Text(p.rawValue.capitalized).tag(p)
                         }
                     }
+                    .pickerStyle(.menu)
                     
                     DatePicker("Deadline", selection: $deadline)
-                        
                 }
             }
             .navigationTitle(initialTask == nil ? "Add Task" : "Edit Task")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                if isFirstAppear {
+                    loadTaskData()
+                    isFirstAppear = false
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
+                    Button { dismiss() } label: { Image(systemName: "xmark") }
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        saveTask()
-                    } label: {
-                        Image(systemName: "checkmark")
-                    }
-                    .disabled(title.isEmpty || (assignmentType == .club && (selectedOtherClubId == nil || selectedClubLeadId == nil)) || (assignmentType == .clubMember && selectedMemberId == nil))
+                    Button { saveTask() } label: { Image(systemName: "checkmark") }
+                    .disabled(title.isEmpty)
                 }
             }
+        }
+    }
+    
+    private func loadTaskData() {
+        guard let task = initialTask else { return }
+        
+        title = task.title
+        description = task.description
+        priority = task.priority
+        deadline = task.deadline
+        selectedEventId = task.eventId
+        
+        if let targetId = task.targetClubId {
+            assignmentType = .club
+            selectedOtherClubId = targetId
+            selectedClubLeadId = task.assignedTo
+        } else if task.assignedToRole == .clubMember {
+            assignmentType = .clubMember
+            selectedMemberId = task.assignedTo
+        } else {
+            assignmentType = .myself
         }
     }
     
     private func saveTask() {
         guard let currentUser = appSession.currentUser else { return }
         
-        var assignedToId: UUID = currentUser.id
-        var assignedToRole: AppRole = currentUser.role
+        var assignedToId = currentUser.id
+        var assignedToRole = currentUser.role
         var targetClubId: UUID? = nil
         
         switch assignmentType {
@@ -186,23 +181,22 @@ struct AddTaskView: View {
                 assignedToRole = .clubMember
             }
         case .club:
-            if let clubId = selectedOtherClubId,
-               let leadId = selectedClubLeadId {
+            if let clubId = selectedOtherClubId, let leadId = selectedClubLeadId {
                 assignedToId = leadId
                 assignedToRole = .clubLead
                 targetClubId = clubId
             }
         }
         
-        let newTask = Tasks(
+        let taskToSave = Tasks(
             id: initialTask?.id ?? UUID(),
             clubId: currentUser.clubId ?? UUID(),
             targetClubId: targetClubId,
             eventId: selectedEventId,
             title: title,
             description: description,
-            assignedBy: currentUser.id,
-            assignedByRole: currentUser.role,
+            assignedBy: initialTask?.assignedBy ?? currentUser.id,
+            assignedByRole: initialTask?.assignedByRole ?? currentUser.role,
             assignedTo: assignedToId,
             assignedToRole: assignedToRole,
             deadline: deadline,
@@ -214,9 +208,9 @@ struct AddTaskView: View {
         Task {
             do {
                 if initialTask != nil {
-                    try await appSession.taskStore.editTask(newTask)
+                    try await appSession.taskStore.editTask(taskToSave)
                 } else {
-                    try await appSession.taskStore.addTask(newTask)
+                    try await appSession.taskStore.addTask(taskToSave)
                 }
                 dismiss()
             } catch {
@@ -224,11 +218,4 @@ struct AddTaskView: View {
             }
         }
     }
-}
-
-#Preview {
-    let session = AppSession()
-    session.currentRole = .clubLead
-    return AddTaskView()
-        .environment(session)
 }

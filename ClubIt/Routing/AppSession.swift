@@ -19,8 +19,7 @@ final class AppSession {
     var activeExploreTab: Int = 0
     
     var clubAchievementStore: AchievementStore
-    var clubAnnouncementStore: ClubAnnouncementStore
-    var globalAnnouncementStore: AnnouncementStore
+    var announcementStore: AnnouncementStore
     var clubLinkStore: ClubLinkStore
     var clubFileStore: ClubFileStore
     var clubImageStore: ClubImageStore
@@ -55,8 +54,7 @@ final class AppSession {
         self.venueStore = VenueStore()
         
         self.clubAchievementStore = AchievementStore(clubId: clubStore.club.id)
-        self.clubAnnouncementStore = ClubAnnouncementStore()
-        self.globalAnnouncementStore = AnnouncementStore()
+        self.announcementStore = AnnouncementStore()
         self.clubLinkStore = ClubLinkStore(clubId: clubStore.club.id)
         self.clubFileStore = ClubFileStore(clubId: clubStore.club.id)
         self.clubImageStore = ClubImageStore(clubId: clubStore.club.id)
@@ -115,7 +113,15 @@ final class AppSession {
             print("DEBUG ERROR: Tasks Fetch Failed: \(error)")
         }
         
-        // 5. User Specific Data
+        // 5. Fetch Announcements
+        do {
+            try await announcementStore.fetchAnnouncements()
+            print("DEBUG: Announcements Fetched Successfully")
+        } catch {
+            print("DEBUG ERROR: Announcements Fetch Failed: \(error)")
+        }
+        
+        // 6. User Specific Data
         if let clubId = currentUser?.clubId {
             do {
                 try await clubStore.fetchClubDetails(id: clubId)
