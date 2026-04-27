@@ -81,9 +81,15 @@ struct TasksListView: View {
                             ForEach(Array(filteredTasks.enumerated()), id: \.element.id) { (index, task) in
                                 TaskRowView(task: task, now: appSession.currentTime)
                             }
-                            }
                         }
-                        .padding(.horizontal)
+                    }
+                    .padding(.horizontal)
+                    .refreshable {
+                        do {
+                            try await appSession.taskStore.fetchTasks()
+                        } catch {
+                            print("DEBUG ERROR: Refresh tasks failed: \(error)")
+                        }
                     }
                 }
             }
@@ -107,7 +113,7 @@ struct TasksListView: View {
             .navigationTitle("Tasks")
             .navigationBarTitleDisplayMode(.inline)
         }
-    
+    }
 }
 
 // MARK: - Subcomponents

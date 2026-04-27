@@ -25,12 +25,12 @@ struct AddTaskView: View {
     
     private var clubMembers: [User] {
         guard let clubId = appSession.currentUser?.clubId else { return [] }
-        return MockData.allMockUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
     }
     
     private var availableClubLeads: [User] {
         guard let clubId = selectedOtherClubId else { return [] }
-        return MockData.allMockUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
     }
     
     init(initialTask: Tasks? = nil) {
@@ -100,7 +100,7 @@ struct AddTaskView: View {
                     if assignmentType == .club {
                         Picker("Select Club", selection: $selectedOtherClubId) {
                             Text("Select a club").tag(UUID?.none)
-                            ForEach(MockData.allClubs) { club in
+                            ForEach(appSession.clubStore.allClubs) { club in
                                 if club.id != appSession.currentUser?.clubId {
                                     Text(club.name).tag(UUID?.some(club.id))
                                 }
@@ -108,7 +108,7 @@ struct AddTaskView: View {
                         }
                         .onChange(of: selectedOtherClubId) { oldId, newId in
                             if let newId = newId,
-                               let club = MockData.allClubs.first(where: { $0.id == newId }) {
+                               let club = appSession.clubStore.allClubs.first(where: { $0.id == newId }) {
                                 selectedClubLeadId = club.clubLeadId
                             } else {
                                 selectedClubLeadId = nil
@@ -194,35 +194,35 @@ struct AddTaskView: View {
             }
         }
         
-        if let task = initialTask {
-            appSession.taskStore.editTask(
-                id: task.id,
-                title: title,
-                description: description,
-                clubId: currentUser.clubId ?? UUID(),
-                targetClubId: targetClubId,
-                eventId: selectedEventId,
-                assignedTo: assignedToId,
-                assignedToRole: assignedToRole,
-                priority: priority,
-                deadline: deadline
-            )
-        } else {
-            appSession.taskStore.addTask(
-                title: title,
-                description: description,
-                clubId: currentUser.clubId ?? UUID(),
-                targetClubId: targetClubId,
-                eventId: selectedEventId,
-                assignedBy: currentUser.id,
-                assignedByRole: currentUser.role,
-                assignedTo: assignedToId,
-                assignedToRole: assignedToRole,
-                priority: priority,
-                deadline: deadline
-            )
+        let newTask = Tasks(
+            id: initialTask?.id ?? UUID(),
+            clubId: currentUser.clubId ?? UUID(),
+            targetClubId: targetClubId,
+            eventId: selectedEventId,
+            title: title,
+            description: description,
+            assignedBy: currentUser.id,
+            assignedByRole: currentUser.role,
+            assignedTo: assignedToId,
+            assignedToRole: assignedToRole,
+            deadline: deadline,
+            priority: priority,
+            status: initialTask?.status ?? .pending,
+            createdAt: initialTask?.createdAt ?? Date()
+        )
+        
+        Task {
+            do {
+                if initialTask != nil {
+                    try await appSession.taskStore.editTask(newTask)
+                } else {
+                    try await appSession.taskStore.addTask(newTask)
+                }
+                dismiss()
+            } catch {
+                print("DEBUG ERROR: Save task failed: \(error)")
+            }
         }
-        dismiss()
     }
 }
 

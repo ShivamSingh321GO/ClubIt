@@ -11,17 +11,17 @@ struct TaskDetailView: View {
     @State private var showDeleteAlert = false
     
     private var assignerName: String {
-        MockData.allMockUsers.first(where: { $0.id == task.assignedBy })?.name ?? "Unknown"
+        appSession.clubStore.allUsers.first(where: { $0.id == task.assignedBy })?.name ?? "Unknown"
     }
     
     private var assigneeName: String {
         if task.assignedTo == appSession.currentUser?.id { return "You" }
-        return MockData.allMockUsers.first(where: { $0.id == task.assignedTo })?.name ?? "Unknown"
+        return appSession.clubStore.allUsers.first(where: { $0.id == task.assignedTo })?.name ?? "Unknown"
     }
     
     private var delegatedName: String? {
         guard let id = task.delegatedToId else { return nil }
-        return MockData.allMockUsers.first(where: { $0.id == id })?.name
+        return appSession.clubStore.allUsers.first(where: { $0.id == id })?.name
     }
     
     private var associatedEvent: Event? {
@@ -180,8 +180,10 @@ struct TaskDetailView: View {
                     // Mark as Complete Button
                     if (task.assignedTo == appSession.currentUser?.id || task.delegatedToId == appSession.currentUser?.id) && task.status != .completed {
                         Button {
-                            appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
-                            dismiss()
+                            Task {
+                                try? await appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
+                                dismiss()
+                            }
                         } label: {
                             Text("Mark as Complete")
                                 .font(.headline)
@@ -204,8 +206,10 @@ struct TaskDetailView: View {
                     dismiss()
                 }
                 Button("Delete", role: .destructive) {
-                    appSession.taskStore.deleteTask(id: task.id)
-                    dismiss()
+                    Task {
+                        try? await appSession.taskStore.deleteTask(id: task.id)
+                        dismiss()
+                    }
                 }
             }, message: {
                 Text("Are you sure you want to delete this task? This action cannot be undone.")

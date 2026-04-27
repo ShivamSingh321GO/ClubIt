@@ -105,7 +105,15 @@ final class AppSession {
             print("DEBUG ERROR: Events Fetch Failed: \(error)")
         }
         
-        // 4. User Specific Data
+        // 4. Fetch Tasks
+        do {
+            try await taskStore.fetchTasks()
+            print("DEBUG: Tasks Fetched Successfully")
+        } catch {
+            print("DEBUG ERROR: Tasks Fetch Failed: \(error)")
+        }
+        
+        // 5. User Specific Data
         if let clubId = currentUser?.clubId {
             do {
                 try await clubStore.fetchClubDetails(id: clubId)

@@ -37,6 +37,7 @@ struct Tasks: Identifiable, Codable {
     var priority: TaskPriority
     var status: TaskStatus
     var createdAt: Date
+    var updatedAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -54,6 +55,7 @@ struct Tasks: Identifiable, Codable {
         case priority
         case status
         case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
 }
 

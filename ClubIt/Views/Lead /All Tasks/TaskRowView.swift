@@ -16,7 +16,7 @@ struct TaskRowView: View {
     }
     
     private var assignerName: String {
-        let user = MockData.allMockUsers.first(where: { $0.id == task.assignedBy })
+        let user = appSession.clubStore.allUsers.first(where: { $0.id == task.assignedBy })
         return user?.name ?? "Unknown"
     }
     
@@ -24,17 +24,17 @@ struct TaskRowView: View {
         if task.assignedTo == appSession.currentUser?.id {
             return "You"
         }
-        let user = MockData.allMockUsers.first(where: { $0.id == task.assignedTo })
+        let user = appSession.clubStore.allUsers.first(where: { $0.id == task.assignedTo })
         return user?.name ?? "Unknown"
     }
     
     private var targetClubName: String? {
         guard let targetId = task.targetClubId else { return nil }
-        return MockData.allClubs.first(where: { $0.id == targetId })?.name
+        return appSession.clubStore.allClubs.first(where: { $0.id == targetId })?.name
     }
     
     private var assignmentInfo: String {
-        if let delegatedId = task.delegatedToId, let delegatedName = MockData.allMockUsers.first(where: { $0.id == delegatedId })?.name {
+        if let delegatedId = task.delegatedToId, let delegatedName = appSession.clubStore.allUsers.first(where: { $0.id == delegatedId })?.name {
             // Flow: Assigner -> Delegate (hiding the middleman as requested)
             return "\(assignerName) → \(delegatedName)"
         } else if task.assignedTo == task.assignedBy {

@@ -10,11 +10,11 @@ struct DelegateTaskView: View {
     var clubMembers: [User] {
         if appSession.currentRole == .president {
             // President delegates to Club Leads
-            return MockData.allMockUsers.filter { $0.role == .clubLead }
+            return appSession.clubStore.allUsers.filter { $0.role == .clubLead }
         } else {
             // Club Lead delegates to Members in their club
             guard let clubId = appSession.currentUser?.clubId else { return [] }
-            return MockData.allMockUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
+            return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
         }
     }
     
@@ -66,10 +66,15 @@ struct DelegateTaskView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        if let memberId = selectedMemberId,
-                           let member = clubMembers.first(where: { $0.id == memberId }) {
-                            appSession.taskStore.delegateTask(taskId: task.id, memberId: memberId)
-                            dismiss()
+                        if let memberId = selectedMemberId {
+                            Task {
+                                do {
+                                    try await appSession.taskStore.delegateTask(taskId: task.id, memberId: memberId)
+                                    dismiss()
+                                } catch {
+                                    print("DEBUG ERROR: Delegate task failed: \(error)")
+                                }
+                            }
                         }
                     } label: {
                         Image(systemName: "checkmark")
