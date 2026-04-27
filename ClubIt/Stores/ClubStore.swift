@@ -61,7 +61,25 @@ final class ClubStore {
             .value
     }
     
-    func updateClub(name: String, tagLine: String, description: String, category: ClubCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) {
+    @MainActor
+    func updateClub(name: String, tagLine: String, description: String, category: ClubCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) async throws {
+        // 1. Update Supabase
+        let updateData: [String: AnyJSON] = [
+            "name": .string(name),
+            "tag_line": .string(tagLine),
+            "description": .string(description),
+            "category": .string(category.rawValue),
+            "socials": .object(socials.mapValues { .string($0) }),
+            "logo": .string(logo)
+        ]
+        
+        try await client
+            .from("clubs")
+            .update(updateData)
+            .eq("id", value: club.id)
+            .execute()
+            
+        // 2. Update local state
         club.name = name
         club.tagLine = tagLine
         club.description = description
@@ -71,6 +89,9 @@ final class ClubStore {
         club.socials = socials
         club.logo = logo
         club.imageData = imageData
+        
+        // 3. Refresh global list
+        try? await fetchAllClubs()
     }
     
     func toggleFollow(for clubId: UUID) {

@@ -163,18 +163,24 @@ struct EditClubDetailView: View {
         if !whatsapp.isEmpty { updatedSocials["whatsapp"] = whatsapp }
         if !discord.isEmpty { updatedSocials["discord"] = discord }
         
-        appSession.clubStore.updateClub(
-            name: name,
-            tagLine: tagLine,
-            description: description,
-            category: category,
-            memberCount: memberCount,
-            eventCount: eventCount,
-            socials: updatedSocials,
-            logo: logo,
-            imageData: imageData
-        )
-        dismiss()
+        Task {
+            do {
+                try await appSession.clubStore.updateClub(
+                    name: name,
+                    tagLine: tagLine,
+                    description: description,
+                    category: category,
+                    memberCount: memberCount,
+                    eventCount: eventCount,
+                    socials: updatedSocials,
+                    logo: logo,
+                    imageData: imageData
+                )
+                dismiss()
+            } catch {
+                print("DEBUG ERROR: Failed to update club: \(error)")
+            }
+        }
     }
 }
 

@@ -16,11 +16,11 @@ enum ClubStatus: String, Codable {
 
 enum ClubCategory: String, Codable, CaseIterable {
     case technical = "Technical"
-    case cultural = "Cultural"
-    case sports = "Sports"
-    case music = "Music"
-    case dance = "Dance"
-    case photography = "Photography"
+    case cultural = "Cultural"//
+    case sports = "Sports" 
+    case music = "Music"//
+    case dance = "Dance"//
+    case photography = "Photography"//
     case literary = "Literary"
     case entrepreneurship = "Entrepreneurship"
     case ai = "AI"
