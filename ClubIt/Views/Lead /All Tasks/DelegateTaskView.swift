@@ -8,7 +8,7 @@ struct DelegateTaskView: View {
     @State private var selectedMemberId: UUID? = nil
     
     var clubMembers: [User] {
-        if appSession.currentRole == .president {
+        if appSession.currentRole ?? .clubMember == .president {
             // President delegates to Club Leads
             return appSession.clubStore.allUsers.filter { $0.role == .clubLead }
         } else {
@@ -19,7 +19,7 @@ struct DelegateTaskView: View {
     }
     
     var delegationTargetTitle: String {
-        appSession.currentRole == .president ? "Select Lead to Delegate" : "Select Member to Delegate"
+        appSession.currentRole ?? .clubMember == .president ? "Select Lead to Delegate" : "Select Member to Delegate"
     }
     
     var body: some View {

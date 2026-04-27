@@ -94,7 +94,7 @@ struct TasksListView: View {
                 }
             }
             .toolbar {
-                if appSession.currentRole == .clubLead {
+                if appSession.currentRole ?? .clubMember == .clubLead {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             showingAddTaskForm = true
@@ -112,6 +112,11 @@ struct TasksListView: View {
             }
             .navigationTitle("Tasks")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(item: Bindable(appSession).selectedTask) { task in
+                TaskDetailView(task: task)
+                    .presentationDragIndicator(.visible)
+                    .presentationDetents([.large])
+            }
         }
     }
 }

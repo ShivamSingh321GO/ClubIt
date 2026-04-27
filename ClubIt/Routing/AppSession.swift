@@ -36,6 +36,8 @@ final class AppSession {
     
     var registeredEventIds: Set<UUID> = []
     var favouritedEventIds: Set<UUID> = []
+    
+    var selectedTask: Tasks? = nil
 
     var currentTime: Date = Date()
     private var timer: Timer?

@@ -181,9 +181,14 @@ struct TaskDetailView: View {
                     if (task.assignedTo == appSession.currentUser?.id || task.delegatedToId == appSession.currentUser?.id) && task.status != .completed {
                         Button {
                             Task {
-                                try? await appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
+                            do {
+                                try await appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
+                                appSession.selectedTask = nil
                                 dismiss()
+                            } catch {
+                                print("DEBUG ERROR: Status update failed: \(error)")
                             }
+                        }
                         } label: {
                             Text("Mark as Complete")
                                 .font(.headline)
@@ -203,12 +208,17 @@ struct TaskDetailView: View {
             }
             .alert("Delete Task", isPresented: $showDeleteAlert, actions: {
                 Button("Cancel", role: .cancel) {
-                    dismiss()
+                    // Do nothing, just close the alert
                 }
                 Button("Delete", role: .destructive) {
                     Task {
-                        try? await appSession.taskStore.deleteTask(id: task.id)
-                        dismiss()
+                        do {
+                            try await appSession.taskStore.deleteTask(id: task.id)
+                            appSession.selectedTask = nil
+                            dismiss()
+                        } catch {
+                            print("DEBUG ERROR: Deletion failed: \(error)")
+                        }
                     }
                 }
             }, message: {

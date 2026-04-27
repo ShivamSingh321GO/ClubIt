@@ -117,13 +117,29 @@ struct TaskRowView: View {
         .padding()
         .contentShape(Rectangle())
         .onTapGesture {
-            showingTaskDetail = true
+            appSession.selectedTask = task
         }
         .glassEffect(in: .rect(cornerRadius: 20))
-        .sheet(isPresented: $showingTaskDetail) {
-            TaskDetailView(task: task)
-                .presentationDragIndicator(.visible)
-                .presentationDetents([.large])
+        .contextMenu {
+            if task.assignedBy == appSession.currentUser?.id {
+                Button(role: .destructive) {
+                    Task {
+                        try? await appSession.taskStore.deleteTask(id: task.id)
+                    }
+                } label: {
+                    Label("Delete Task", systemImage: "trash")
+                }
+            }
+            
+            if task.status != .completed && (task.assignedTo == appSession.currentUser?.id || task.delegatedToId == appSession.currentUser?.id) {
+                Button {
+                    Task {
+                        try? await appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
+                    }
+                } label: {
+                    Label("Mark as Complete", systemImage: "checkmark.circle")
+                }
+            }
         }
     }
     

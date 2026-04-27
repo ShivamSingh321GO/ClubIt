@@ -77,6 +77,11 @@ struct LeadHomeView: View {
                 }
             }
         }
+        .sheet(item: Bindable(appSession).selectedTask) { task in
+            TaskDetailView(task: task)
+                .presentationDragIndicator(.visible)
+                .presentationDetents([.large])
+        }
     }
 }
 
