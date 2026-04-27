@@ -25,11 +25,28 @@ final class ActivityStore {
             .value
     }
     
-    func addActivity(_ activity: Activity) {
-        activities.insert(activity, at: 0)
+    @MainActor
+    func addActivity(_ activity: Activity) async throws {
+        // 1. Insert into Supabase
+        try await client
+            .from("activities")
+            .insert(activity)
+            .execute()
+        
+        // 2. Refresh local list
+        try await fetchActivities(clubId: activity.clubId)
     }
     
-    func deleteActivity(_ activity: Activity) {
-        activities.removeAll { $0.id == activity.id }
+    @MainActor
+    func deleteActivity(_ activity: Activity) async throws {
+        // 1. Delete from Supabase
+        try await client
+            .from("activities")
+            .delete()
+            .eq("id", value: activity.id)
+            .execute()
+        
+        // 2. Refresh local list
+        try await fetchActivities(clubId: activity.clubId)
     }
 }

@@ -34,6 +34,11 @@ struct LeadMyClubView: View {
                 }
             }
         }
+        .sheet(item: Bindable(appSession).selectedActivity) { activity in
+            ActivityDetailView(activity: activity)
+                .environment(appSession)
+                .presentationDetents([.large])
+        }
     }
 }
 

@@ -8,7 +8,6 @@ import SwiftUI
 struct ActivityListView: View {
     @Environment(AppSession.self) var appSession
     @State private var showingAddActivity = false
-    @State private var selectedActivity: Activity? = nil
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -19,13 +18,17 @@ struct ActivityListView: View {
                 } else {
                     ForEach(appSession.activityStore.activities) { activity in
                         ActivityCard(activity: activity) { tappedActivity in
-                            selectedActivity = tappedActivity
+                            appSession.selectedActivity = tappedActivity
                         }
                             .contextMenu {
                                 if appSession.currentRole == .clubLead {
                                     Button(role: .destructive) {
-                                        withAnimation {
-                                            appSession.activityStore.deleteActivity(activity)
+                                        Task {
+                                            do {
+                                                try await appSession.activityStore.deleteActivity(activity)
+                                            } catch {
+                                                print("DEBUG: Failed to delete activity: \(error.localizedDescription)")
+                                            }
                                         }
                                     } label: {
                                         Label("Delete", systemImage: "trash")
@@ -52,12 +55,6 @@ struct ActivityListView: View {
         }
         .sheet(isPresented: $showingAddActivity) {
             AddActivityFormView()
-        }
-        .sheet(item: $selectedActivity) { activity in
-            ActivityDetailView(activity: activity)
-                .environment(appSession)
-//                .presentationDragIndicator(.visible)
-                .presentationDetents([.large])
         }
     }
 }

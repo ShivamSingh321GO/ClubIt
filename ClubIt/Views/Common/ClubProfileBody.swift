@@ -13,7 +13,6 @@ struct ClubProfileBody: View {
     }
     
     @State private var isAboutExpanded: Bool = true
-    @State private var selectedActivity: Activity? = nil
     
     var body: some View {
         VStack(spacing: 24) {
@@ -188,7 +187,22 @@ struct ClubProfileBody: View {
                         } else {
                             ForEach(activities) { activity in
                                 ActivityCard(activity: activity) { tappedActivity in
-                                    selectedActivity = tappedActivity
+                                    appSession.selectedActivity = tappedActivity
+                                }
+                                .contextMenu {
+                                    if appSession.currentRole == .clubLead {
+                                        Button(role: .destructive) {
+                                            Task {
+                                                do {
+                                                    try await appSession.activityStore.deleteActivity(activity)
+                                                } catch {
+                                                    print("DEBUG: Failed to delete activity: \(error.localizedDescription)")
+                                                }
+                                            }
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
                                 }
                                 .padding(.bottom, 12)
                             }
@@ -231,11 +245,6 @@ struct ClubProfileBody: View {
                     .padding(.horizontal, 12)
                 }
             }
-        }
-        .sheet(item: $selectedActivity) { activity in
-            ActivityDetailView(activity: activity)
-                .environment(appSession)
-                .presentationDetents([.large])
         }
     }
 }

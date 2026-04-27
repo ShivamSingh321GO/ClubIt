@@ -72,10 +72,14 @@ struct AddActivityFormView: View {
             createdAt: Date()
         )
         
-        withAnimation {
-            appSession.activityStore.addActivity(newActivity)
+        Task {
+            do {
+                try await appSession.activityStore.addActivity(newActivity)
+                dismiss()
+            } catch {
+                print("DEBUG: Failed to add activity: \(error.localizedDescription)")
+            }
         }
-        dismiss()
     }
 }
 

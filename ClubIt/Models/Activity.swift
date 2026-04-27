@@ -27,7 +27,7 @@ enum ActivityType: String, Codable, CaseIterable {
         switch self {
         case .workshop: return .purple
         case .meeting: return .blue
-        case .announcement: return .orange
+        case .announcement: return .yellow
         case .competition: return .goldenBrown
         case .seminar: return .green
         }

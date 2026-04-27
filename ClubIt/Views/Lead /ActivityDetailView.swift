@@ -117,10 +117,15 @@ struct ActivityDetailView: View {
             }
             .alert("Delete Activity", isPresented: $showingDeleteAlert) {
                 Button("Delete", role: .destructive) {
-                    withAnimation {
-                        appSession.activityStore.deleteActivity(activity)
+                    Task {
+                        do {
+                            try await appSession.activityStore.deleteActivity(activity)
+                            appSession.selectedActivity = nil
+                            dismiss()
+                        } catch {
+                            print("DEBUG ERROR: Deletion failed: \(error.localizedDescription)")
+                        }
                     }
-                    dismiss()
                 }
                 Button("Cancel", role: .cancel) { }
             } message: {
