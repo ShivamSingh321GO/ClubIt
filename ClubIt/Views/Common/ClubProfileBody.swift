@@ -156,9 +156,7 @@ struct ClubProfileBody: View {
                 }
             }
             .padding(20)
-            .background(Color(white: 0.05).opacity(0.8))
-            .cornerRadius(24)
-            .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.1), lineWidth: 1))
+            .glassEffect(in: RoundedRectangle(cornerRadius: 20))
             .padding(.horizontal, 16)
             
             if showExtraSections {
