@@ -4,8 +4,20 @@ struct EventDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSession.self) private var appSession
     
-    let event: Event
+    let eventId: UUID
     let isMyEvent: Bool
+    
+    private let initialEvent: Event
+    
+    var event: Event {
+        appSession.eventStore.events.first(where: { $0.id == eventId }) ?? initialEvent
+    }
+    
+    init(event: Event, isMyEvent: Bool) {
+        self.initialEvent = event
+        self.eventId = event.id
+        self.isMyEvent = isMyEvent
+    }
     
     @State private var isShowingRegistrationForm = false
     @State private var isShowingPublishAlert = false
@@ -67,8 +79,13 @@ struct EventDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .alert("Ready to Go Live?", isPresented: $isShowingPublishAlert) {
             Button("Publish Now", role: .none) {
-                withAnimation(.spring()) {
-                    appSession.eventStore.updateEventStatus(id: event.id, status: .published)
+                Task {
+                    do {
+                        try await appSession.eventStore.updateEventStatus(id: event.id, status: .published)
+                        print("DEBUG: Event \(event.id) published successfully")
+                    } catch {
+                        print("ERROR: Failed to publish event: \(error)")
+                    }
                 }
             }
             Button("Not Yet", role: .cancel) {}
@@ -77,8 +94,8 @@ struct EventDetailView: View {
         }
         .alert("Confirm Registration", isPresented: $isShowingRegisterConfirmAlert) {
             Button("Register", role: .none) {
-                withAnimation {
-                    appSession.registerForEvent(id: event.id)
+                Task {
+                    await appSession.registerForEvent(id: event.id)
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -87,8 +104,8 @@ struct EventDetailView: View {
         }
         .alert("Withdraw Registration", isPresented: $isShowingWithdrawConfirmAlert) {
             Button("Withdraw", role: .destructive) {
-                withAnimation {
-                    appSession.registerForEvent(id: event.id)
+                Task {
+                    await appSession.registerForEvent(id: event.id)
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -127,7 +144,7 @@ struct EventDetailView: View {
                     HStack(spacing: 6) {
                         Image(systemName: categoryIcon)
                             .font(.system(size: 10, weight: .bold))
-                        Text(event.category.rawValue)
+                        Text(event.category.displayName)
                             .font(.caption.bold())
                     }
                     .padding(.horizontal, 12)
@@ -362,7 +379,7 @@ struct EventDetailView: View {
                         .font(.headline)
                     
                     Group {
-                        Text("\(event.status == .upcoming ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) Registered / ")
+                        Text("\(event.status == .approved ? 0 : (event.numberOfRegistrations ?? 0)) Registered / ")
                         + Text("\(event.maxParticipants)")
                             .font(.subheadline)
                             .bold()
@@ -375,7 +392,7 @@ struct EventDetailView: View {
                 
                 Spacer()
                 
-                if event.status != .upcoming {
+                if event.status != .approved {
                     if appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants {
                         Text("Sold Out")
                             .font(.system(size: 10, weight: .heavy))
@@ -401,7 +418,7 @@ struct EventDetailView: View {
                     }
                 }
             }
-            if event.status == .upcoming {
+            if event.status == .approved {
                 HStack(spacing: 8) {
                     Image(systemName: "info.circle")
                         .font(.caption)
@@ -429,7 +446,7 @@ struct EventDetailView: View {
                 .tint(.orange)
                 .disabled(true)
             } else if isMyEvent {
-                if event.status == .upcoming {
+                if event.status == .approved {
                     Button {
                         isShowingPublishAlert = true
                     } label: {

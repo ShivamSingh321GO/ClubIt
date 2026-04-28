@@ -17,10 +17,20 @@ enum RegistrationStatus: String, Codable {
 
 struct IndividualRegistration: Identifiable, Codable {
     var id: UUID
-    var eventId: UUID
-    var userId: UUID
-    var status: RegistrationStatus
-    var registeredAt: Date
+    var eventId: UUID?
+    var userId: UUID?
+    var status: RegistrationStatus?
+    var answers: [String: String]?
+    var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case eventId = "event_id"
+        case userId = "user_id"
+        case status
+        case answers
+        case createdAt = "created_at"
+    }
 }
 
 

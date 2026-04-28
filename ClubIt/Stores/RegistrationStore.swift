@@ -1,50 +1,67 @@
 import Foundation
 import Observation
+import Supabase
 
 @Observable
 final class RegistrationStore {
+    private var client: SupabaseClient { SupabaseManager.shared.client }
     var registrations: [IndividualRegistration] = []
     
-    init() {
-        // Start with empty registrations for testing
-    }
+    init() {}
     
-    private func allRegistrationsCount(for event: Event) -> Int {
-        // Just a helper to limit mock data
-        min(sampleUsersCount, 8)
-    }
-    
-    private var sampleUsersCount: Int {
-        MockData.allMockUsers.count
+    @MainActor
+    func fetchRegistrations() async throws {
+        self.registrations = try await client
+            .from("registrations")
+            .select()
+            .execute()
+            .value
     }
     
     func getRegistrations(for eventId: UUID) -> [IndividualRegistration] {
         registrations.filter { $0.eventId == eventId }
     }
     
-    func toggleRegistration(eventId: UUID, userId: UUID) {
+    @MainActor
+    func toggleRegistration(eventId: UUID, userId: UUID) async throws {
         if let index = registrations.firstIndex(where: { $0.eventId == eventId && $0.userId == userId }) {
+            let registrationId = registrations[index].id
+            try await client
+                .from("registrations")
+                .delete()
+                .eq("id", value: registrationId)
+                .execute()
+            
             registrations.remove(at: index)
         } else {
-            registrations.append(IndividualRegistration(id: UUID(), eventId: eventId,
+            let newRegistration = IndividualRegistration(
+                id: UUID(),
+                eventId: eventId,
                 userId: userId,
                 status: .confirmed,
-                registeredAt: Date()
-            ))
+                answers: [:],
+                createdAt: Date()
+            )
+            
+            try await client
+                .from("registrations")
+                .insert(newRegistration)
+                .execute()
+            
+            registrations.append(newRegistration)
         }
     }
     
-    func updateStatus(registrationId: UUID, status: RegistrationStatus) {
+    @MainActor
+    func updateStatus(registrationId: UUID, status: RegistrationStatus) async throws {
+        try await client
+            .from("registrations")
+            .update(["status": status.rawValue])
+            .eq("id", value: registrationId)
+            .execute()
+            
         if let index = registrations.firstIndex(where: { $0.id == registrationId }) {
             registrations[index].status = status
-        }
-    }
-    
-    func confirmAll(for eventId: UUID) {
-        for index in registrations.indices {
-            if registrations[index].eventId == eventId {
-                registrations[index].status = .confirmed
-            }
         }
     }
 }

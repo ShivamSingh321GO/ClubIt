@@ -209,6 +209,7 @@ struct ParticipantRow: View {
         case .confirmed: return .green
         case .pending: return .orange
         case .cancelled: return .red
+        case nil: return .gray
         }
     }
 }

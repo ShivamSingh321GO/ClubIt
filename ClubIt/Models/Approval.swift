@@ -27,6 +27,13 @@ struct Remark: Identifiable, Codable {
     var text: String
     var authorId: UUID
     var createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case text
+        case authorId = "author_id"
+        case createdAt = "created_at"
+    }
 }
 
 
@@ -34,11 +41,11 @@ struct Approval: Identifiable, Codable {
     var id: UUID
     
     var type: ApprovalType
-    var senderId: UUID
-    var receiverId: UUID
+    var senderId: UUID?
+    var receiverId: UUID?
     
-    var eventId: UUID
-    var approvalRelatedId: UUID     
+    var eventId: UUID?
+    var approvalRelatedId: UUID?     
     
     var status: ApprovalStatus
     var remarks: [Remark]
@@ -46,7 +53,20 @@ struct Approval: Identifiable, Codable {
     var createdAt: Date
     var updatedAt: Date?
 
-    init(id: UUID, type: ApprovalType, senderId: UUID, receiverId: UUID, eventId: UUID, approvalRelatedId: UUID, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, updatedAt: Date? = nil) {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case type
+        case senderId = "sender_id"
+        case receiverId = "receiver_id"
+        case eventId = "event_id"
+        case approvalRelatedId = "approval_related_id"
+        case status
+        case remarks
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+
+    init(id: UUID, type: ApprovalType, senderId: UUID?, receiverId: UUID?, eventId: UUID?, approvalRelatedId: UUID?, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, updatedAt: Date? = nil) {
         self.id = id
         self.type = type
         self.senderId = senderId
@@ -64,7 +84,7 @@ struct Approval: Identifiable, Codable {
 struct Budget: Identifiable, Codable {
     var id: UUID
     
-    var eventId: UUID
+    var eventId: UUID?
     
     var itemName: String
     var unitPrice: Double
@@ -75,13 +95,26 @@ struct Budget: Identifiable, Codable {
     }
     
     var status: ApprovalStatus
-    var addedBy: UUID
+    var addedBy: UUID?
     
     var remarks: [Remark]
     var createdAt: Date
     var approvedAt: Date?
 
-    init(id: UUID, eventId: UUID, itemName: String, unitPrice: Double, quantity: Int, status: ApprovalStatus, addedBy: UUID, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case eventId = "event_id"
+        case itemName = "item_name"
+        case unitPrice = "unit_price"
+        case quantity
+        case status
+        case addedBy = "added_by"
+        case remarks
+        case createdAt = "created_at"
+        case approvedAt = "approved_at"
+    }
+
+    init(id: UUID, eventId: UUID?, itemName: String, unitPrice: Double, quantity: Int, status: ApprovalStatus, addedBy: UUID?, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.itemName = itemName

@@ -110,7 +110,7 @@ struct FacultyExpandableClubRow: View {
                         Text(club.name)
                             .font(.body)
                             .bold()
-                        Text(club.category.rawValue)
+                        Text(club.category.displayName)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

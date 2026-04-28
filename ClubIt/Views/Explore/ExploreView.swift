@@ -64,9 +64,7 @@ struct ExploreView: View {
                                 }
                             } else {
                                 NavigationLink {
-                                    CreateNewEventView { event in
-                                        appSession.eventStore.addEvent(event)
-                                    }
+                                    CreateNewEventView { _ in }
                                 } label: {
                                     Image(systemName: "plus")
                                         .font(.title2.bold())

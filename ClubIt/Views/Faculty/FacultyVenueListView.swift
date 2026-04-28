@@ -179,7 +179,7 @@ struct VenueRow: View {
                                     .font(.subheadline)
                                     .bold()
                                 
-                                Text("\(slot.event.startTime, format: .dateTime.hour().minute()) - \(slot.event.endTime, format: .dateTime.hour().minute())")
+                                Text("\(slot.event.startTime ?? slot.event.startDate, format: .dateTime.hour().minute()) - \(slot.event.endTime ?? slot.event.endDate, format: .dateTime.hour().minute())")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }

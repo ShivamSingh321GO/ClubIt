@@ -8,29 +8,36 @@
 import Foundation
 
 enum RegistrationType: String, Codable {
-    case individual = "Individual Registration"
-    case team = "Team Registration"
+    case individual
+    case team
+    
+    var displayName: String {
+        switch self {
+        case .individual: return "Individual Registration"
+        case .team: return "Team Registration"
+        }
+    }
 }
 
 enum EventStatus: String, Codable {
-    case upcoming
-    case ongoing
-    case completed
-    case cancelled
     case pending
-    case pastEvent
+    case approved
     case published
 }
 
 enum EventCategory: String, CaseIterable, Codable {
-    case workshop = "Workshop"
-    case technical = "Technical"
-    case entertainment = "Entertainment"
-    case sports = "Sports"
-    case ai = "AI"
-    case wellness = "Wellness"
-    case literary = "Literary"
-    case entrepreneurship = "Entrepreneurship"
+    case workshop
+    case technical
+    case entertainment
+    case sports
+    case ai
+    case wellness
+    case literary
+    case entrepreneurship
+    
+    var displayName: String {
+        self.rawValue.capitalized
+    }
 }
 
 
@@ -58,8 +65,14 @@ struct RegistrationFormField: Identifiable, Hashable, Codable {
     var label: String = ""
     var type: FormFieldType = .text
     var options: [String]? // For multiple choice, checkbox, dropdown
-    var isRequired: Bool = true
-    var placeholder: String = ""
+    var isRequired: Bool? = true
+    var placeholder: String? = ""
+    
+    enum CodingKeys: String, CodingKey {
+        case id, label, type, options
+        case isRequired = "is_required"
+        case placeholder
+    }
 }
 
 struct Event: Identifiable, Hashable, Codable {
@@ -72,8 +85,8 @@ struct Event: Identifiable, Hashable, Codable {
     var startDate: Date
     var endDate: Date
     
-    var startTime: Date
-    var endTime: Date
+    var startTime: Date? = nil
+    var endTime: Date? = nil
     
     var numberOfVolunteers: Int
     var numberOfRegistrations: Int?
@@ -90,7 +103,7 @@ struct Event: Identifiable, Hashable, Codable {
     
     var registrationDeadline: Date?
     var bannerImage: String?
-    var imageData: Data?
+    var imageData: Data? = nil
     var agenda: String?
     
     var registrationForm: [RegistrationFormField]? = nil
@@ -117,9 +130,94 @@ struct Event: Identifiable, Hashable, Codable {
         case status
         case registrationDeadline = "registration_deadline"
         case bannerImage = "banner_image"
+        case imageData = "image_data"
         case agenda
         case registrationForm = "registration_form"
         case createdAt = "created_at"
+    }
+
+    init(id: UUID, name: String, title: String, description: String, startDate: Date, endDate: Date, startTime: Date? = nil, endTime: Date? = nil, numberOfVolunteers: Int, numberOfRegistrations: Int? = nil, maxParticipants: Int, registrationType: RegistrationType? = nil, location: String, clubId: UUID, createdBy: UUID, category: EventCategory, status: EventStatus, registrationDeadline: Date? = nil, bannerImage: String? = nil, imageData: Data? = nil, agenda: String? = nil, registrationForm: [RegistrationFormField]? = nil, createdAt: Date) {
+        self.id = id
+        self.name = name
+        self.title = title
+        self.description = description
+        self.startDate = startDate
+        self.endDate = endDate
+        self.startTime = startTime
+        self.endTime = endTime
+        self.numberOfVolunteers = numberOfVolunteers
+        self.numberOfRegistrations = numberOfRegistrations
+        self.maxParticipants = maxParticipants
+        self.registrationType = registrationType
+        self.location = location
+        self.clubId = clubId
+        self.createdBy = createdBy
+        self.category = category
+        self.status = status
+        self.registrationDeadline = registrationDeadline
+        self.bannerImage = bannerImage
+        self.imageData = imageData
+        self.agenda = agenda
+        self.registrationForm = registrationForm
+        self.createdAt = createdAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = (try? container.decode(String.self, forKey: .name)) ?? ""
+        title = (try? container.decode(String.self, forKey: .title)) ?? ""
+        description = (try? container.decode(String.self, forKey: .description)) ?? ""
+        
+        // Flexible Date Decoding
+        let dateStringDecoder = { (key: CodingKeys) -> Date? in
+            guard let str = try? container.decode(String.self, forKey: key) else { return nil }
+            return Event.parseDate(str)
+        }
+        
+        startDate = dateStringDecoder(.startDate) ?? Date()
+        endDate = dateStringDecoder(.endDate) ?? Date()
+        startTime = dateStringDecoder(.startTime)
+        endTime = dateStringDecoder(.endTime)
+        
+        numberOfVolunteers = (try? container.decode(Int.self, forKey: .numberOfVolunteers)) ?? 0
+        numberOfRegistrations = try? container.decode(Int.self, forKey: .numberOfRegistrations)
+        maxParticipants = (try? container.decode(Int.self, forKey: .maxParticipants)) ?? 0
+        registrationType = try? container.decode(RegistrationType.self, forKey: .registrationType)
+        location = (try? container.decode(String.self, forKey: .location)) ?? ""
+        clubId = try container.decode(UUID.self, forKey: .clubId)
+        createdBy = try container.decode(UUID.self, forKey: .createdBy)
+        
+        // Robust Enum Decoding
+        category = (try? container.decode(EventCategory.self, forKey: .category)) ?? .technical
+        status = (try? container.decode(EventStatus.self, forKey: .status)) ?? .pending
+        
+        registrationDeadline = dateStringDecoder(.registrationDeadline)
+        bannerImage = try? container.decode(String.self, forKey: .bannerImage)
+        imageData = try? container.decode(Data.self, forKey: .imageData)
+        agenda = try? container.decode(String.self, forKey: .agenda)
+        registrationForm = try? container.decode([RegistrationFormField].self, forKey: .registrationForm)
+        createdAt = dateStringDecoder(.createdAt) ?? Date()
+    }
+
+    static func parseDate(_ string: String) -> Date? {
+        let formats = [
+            "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
+            "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+            "yyyy-MM-dd",
+            "HH:mm:ss",
+            "yyyy-MM-dd HH:mm:ss"
+        ]
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        for format in formats {
+            formatter.dateFormat = format
+            if let date = formatter.date(from: string) {
+                return date
+            }
+        }
+        return nil
     }
 }
 
@@ -182,7 +280,7 @@ enum ResourceStatus: String, Codable {
 
 struct Resource: Identifiable, Codable {
     var id: UUID
-    var eventId: UUID
+    var eventId: UUID?
     
     var name: String
     var quantity: Int
@@ -196,7 +294,7 @@ struct Resource: Identifiable, Codable {
     var issuedAt: Date?        // university
     var returnedAt: Date?      // university
     
-    var addedBy: UUID
+    var addedBy: UUID?
     
     var remarks: [Remark]
     var createdAt: Date
@@ -219,7 +317,7 @@ struct Resource: Identifiable, Codable {
         case approvedAt = "approved_at"
     }
 
-    init(id: UUID, eventId: UUID, name: String, quantity: Int, type: ResourceType, status: ResourceStatus, cost: Double? = nil, vendorName: String? = nil, issuedAt: Date? = nil, returnedAt: Date? = nil, addedBy: UUID, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    init(id: UUID, eventId: UUID?, name: String, quantity: Int, type: ResourceType, status: ResourceStatus, cost: Double? = nil, vendorName: String? = nil, issuedAt: Date? = nil, returnedAt: Date? = nil, addedBy: UUID?, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.name = name

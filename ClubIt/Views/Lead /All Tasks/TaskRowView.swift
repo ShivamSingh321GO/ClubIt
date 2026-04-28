@@ -192,7 +192,7 @@ struct TaskRowView: View {
         clubId: clubId,
         createdBy: UUID(),
         category: .technical,
-        status: .upcoming,
+        status: .approved,
         registrationDeadline: Date(),
         bannerImage: nil,
         agenda: nil,

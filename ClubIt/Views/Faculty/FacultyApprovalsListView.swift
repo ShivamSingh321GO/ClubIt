@@ -33,7 +33,7 @@ struct FacultyApprovalsListView: View {
                     .padding(.top, 40)
                 } else {
                     VStack(spacing: 16) {
-                        ForEach(groupedApprovals.keys.sorted(by: { $0.uuidString < $1.uuidString }), id: \.self) { eventId in
+                        ForEach(groupedApprovals.keys.compactMap { $0 }.sorted(by: { $0.uuidString < $1.uuidString }), id: \.self) { eventId in
                             if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
                                 let eventApprovals = groupedApprovals[eventId] ?? []
                                 let isPending = eventApprovals.contains { $0.status == .pending }

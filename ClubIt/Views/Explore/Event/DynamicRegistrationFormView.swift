@@ -25,7 +25,7 @@ struct DynamicRegistrationFormView: View {
                                 HStack {
                                     Text(field.label)
                                         .font(.headline)
-                                    if field.isRequired {
+                                    if field.isRequired ?? true {
                                         Text("*")
                                             .foregroundStyle(.red)
                                     }
@@ -151,7 +151,7 @@ struct DynamicRegistrationFormView: View {
     private func submitForm() {
         // Validate required fields
         if let fields = event.registrationForm {
-            for field in fields where field.isRequired {
+            for field in fields where field.isRequired ?? true {
                 if field.type == .checkbox {
                     if checkboxResponses[field.id]?.isEmpty ?? true {
                         errorMessage = "Please answer all required questions."
@@ -167,8 +167,10 @@ struct DynamicRegistrationFormView: View {
         }
         
         // Complete registration
-        appSession.registerForEvent(id: event.id)
-        dismiss()
+        Task {
+            await appSession.registerForEvent(id: event.id)
+            dismiss()
+        }
     }
 }
 
@@ -188,7 +190,7 @@ struct DynamicRegistrationFormView: View {
         clubId: UUID(),
         createdBy: UUID(),
         category: .technical,
-        status: .upcoming,
+        status: .approved,
         registrationDeadline: Date(),
         registrationForm: [
             RegistrationFormField(id: UUID(), label: "What is your team name?", type: .text),

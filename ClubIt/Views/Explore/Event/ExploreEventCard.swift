@@ -69,7 +69,7 @@ struct ExploreEventCard: View {
                                 Text("REGISTRATIONS")
                                     .font(.caption2.bold())
                                     .foregroundStyle(.secondary)
-                                Text("\( (event.status == .pending || event.status == .upcoming) ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) / \(event.maxParticipants)")
+                                Text("\( (event.status == .pending || event.status == .approved) ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) / \(event.maxParticipants)")
                                     .font(.footnote.bold())
                                     .foregroundStyle(.primary)
                             }
@@ -171,9 +171,7 @@ struct ExploreEventCard: View {
         let status = event.status
         let color: Color = {
             switch status {
-            case .pending: return .orange
-            case .completed, .upcoming: return .green
-            case .cancelled: return .red
+            case .approved: return .green
             default: return .green
             }
         }()
@@ -181,7 +179,7 @@ struct ExploreEventCard: View {
         let text: String = {
             switch status {
             case .pending: return "Pending"
-            case .upcoming: return "Approved"
+            case .approved: return "Approved"
             default: return status.rawValue.capitalized
             }
         }()
@@ -214,7 +212,7 @@ struct ExploreEventCard: View {
     private var formattedTime: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
-        return formatter.string(from: event.startTime)
+        return formatter.string(from: event.startTime ?? event.startDate)
     }
 }
 
@@ -236,7 +234,7 @@ struct ExploreEventCard: View {
                 clubId: UUID(),
                 createdBy: UUID(),
                 category: .entertainment,
-                status: .upcoming,
+                status: .approved,
                 registrationDeadline: Date(),
                 bannerImage: "banner1",
                 createdAt: Date()

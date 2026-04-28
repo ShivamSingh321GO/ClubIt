@@ -80,65 +80,53 @@ final class AppSession {
 
     @MainActor
     func refreshData() async {
-        print("DEBUG: Starting Data Refresh...")
+        guard isLoggedIn, let user = currentUser else { return }
         
-        // 1. Fetch Clubs
-        do {
-            try await clubStore.fetchAllClubs()
-            print("DEBUG: Clubs Fetched Successfully")
-        } catch {
-            print("DEBUG ERROR: Clubs Fetch Failed: \(error)")
-        }
+        print("DEBUG: Starting Data Refresh for \(user.name)...")
         
-        // 2. Fetch Users
-        do {
-            try await clubStore.fetchAllUsers()
-            print("DEBUG: Users Fetched Successfully")
-        } catch {
-            print("DEBUG ERROR: Users Fetch Failed: \(error)")
-        }
-        
-        // 3. Fetch Events
-        do {
-            try await eventStore.fetchAllEvents()
-            print("DEBUG: Events Fetched Successfully")
-        } catch {
-            print("DEBUG ERROR: Events Fetch Failed: \(error)")
-        }
-        
-        // 4. Fetch Tasks
-        do {
-            try await taskStore.fetchTasks()
-            print("DEBUG: Tasks Fetched Successfully")
-        } catch {
-            print("DEBUG ERROR: Tasks Fetch Failed: \(error)")
-        }
-        
-        // 5. Fetch Announcements
-        do {
-            try await announcementStore.fetchAnnouncements()
-            print("DEBUG: Announcements Fetched Successfully")
-        } catch {
-            print("DEBUG ERROR: Announcements Fetch Failed: \(error)")
-        }
-        
-        // 6. User Specific Data
-        if let clubId = currentUser?.clubId {
+        // 1. Fetch User's specific Club Details FIRST
+        if let clubId = user.clubId {
             do {
+                print("DEBUG: Loading personal club data for \(clubId)")
                 try await clubStore.fetchClubDetails(id: clubId)
+                
+                // Update achievement store with the real ID
+                self.clubAchievementStore = AchievementStore(clubId: clubId)
+                
                 try await activityStore.fetchActivities(clubId: clubId)
                 try await clubFileStore.fetchFiles(clubId: clubId)
                 try await clubLinkStore.fetchLinks(clubId: clubId)
-                print("DEBUG: User Specific Data Fetched")
+                print("DEBUG: Personal club data loaded: \(clubStore.club.name)")
             } catch {
-                print("DEBUG ERROR: User Specific Fetch Failed: \(error)")
+                print("DEBUG ERROR: Personal club data failed: \(error.localizedDescription)")
             }
         }
+
+        // 2. Load Global Data in parallel (Non-blocking)
+        async let clubsTask: Void = { try? await clubStore.fetchAllClubs() }()
+        async let usersTask: Void = { try? await clubStore.fetchAllUsers() }()
+        async let eventsTask: Void = { try? await eventStore.fetchAllEvents() }()
+        async let approvalsTask: Void = { try? await approvalStore.fetchApprovals() }()
+        async let budgetsTask: Void = { try? await approvalStore.fetchBudgets() }()
+        async let resourcesTask: Void = { try? await approvalStore.fetchResources() }()
+        async let registrationsTask: Void = { try? await registrationStore.fetchRegistrations() }()
+        async let tasksTask: Void = { try? await taskStore.fetchTasks() }()
+        async let announcementsTask: Void = { try? await announcementStore.fetchAnnouncements() }()
         
-        // Sync registrations
-        let userRegistrations = registrationStore.registrations.filter { $0.userId == currentUser?.id }
-        registeredEventIds = Set(userRegistrations.map { $0.eventId })
-        studentDashboardStore.registeredEventIds = registeredEventIds
+        await clubsTask
+        await usersTask
+        await eventsTask
+        await approvalsTask
+        await budgetsTask
+        await resourcesTask
+        await registrationsTask
+        await tasksTask
+        await announcementsTask
+        
+        // 3. Sync registrations
+        let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
+        self.registeredEventIds = Set(userRegistrations.compactMap { $0.eventId })
+        self.studentDashboardStore.registeredEventIds = self.registeredEventIds
         
         print("DEBUG: Data Sync Sequence Complete")
     }
@@ -166,7 +154,8 @@ final class AppSession {
         clubStore.updateMember(updatedUser: user)
     }
     
-    func registerForEvent(id: UUID) {
+    @MainActor
+    func registerForEvent(id: UUID) async {
         guard let userId = currentUser?.id else { return }
         
         // Find the event to check max participants
@@ -179,14 +168,27 @@ final class AppSession {
             return
         }
         
-        registrationStore.toggleRegistration(eventId: id, userId: userId)
-        
-        if registeredEventIds.contains(id) {
-            registeredEventIds.remove(id)
-        } else {
-            registeredEventIds.insert(id)
+        do {
+            try await registrationStore.toggleRegistration(eventId: id, userId: userId)
+            
+            // Update registration count locally for immediate UI feedback
+            if let index = eventStore.events.firstIndex(where: { $0.id == id }) {
+                let isRegistering = !registeredEventIds.contains(id)
+                let currentRegistrations = eventStore.events[index].numberOfRegistrations ?? 0
+                
+                if isRegistering {
+                    eventStore.events[index].numberOfRegistrations = currentRegistrations + 1
+                    registeredEventIds.insert(id)
+                } else {
+                    eventStore.events[index].numberOfRegistrations = max(0, currentRegistrations - 1)
+                    registeredEventIds.remove(id)
+                }
+            }
+            
+            studentDashboardStore.registeredEventIds = registeredEventIds
+        } catch {
+            print("Registration toggle failed: \(error)")
         }
-        studentDashboardStore.registeredEventIds = registeredEventIds
     }
     
     func toggleFavorite(id: UUID) {
@@ -197,7 +199,8 @@ final class AppSession {
         }
     }
     
-    func checkAndAutoApproveEvent(eventId: UUID) {
+    @MainActor
+    func checkAndAutoApproveEvent(eventId: UUID) async {
         let allResources = approvalStore.resources.filter { $0.eventId == eventId }
         let allVenues = approvalStore.approvals.filter { $0.eventId == eventId && $0.type == .venue }
         let allBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
@@ -208,9 +211,9 @@ final class AppSession {
         
         if isFullyApproved {
             if let eventApproval = approvalStore.approvals.first(where: { $0.eventId == eventId && $0.type == .event && $0.status == .pending }) {
-                approvalStore.updateApproval(id: eventApproval.id, status: .approved)
+                try? await approvalStore.updateApproval(id: eventApproval.id, status: .approved)
             }
-            eventStore.updateEventStatus(id: eventId, status: .upcoming)
+            try? await eventStore.updateEventStatus(id: eventId, status: .approved)
         }
     }
 }

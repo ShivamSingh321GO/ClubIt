@@ -56,7 +56,7 @@ struct CreateNewEventView: View {
                 
                 Picker("Event Category", selection: $selectedCategory) {
                     ForEach(EventCategory.allCases, id: \.self) { category in
-                        Text(category.rawValue).tag(category)
+                        Text(category.displayName).tag(category)
                     }
                 }
                 .pickerStyle(.menu)
@@ -161,9 +161,9 @@ struct CreateNewEventView: View {
             
             Section {
                 let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
-                let conflictingEvents = appSession.eventStore.events.filter { event in
-                    guard event.status != .cancelled && event.status != .completed && event.status != .pastEvent else { return false }
-                    return (startDate < event.endDate) && (event.startDate < endDate)
+                let conflictingEvents = appSession.eventStore.events.filter { e in
+                    (e.status == .pending || e.status == .approved) &&
+                    (startDate < e.endDate) && (e.startDate < endDate)
                 }
                 
                 Picker("Location", selection: $venue) {
@@ -271,7 +271,6 @@ struct CreateNewEventView: View {
             
             Section {
                 let isVenueBooked = appSession.eventStore.events.contains { e in
-                    e.status != .cancelled && e.status != .completed && e.status != .pastEvent &&
                     e.location == venue &&
                     (startDate < e.endDate) && (e.startDate < endDate)
                 }
@@ -349,7 +348,10 @@ struct CreateNewEventView: View {
             return
         }
         
-        let newEvent = Event(id: UUID(), name: trimmedName,
+        let newEventId = UUID()
+        let newEvent = Event(
+            id: newEventId,
+            name: trimmedName,
             title: trimmedName,
             description: trimmedDescription,
             startDate: startDate,
@@ -373,123 +375,151 @@ struct CreateNewEventView: View {
             createdAt: Date()
         )
 
-        let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
-        let facultyId = club?.facultyId ?? UUID()
+        Task {
+            do {
+                // 1. Save the main event
+                try await appSession.eventStore.createEvent(newEvent)
+                
+                let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
+                
+                // The Event Management Team ID you provided
+                let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                let facultyId = club?.facultyId ?? eventManagementTeamID
+                
+                print("DEBUG: Submitting Approval - Club: \(club?.name ?? "Unknown"), FacultyID: \(facultyId)")
 
-        
-        // Save Budget Items
-        for item in budgetItems {
-            let price = Double(item.price) ?? 0
-            let budget = Budget(
-                id: UUID(),
-                eventId: newEvent.id,
-                itemName: item.name,
-                unitPrice: price,
-                quantity: item.quantity,
-                status: .pending,
-                addedBy: currentUser.id,
-                remarks: [],
-                createdAt: Date()
-            )
-            appSession.approvalStore.addBudget(budget)
-        }
-        
-        // Save Resource Items
-        for item in universityResources {
-            let resource = Resource(id: UUID(), 
-                eventId: newEvent.id,
-                name: item.name,
-                quantity: item.quantity,
-                type: .university,
-                status: .pending,
-                addedBy: currentUser.id,
-                remarks: [],
-                createdAt: Date()
-            )
-            appSession.approvalStore.addResource(resource)
-        }
-        
-        for item in rentalResources {
-            let price = Double(item.price) ?? 0
-            let resource = Resource(id: UUID(), 
-                eventId: newEvent.id,
-                name: item.name,
-                quantity: item.quantity,
-                type: .external,
-                status: .pending,
-                cost: price * Double(item.quantity),
-                vendorName: item.vendorName,
-                addedBy: currentUser.id,
-                remarks: [],
-                createdAt: Date()
-            )
-            appSession.approvalStore.addResource(resource)
-        }
+                // 2. Save Budget Items & Create Individual Approvals
+                for item in budgetItems {
+                    let budgetId = UUID()
+                    let price = Double(item.price) ?? 0
+                    let budget = Budget(
+                        id: budgetId,
+                        eventId: newEvent.id,
+                        itemName: item.name,
+                        unitPrice: price,
+                        quantity: item.quantity,
+                        status: .pending,
+                        addedBy: currentUser.id,
+                        remarks: [],
+                        createdAt: Date()
+                    )
+                    try await appSession.approvalStore.addBudget(budget)
+                    
+                    // Create corresponding approval entry for this specific budget
+                    let budgetApproval = Approval(
+                        id: UUID(),
+                        type: .budget,
+                        senderId: currentUser.id,
+                        receiverId: facultyId,
+                        eventId: newEvent.id,
+                        approvalRelatedId: budgetId,
+                        status: .pending,
+                        remarks: [Remark(id: UUID(), text: "Budget approval requested for \(item.name)", authorId: currentUser.id, createdAt: Date())],
+                        createdAt: Date(),
+                        updatedAt: nil
+                    )
+                    try await appSession.approvalStore.submitApprovalRequest(budgetApproval)
+                }
+                
+                // 3. Save Resource Items & Create Individual Approvals
+                for item in universityResources {
+                    let resourceId = UUID()
+                    let resource = Resource(
+                        id: resourceId, 
+                        eventId: newEvent.id,
+                        name: item.name,
+                        quantity: item.quantity,
+                        type: .university,
+                        status: .pending,
+                        addedBy: currentUser.id,
+                        remarks: [],
+                        createdAt: Date()
+                    )
+                    try await appSession.approvalStore.addResource(resource)
+                    
+                    let resApproval = Approval(
+                        id: UUID(),
+                        type: .resource,
+                        senderId: currentUser.id,
+                        receiverId: facultyId,
+                        eventId: newEvent.id,
+                        approvalRelatedId: resourceId,
+                        status: .pending,
+                        remarks: [Remark(id: UUID(), text: "Resource approval requested for \(item.name)", authorId: currentUser.id, createdAt: Date())],
+                        createdAt: Date(),
+                        updatedAt: nil
+                    )
+                    try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                }
+                
+                for item in rentalResources {
+                    let resourceId = UUID()
+                    let price = Double(item.price) ?? 0
+                    let resource = Resource(
+                        id: resourceId, 
+                        eventId: newEvent.id,
+                        name: item.name,
+                        quantity: item.quantity,
+                        type: .external,
+                        status: .pending,
+                        cost: price * Double(item.quantity),
+                        vendorName: item.vendorName,
+                        addedBy: currentUser.id,
+                        remarks: [],
+                        createdAt: Date()
+                    )
+                    try await appSession.approvalStore.addResource(resource)
+                    
+                    let resApproval = Approval(
+                        id: UUID(),
+                        type: .resource,
+                        senderId: currentUser.id,
+                        receiverId: facultyId,
+                        eventId: newEvent.id,
+                        approvalRelatedId: resourceId,
+                        status: .pending,
+                        remarks: [Remark(id: UUID(), text: "Resource approval requested for \(item.name)", authorId: currentUser.id, createdAt: Date())],
+                        createdAt: Date(),
+                        updatedAt: nil
+                    )
+                    try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                }
 
-        // Generate Approval Summaries for Faculty
-        let eventApproval = Approval(
-            id: UUID(),
-            type: .event,
-            senderId: currentUser.id,
-            receiverId: facultyId,
-            eventId: newEvent.id,
-            approvalRelatedId: newEvent.id,
-            status: .pending,
-            remarks: [Remark(id: UUID(), text: "Event creation approval requested", authorId: currentUser.id, createdAt: Date())],
-            createdAt: Date(),
-            updatedAt: nil
-        )
-        appSession.approvalStore.addApproval(eventApproval)
-        
-        if !budgetItems.isEmpty {
-            let budgetApproval = Approval(
-                id: UUID(),
-                type: .budget,
-                senderId: currentUser.id,
-                receiverId: facultyId,
-                eventId: newEvent.id,
-                approvalRelatedId: UUID(), // Reference for the collection
-                status: .pending,
-                remarks: [Remark(id: UUID(), text: "Budget approval requested for \(budgetItems.count) items", authorId: currentUser.id, createdAt: Date())],
-                createdAt: Date(),
-                updatedAt: nil
-            )
-            appSession.approvalStore.addApproval(budgetApproval)
+                // 4. Generate Main Event and Venue Approvals
+                let eventApproval = Approval(
+                    id: UUID(),
+                    type: .event,
+                    senderId: currentUser.id,
+                    receiverId: facultyId,
+                    eventId: newEvent.id,
+                    approvalRelatedId: newEvent.id,
+                    status: .pending,
+                    remarks: [Remark(id: UUID(), text: "Event creation approval requested", authorId: currentUser.id, createdAt: Date())],
+                    createdAt: Date(),
+                    updatedAt: nil
+                )
+                try await appSession.approvalStore.submitApprovalRequest(eventApproval)
+                
+                let venueApproval = Approval(
+                    id: UUID(),
+                    type: .venue,
+                    senderId: currentUser.id,
+                    receiverId: facultyId,
+                    eventId: newEvent.id,
+                    approvalRelatedId: newEvent.id, // Linking to the event for venue context
+                    status: .pending,
+                    remarks: [Remark(id: UUID(), text: "Venue booking approval requested for \(venue)", authorId: currentUser.id, createdAt: Date())],
+                    createdAt: Date(),
+                    updatedAt: nil
+                )
+                try await appSession.approvalStore.submitApprovalRequest(venueApproval)
+                
+                onSave(newEvent)
+                dismiss()
+            } catch {
+                errorMessage = "Failed to save event: \(error.localizedDescription)"
+            }
         }
-        
-        if !universityResources.isEmpty || !rentalResources.isEmpty {
-            let resourceApproval = Approval(
-                id: UUID(),
-                type: .resource,
-                senderId: currentUser.id,
-                receiverId: facultyId,
-                eventId: newEvent.id,
-                approvalRelatedId: UUID(), // Reference for the collection
-                status: .pending,
-                remarks: [Remark(id: UUID(), text: "Resource approval requested for \(universityResources.count + rentalResources.count) items", authorId: currentUser.id, createdAt: Date())],
-                createdAt: Date(),
-                updatedAt: nil
-            )
-            appSession.approvalStore.addApproval(resourceApproval)
-        }
-        
-        // Venue Approval
-        let venueApproval = Approval(
-            id: UUID(),
-            type: .venue,
-            senderId: currentUser.id,
-            receiverId: facultyId,
-            eventId: newEvent.id,
-            approvalRelatedId: UUID(),
-            status: .pending,
-            remarks: [Remark(id: UUID(), text: "Venue booking approval requested for \(venue)", authorId: currentUser.id, createdAt: Date())],
-            createdAt: Date(),
-            updatedAt: nil
-        )
-        appSession.approvalStore.addApproval(venueApproval)
-        
-        onSave(newEvent)
-        dismiss()
     }
 
     

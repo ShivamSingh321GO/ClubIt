@@ -11,7 +11,7 @@ struct PresidentClubBudgetDetailView: View {
     var body: some View {
         let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
         let clubEventIds = Set(clubEvents.map { $0.id })
-        let allClubBudgets = appSession.approvalStore.budgets.filter { clubEventIds.contains($0.eventId) }
+        let allClubBudgets = appSession.approvalStore.budgets.filter { clubEventIds.contains($0.eventId ?? UUID()) }
         
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
@@ -206,8 +206,8 @@ struct PresidentClubBudgetDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Approve") {
                 if let budget = budgetToApprove {
-                    withAnimation {
-                        appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
+                    Task {
+                        try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
                     }
                 }
             }
@@ -284,7 +284,11 @@ struct PresidentBudgetRequestCard: View {
                 if showingReply {
                     ReplyInputView(replyText: $replyText, onSend: {
                         let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                        appSession.approvalStore.addRemarkToBudget(id: budget.id, remark: newRemark)
+                        Task {
+                            var remarks = budget.remarks
+                            remarks.append(newRemark)
+                            try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: budget.status, remarks: remarks)
+                        }
                         replyText = ""
                         showingReply = false
                     }, onCancel: {
@@ -425,8 +429,10 @@ struct PresidentBudgetRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                    appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected, remark: newRemark)
+                    let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
+                    Task {
+                        try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected, remarks: newRemark)
+                    }
                     dismiss()
                 }) {
                     Text("Reject with Remark")

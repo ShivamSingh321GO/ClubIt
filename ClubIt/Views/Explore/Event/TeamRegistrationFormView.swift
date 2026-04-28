@@ -151,7 +151,10 @@ struct FieldEditorView: View {
             Divider()
             
             HStack {
-                Toggle("Required", isOn: $field.isRequired)
+                Toggle("Required", isOn: Binding(
+                    get: { field.isRequired ?? true },
+                    set: { field.isRequired = $0 }
+                ))
                     .labelsHidden()
                 Text("Required")
                     .font(.caption)

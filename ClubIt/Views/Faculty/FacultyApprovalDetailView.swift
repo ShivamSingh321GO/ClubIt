@@ -79,9 +79,16 @@ struct FacultyApprovalDetailView: View {
         .alert("Confirm Action", isPresented: $showingConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button(targetStatus == .approved ? "Approve" : "Reject", role: targetStatus == .approved ? .none : .destructive) {
-                let newRemark = remark.isEmpty ? nil : Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus, remark: newRemark)
-                dismiss()
+                Task {
+                    let newRemark = remark.isEmpty ? [] : [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
+                    try? await appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus, remarks: newRemark)
+                    
+                    if targetStatus == .approved {
+                        await appSession.checkAndAutoApproveEvent(eventId: approval.eventId ?? UUID())
+                    }
+                    
+                    dismiss()
+                }
             }
         } message: {
             Text("Are you sure you want to \(targetStatus == .approved ? "approve" : "reject") this event proposal?")
@@ -110,10 +117,12 @@ struct FacultyApprovalDetailView: View {
                     Spacer()
                     
                     Button("Submit Rejection") {
-                        let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                        appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
-                        showingRemarkPrompt = false
-                        dismiss()
+                        Task {
+                            let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
+                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: newRemark)
+                            showingRemarkPrompt = false
+                            dismiss()
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red)

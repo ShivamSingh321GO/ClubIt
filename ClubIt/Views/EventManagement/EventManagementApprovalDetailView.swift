@@ -95,9 +95,13 @@ struct EventManagementApprovalDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Approve") {
                 if let resource = resourceToApprove {
-                    withAnimation {
-                        appSession.approvalStore.updateResourceStatus(id: resource.id, status: .approved)
-                        appSession.checkAndAutoApproveEvent(eventId: event.id)
+                    Task {
+                        do {
+                            try await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .approved)
+                            await appSession.checkAndAutoApproveEvent(eventId: event.id)
+                        } catch {
+                            print("DEBUG ERROR: Resource approval failed: \(error)")
+                        }
                     }
                 }
             }
@@ -111,9 +115,13 @@ struct EventManagementApprovalDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Approve") {
                 if let approval = venueToApprove {
-                    withAnimation {
-                        appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
-                        appSession.checkAndAutoApproveEvent(eventId: event.id)
+                    Task {
+                        do {
+                            try await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                            await appSession.checkAndAutoApproveEvent(eventId: event.id)
+                        } catch {
+                            print("DEBUG ERROR: Venue approval failed: \(error)")
+                        }
                     }
                 }
             }
@@ -128,9 +136,13 @@ struct EventManagementApprovalDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Approve") {
                 if let budget = budgetToApprove {
-                    withAnimation {
-                        appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
-                        appSession.checkAndAutoApproveEvent(eventId: event.id)
+                    Task {
+                        do {
+                            try await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
+                            await appSession.checkAndAutoApproveEvent(eventId: event.id)
+                        } catch {
+                            print("DEBUG ERROR: Budget approval failed: \(error)")
+                        }
                     }
                 }
             }
@@ -144,10 +156,10 @@ struct EventManagementApprovalDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Approve") {
                 if let approval = eventToApprove {
-                    withAnimation {
-                        appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                    Task {
+                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
                         // Sync event status
-                        appSession.eventStore.updateEventStatus(id: approval.eventId, status: .upcoming)
+                        try? await appSession.eventStore.updateEventStatus(id: approval.eventId ?? UUID(), status: .approved)
                     }
                 }
             }
@@ -159,9 +171,11 @@ struct EventManagementApprovalDetailView: View {
         }
         .sheet(item: $selectedEventApprovalForRemark) { approval in
             FacultyVenueRemarkSheet(approval: approval, onReject: { remark in
-                let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
-                appSession.eventStore.updateEventStatus(id: approval.eventId, status: .cancelled)
+                let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
+                Task {
+                    try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: newRemark)
+                }
+                // Removed .cancelled status update
             })
         }
     }
@@ -467,7 +481,11 @@ struct EventApprovalRequestCard: View {
             if showingReply {
                 ReplyInputView(replyText: $replyText, onSend: {
                     let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                    appSession.approvalStore.addRemarkToApproval(id: approval.id, remark: newRemark)
+                    Task {
+                        var remarks = approval.remarks
+                        remarks.append(newRemark)
+                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: approval.status, remarks: remarks)
+                    }
                     replyText = ""
                     showingReply = false
                 }, onCancel: {

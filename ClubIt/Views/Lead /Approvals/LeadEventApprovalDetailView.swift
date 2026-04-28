@@ -26,6 +26,17 @@ struct LeadEventApprovalDetailView: View {
             }
             let allClubBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
             
+            let mainApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event })
+            let isAnyRejected = mainApproval?.status == .rejected ||
+                               allClubResources.contains { $0.status == .rejected } ||
+                               allClubVenueApprovals.contains { $0.status == .rejected } ||
+                               allClubBudgets.contains { $0.status == .rejected }
+            
+            let isAllApproved = mainApproval?.status == .approved &&
+                               (allClubResources.isEmpty || allClubResources.allSatisfy { $0.status == .approved }) &&
+                               (allClubVenueApprovals.isEmpty || allClubVenueApprovals.allSatisfy { $0.status == .approved }) &&
+                               (allClubBudgets.isEmpty || allClubBudgets.allSatisfy { $0.status == .approved })
+
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
                     
@@ -34,16 +45,6 @@ struct LeadEventApprovalDetailView: View {
                         .padding(.horizontal)
                     
                     // Overall Status Banner
-                    let mainApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event })
-                    let isAnyRejected = mainApproval?.status == .rejected ||
-                                       allClubResources.contains { $0.status == .rejected } ||
-                                       allClubVenueApprovals.contains { $0.status == .rejected } ||
-                                       allClubBudgets.contains { $0.status == .rejected }
-                    
-                    let isAllApproved = mainApproval?.status == .approved &&
-                                       (allClubResources.isEmpty || allClubResources.allSatisfy { $0.status == .approved }) &&
-                                       (allClubVenueApprovals.isEmpty || allClubVenueApprovals.allSatisfy { $0.status == .approved }) &&
-                                       (allClubBudgets.isEmpty || allClubBudgets.allSatisfy { $0.status == .approved })
                     
                     Group {
                         if isAllApproved {
@@ -115,6 +116,26 @@ struct LeadEventApprovalDetailView: View {
             .overlay(alignment: .bottom) {
                 if replyingToItemId != nil {
                     replyInputOverlay()
+                } else if isAllApproved && event.status == .approved {
+                    Button {
+                        Task {
+                            try? await appSession.eventStore.updateEventStatus(id: event.id, status: .published)
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "paperplane.fill")
+                            Text("Publish Event")
+                                .fontWeight(.bold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(16)
+                        .padding()
+                        .shadow(radius: 10)
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
         } else {
@@ -254,15 +275,31 @@ struct LeadEventApprovalDetailView: View {
             createdAt: Date()
         )
         
-        switch type {
-        case .resource:
-            appSession.approvalStore.addRemarkToResource(id: id, remark: newRemark)
-        case .venue:
-            appSession.approvalStore.addRemarkToApproval(id: id, remark: newRemark)
-        case .budget:
-            appSession.approvalStore.addRemarkToBudget(id: id, remark: newRemark)
-        case .event:
-            appSession.approvalStore.addRemarkToApproval(id: id, remark: newRemark)
+        Task {
+            do {
+                switch type {
+                case .resource:
+                    if let index = appSession.approvalStore.resources.firstIndex(where: { $0.id == id }) {
+                        var remarks = appSession.approvalStore.resources[index].remarks
+                        remarks.append(newRemark)
+                        try await appSession.approvalStore.updateResourceStatus(id: id, status: appSession.approvalStore.resources[index].status, remarks: remarks)
+                    }
+                case .venue, .event:
+                    if let index = appSession.approvalStore.approvals.firstIndex(where: { $0.id == id }) {
+                        var remarks = appSession.approvalStore.approvals[index].remarks
+                        remarks.append(newRemark)
+                        try await appSession.approvalStore.updateApproval(id: id, status: appSession.approvalStore.approvals[index].status, remarks: remarks)
+                    }
+                case .budget:
+                    if let index = appSession.approvalStore.budgets.firstIndex(where: { $0.id == id }) {
+                        var remarks = appSession.approvalStore.budgets[index].remarks
+                        remarks.append(newRemark)
+                        try await appSession.approvalStore.updateBudgetStatus(id: id, status: appSession.approvalStore.budgets[index].status, remarks: remarks)
+                    }
+                }
+            } catch {
+                print("Error sending reply: \(error)")
+            }
         }
         
         replyText = ""

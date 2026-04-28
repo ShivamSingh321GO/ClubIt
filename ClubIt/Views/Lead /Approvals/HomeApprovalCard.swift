@@ -45,7 +45,9 @@ struct HomeApprovalCard: View {
                 if appSession.currentRole == .president && approval.type == .budget && approval.status == .pending {
                     HStack(spacing: 12) {
                         Button {
-                            appSession.approvalStore.updateApproval(id: approval.id, status: .approved, remark: nil)
+                            Task {
+                                try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved, remarks: [])
+                            }
                         } label: {
                             Text("Approve")
                                 .font(.subheadline.bold())
@@ -57,7 +59,9 @@ struct HomeApprovalCard: View {
                         }
                         
                         Button {
-                            appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: nil)
+                            Task {
+                                try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: [])
+                            }
                         } label: {
                             Text("Reject")
                                 .font(.subheadline.bold())

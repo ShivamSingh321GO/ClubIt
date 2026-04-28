@@ -44,7 +44,7 @@ struct EventCardView: View {
                 
                 HStack(spacing: 12) {
                     Label(event.startDate.formatted(.dateTime.day().month()), systemImage: "calendar")
-                    Label(event.startTime.formatted(.dateTime.hour().minute()), systemImage: "clock")
+                    Label((event.startTime ?? event.startDate).formatted(.dateTime.hour().minute()), systemImage: "clock")
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -57,7 +57,7 @@ struct EventCardView: View {
                         .font(.caption)
                         .bold()
                     
-                    Text("\(event.numberOfRegistrations)")
+                    Text("\(event.numberOfRegistrations ?? 0)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     

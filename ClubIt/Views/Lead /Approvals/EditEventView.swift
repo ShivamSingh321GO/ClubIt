@@ -164,9 +164,7 @@ struct EditEventView: View {
                 let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
                 let conflictingEvents = appSession.eventStore.events.filter { e in
                     e.id != event.id && // Don't check against self
-                    e.status != .cancelled && 
-                    e.status != .completed && 
-                    e.status != .pastEvent &&
+                    (e.status == .pending || e.status == .approved) &&
                     (startDate < e.endDate) && (e.startDate < endDate)
                 }
                 
@@ -273,7 +271,7 @@ struct EditEventView: View {
             Section {
                 let isVenueBooked = appSession.eventStore.events.contains { e in
                     e.id != event.id && 
-                    e.status != .cancelled && e.status != .completed && e.status != .pastEvent &&
+                    (e.status == .pending || e.status == .approved) &&
                     e.location == venue &&
                     (startDate < e.endDate) && (e.startDate < endDate)
                 }
@@ -298,7 +296,7 @@ struct EditEventView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 let isVenueBooked = appSession.eventStore.events.contains { e in
                     e.id != event.id && // Don't check against self
-                    e.status != .cancelled && e.status != .completed && e.status != .pastEvent &&
+                    (e.status == .pending || e.status == .approved) &&
                     e.location == venue &&
                     (startDate < e.endDate) && (e.startDate < endDate)
                 }
@@ -350,8 +348,7 @@ struct EditEventView: View {
             DraftResourceItem(id: res.id, name: res.name, price: "\(Int((res.cost ?? 0) / Double(res.quantity)))", quantity: res.quantity, vendorName: res.vendorName ?? "")
         }
     }
-    
-    private func updateEvent() {
+     private func updateEvent() {
         // 1. Validate
         let trimmedName = eventName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedDescription = eventDescription.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -377,158 +374,159 @@ struct EditEventView: View {
         updatedEvent.imageData = imageData
         updatedEvent.registrationForm = customFormFields
         
-        appSession.eventStore.updateEvent(updatedEvent)
-        
-        // 3. Conditional Re-submission Logic
-        let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
-        let facultyId = club?.facultyId ?? UUID()
-        let currentUser = appSession.currentUser!
+        Task {
+            do {
+                try await appSession.eventStore.updateEvent(updatedEvent)
+                
+                let currentUser = appSession.currentUser!
 
-        // Venue Approval re-submission
-        if let venueApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .venue }) {
-            if venueApproval.status == .rejected || event.location != venue {
-                appSession.approvalStore.updateApprovalStatus(id: venueApproval.id, status: .pending)
-                appSession.approvalStore.addRemarkToApproval(id: venueApproval.id, remark: Remark(id: UUID(), text: "Venue details updated: \(venue). Resubmitted for approval.", authorId: currentUser.id, createdAt: Date()))
-            }
-        }
-
-        // Budget collection status check
-        if let budgetApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .budget }) {
-            let hasChanges = budgetItems.contains { draft in
-                if let existing = appSession.approvalStore.budgets.first(where: { $0.id == draft.id }) {
-                    let wasRejected = existing.status == .rejected
-                    let dataChanged = existing.itemName != draft.name || 
-                                     existing.unitPrice != (Double(draft.price) ?? 0) || 
-                                     existing.quantity != draft.quantity
-                    return wasRejected || dataChanged
+                // 3. Conditional Re-submission Logic
+                // Venue Approval re-submission
+                if let venueApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .venue }) {
+                    if venueApproval.status == .rejected || event.location != venue {
+                        var remarks = venueApproval.remarks
+                        remarks.append(Remark(id: UUID(), text: "Venue details updated: \(venue). Resubmitted for approval.", authorId: currentUser.id, createdAt: Date()))
+                        try await appSession.approvalStore.updateApproval(id: venueApproval.id, status: .pending, remarks: remarks)
+                    }
                 }
-                return true // New item
-            }
-            if hasChanges {
-                appSession.approvalStore.updateApprovalStatus(id: budgetApproval.id, status: .pending)
-                appSession.approvalStore.addRemarkToApproval(id: budgetApproval.id, remark: Remark(id: UUID(), text: "Budget updated/items added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
-            }
-        }
 
-        // Budget Items individual updates
-        for draft in budgetItems {
-            if let existing = appSession.approvalStore.budgets.first(where: { $0.id == draft.id }) {
-                var updated = existing
-                let dataChanged = updated.itemName != draft.name || 
-                                 updated.unitPrice != (Double(draft.price) ?? 0) || 
-                                 updated.quantity != draft.quantity
-                
-                updated.itemName = draft.name
-                updated.unitPrice = Double(draft.price) ?? 0
-                updated.quantity = draft.quantity
-                
-                if updated.status == .rejected || dataChanged {
-                    updated.status = .pending
-                    appSession.approvalStore.updateBudget(updated)
-                } else {
-                    appSession.approvalStore.updateBudget(updated)
+                // Budget collection status check
+                if let budgetApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .budget }) {
+                    let hasChanges = budgetItems.contains { draft in
+                        if let existing = appSession.approvalStore.budgets.first(where: { $0.id == draft.id }) {
+                            let wasRejected = existing.status == .rejected
+                            let dataChanged = existing.itemName != draft.name || 
+                                             existing.unitPrice != (Double(draft.price) ?? 0) || 
+                                             existing.quantity != draft.quantity
+                            return wasRejected || dataChanged
+                        }
+                        return true // New item
+                    }
+                    if hasChanges {
+                        var remarks = budgetApproval.remarks
+                        remarks.append(Remark(id: UUID(), text: "Budget updated/items added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
+                        try await appSession.approvalStore.updateApproval(id: budgetApproval.id, status: .pending, remarks: remarks)
+                    }
                 }
-            } else {
-                let newBudget = Budget(id: UUID(),
-                    eventId: event.id,
-                    itemName: draft.name,
-                    unitPrice: Double(draft.price) ?? 0,
-                    quantity: draft.quantity,
-                    status: .pending,
-                    addedBy: currentUser.id,
-                    remarks: [],
-                    createdAt: Date()
-                )
-                appSession.approvalStore.addBudget(newBudget)
-            }
-        }
 
-        // Resource collection status check
-        if let resourceApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .resource }) {
-            let allDraftResources = universityResources + rentalResources
-            let hasChanges = allDraftResources.contains { draft in
-                if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
-                    let wasRejected = existing.status == .rejected
-                    let dataChanged = existing.name != draft.name || existing.quantity != draft.quantity || (existing.vendorName != draft.vendorName && existing.type == .external)
-                    return wasRejected || dataChanged
+                // Budget Items individual updates
+                for draft in budgetItems {
+                    if let existing = appSession.approvalStore.budgets.first(where: { $0.id == draft.id }) {
+                        var updated = existing
+                        let dataChanged = updated.itemName != draft.name || 
+                                         updated.unitPrice != (Double(draft.price) ?? 0) || 
+                                         updated.quantity != draft.quantity
+                        
+                        updated.itemName = draft.name
+                        updated.unitPrice = Double(draft.price) ?? 0
+                        updated.quantity = draft.quantity
+                        
+                        if updated.status == .rejected || dataChanged {
+                            updated.status = .pending
+                        }
+                        try await appSession.approvalStore.updateBudget(updated)
+                    } else {
+                        let newBudget = Budget(id: UUID(),
+                            eventId: event.id,
+                            itemName: draft.name,
+                            unitPrice: Double(draft.price) ?? 0,
+                            quantity: draft.quantity,
+                            status: .pending,
+                            addedBy: currentUser.id,
+                            remarks: [],
+                            createdAt: Date()
+                        )
+                        try await appSession.approvalStore.addBudget(newBudget)
+                    }
                 }
-                return true // New item
-            }
-            if hasChanges {
-                appSession.approvalStore.updateApprovalStatus(id: resourceApproval.id, status: .pending)
-                appSession.approvalStore.addRemarkToApproval(id: resourceApproval.id, remark: Remark(id: UUID(), text: "Resources updated/added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
-            }
-        }
 
-        // Resources individual updates
-        for draft in universityResources {
-            if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
-                var updated = existing
-                let dataChanged = updated.name != draft.name || updated.quantity != draft.quantity
-                
-                updated.name = draft.name
-                updated.quantity = draft.quantity
-                
-                if updated.status == .rejected || dataChanged {
-                    updated.status = .pending
-                    appSession.approvalStore.updateResource(updated)
-                } else {
-                    appSession.approvalStore.updateResource(updated)
+                // Resource collection status check
+                if let resourceApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .resource }) {
+                    let allDraftResources = universityResources + rentalResources
+                    let hasChanges = allDraftResources.contains { draft in
+                        if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
+                            let wasRejected = existing.status == .rejected
+                            let dataChanged = existing.name != draft.name || existing.quantity != draft.quantity || (existing.vendorName != draft.vendorName && existing.type == .external)
+                            return wasRejected || dataChanged
+                        }
+                        return true // New item
+                    }
+                    if hasChanges {
+                        var remarks = resourceApproval.remarks
+                        remarks.append(Remark(id: UUID(), text: "Resources updated/added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
+                        try await appSession.approvalStore.updateApproval(id: resourceApproval.id, status: .pending, remarks: remarks)
+                    }
                 }
-            } else {
-                let newRes = Resource(
-                    id: UUID(),
-                    eventId: event.id,
-                    name: draft.name,
-                    quantity: draft.quantity,
-                    type: .university,
-                    status: .pending,
-                    addedBy: currentUser.id,
-                    remarks: [],
-                    createdAt: Date()
-                )
-                appSession.approvalStore.addResource(newRes)
-            }
-        }
 
-        for draft in rentalResources {
-            if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
-                var updated = existing
-                let dataChanged = updated.name != draft.name || 
-                                 updated.quantity != draft.quantity || 
-                                 updated.cost != ((Double(draft.price) ?? 0) * Double(draft.quantity)) ||
-                                 updated.vendorName != draft.vendorName
-                
-                updated.name = draft.name
-                updated.quantity = draft.quantity
-                updated.cost = (Double(draft.price) ?? 0) * Double(draft.quantity)
-                updated.vendorName = draft.vendorName
-                
-                if updated.status == .rejected || dataChanged {
-                    updated.status = .pending
-                    appSession.approvalStore.updateResource(updated)
-                } else {
-                    appSession.approvalStore.updateResource(updated)
+                // Resources individual updates
+                for draft in universityResources {
+                    if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
+                        var updated = existing
+                        let dataChanged = updated.name != draft.name || updated.quantity != draft.quantity
+                        
+                        updated.name = draft.name
+                        updated.quantity = draft.quantity
+                        
+                        if updated.status == .rejected || dataChanged {
+                            updated.status = .pending
+                        }
+                        try await appSession.approvalStore.updateResource(updated)
+                    } else {
+                        let newRes = Resource(
+                            id: UUID(),
+                            eventId: event.id,
+                            name: draft.name,
+                            quantity: draft.quantity,
+                            type: .university,
+                            status: .pending,
+                            addedBy: currentUser.id,
+                            remarks: [],
+                            createdAt: Date()
+                        )
+                        try await appSession.approvalStore.addResource(newRes)
+                    }
                 }
-            } else {
-                let newRes = Resource(
-                    id: UUID(),
-                    eventId: event.id,
-                    name: draft.name,
-                    quantity: draft.quantity,
-                    type: .external,
-                    status: .pending,
-                    cost: (Double(draft.price) ?? 0) * Double(draft.quantity),
-                    vendorName: draft.vendorName,
-                    addedBy: currentUser.id,
-                    remarks: [],
-                    createdAt: Date()
-                )
-                appSession.approvalStore.addResource(newRes)
+
+                for draft in rentalResources {
+                    if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
+                        var updated = existing
+                        let dataChanged = updated.name != draft.name || 
+                                         updated.quantity != draft.quantity || 
+                                         updated.cost != ((Double(draft.price) ?? 0) * Double(draft.quantity)) ||
+                                         updated.vendorName != draft.vendorName
+                        
+                        updated.name = draft.name
+                        updated.quantity = draft.quantity
+                        updated.cost = (Double(draft.price) ?? 0) * Double(draft.quantity)
+                        updated.vendorName = draft.vendorName
+                        
+                        if updated.status == .rejected || dataChanged {
+                            updated.status = .pending
+                        }
+                        try await appSession.approvalStore.updateResource(updated)
+                    } else {
+                        let newRes = Resource(
+                            id: UUID(),
+                            eventId: event.id,
+                            name: draft.name,
+                            quantity: draft.quantity,
+                            type: .external,
+                            status: .pending,
+                            cost: (Double(draft.price) ?? 0) * Double(draft.quantity),
+                            vendorName: draft.vendorName,
+                            addedBy: currentUser.id,
+                            remarks: [],
+                            createdAt: Date()
+                        )
+                        try await appSession.approvalStore.addResource(newRes)
+                    }
+                }
+
+                onSave(updatedEvent)
+                dismiss()
+            } catch {
+                errorMessage = "Failed to update event: \(error.localizedDescription)"
             }
         }
-
-        onSave(updatedEvent)
-        dismiss()
     }
 }

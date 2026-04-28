@@ -94,8 +94,8 @@ struct ClubResourcesDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Approve") {
                 if let resource = resourceToApprove {
-                    withAnimation {
-                        appSession.approvalStore.updateResourceStatus(id: resource.id, status: .approved)
+                    Task {
+                        try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .approved)
                     }
                 }
             }
@@ -108,8 +108,8 @@ struct ClubResourcesDetailView: View {
             Button("Cancel", role: .cancel) { }
             Button("Approve") {
                 if let approval = venueToApprove {
-                    withAnimation {
-                        appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                    Task {
+                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
                     }
                 }
             }
@@ -291,7 +291,11 @@ struct FacultyResourceRequestCard: View {
                 if showingReply {
                     ReplyInputView(replyText: $replyText, onSend: {
                         let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                        appSession.approvalStore.addRemarkToResource(id: resource.id, remark: newRemark)
+                        Task {
+                            var remarks = resource.remarks
+                            remarks.append(newRemark)
+                            try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: resource.status, remarks: remarks)
+                        }
                         replyText = ""
                         showingReply = false
                     }, onCancel: {
@@ -402,7 +406,7 @@ struct FacultyVenueApprovalCard: View {
                     }
                     
                     HStack(alignment: .top, spacing: 20) {
-                        FacultyDetailItem(icon: "clock", label: "Duration", value: "\(formatTime(event.startTime)) - \(formatTime(event.endTime))")
+                        FacultyDetailItem(icon: "clock", label: "Duration", value: "\(formatTime(event.startTime ?? event.startDate)) - \(formatTime(event.endTime ?? event.endDate))")
                     }
                 }
                 
@@ -420,7 +424,11 @@ struct FacultyVenueApprovalCard: View {
                 if showingReply {
                     ReplyInputView(replyText: $replyText, onSend: {
                         let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                        appSession.approvalStore.addRemarkToApproval(id: approval.id, remark: newRemark)
+                        Task {
+                            var remarks = approval.remarks
+                            remarks.append(newRemark)
+                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: approval.status, remarks: remarks)
+                        }
                         replyText = ""
                         showingReply = false
                     }, onCancel: {
@@ -586,11 +594,13 @@ struct FacultyVenueRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
+                    let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
                     if let onReject = onReject {
                         onReject(remark)
                     } else {
-                        appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remark: newRemark)
+                        Task {
+                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: newRemark)
+                        }
                     }
                     dismiss()
                 }) {
@@ -700,8 +710,10 @@ struct FacultyRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                    appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected, remark: newRemark)
+                    let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
+                    Task {
+                        try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected, remarks: newRemark)
+                    }
                     dismiss()
                 }) {
                     Text("Reject with Remark")

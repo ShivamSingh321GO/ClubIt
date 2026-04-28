@@ -37,7 +37,7 @@ struct PresidentClubBudgetCard: View {
         let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
         let clubEventIds = Set(clubEvents.map { $0.id })
         let pendingCount = appSession.approvalStore.budgets.filter { 
-            clubEventIds.contains($0.eventId) && $0.status == .pending 
+            clubEventIds.contains($0.eventId ?? UUID()) && $0.status == .pending 
         }.count
         
         HStack(spacing: 16) {
@@ -54,7 +54,7 @@ struct PresidentClubBudgetCard: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 let pendingBudgets = appSession.approvalStore.budgets.filter { 
-                    clubEventIds.contains($0.eventId) && $0.status == .pending 
+                    clubEventIds.contains($0.eventId ?? UUID()) && $0.status == .pending 
                 }
                 
                 if let firstPendingEventId = pendingBudgets.first?.eventId,

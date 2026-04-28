@@ -16,15 +16,19 @@ enum ClubStatus: String, Codable {
 
 enum ClubCategory: String, Codable, CaseIterable {
     case technical = "Technical"
-    case cultural = "Cultural"//
-    case sports = "Sports" 
-    case music = "Music"//
-    case dance = "Dance"//
-    case photography = "Photography"//
+    case cultural = "Cultural"
+    case sports = "Sports"
+    case music = "Music"
+    case dance = "Dance"
+    case photography = "Photography"
     case literary = "Literary"
     case entrepreneurship = "Entrepreneurship"
     case ai = "AI"
     case wellness = "Wellness"
+    
+    var displayName: String {
+        self.rawValue.capitalized
+    }
 }
 
 struct Club: Identifiable, Hashable, Codable {
@@ -42,10 +46,10 @@ struct Club: Identifiable, Hashable, Codable {
     var createdAt: Date
     
     // Stats and Socials
-    var memberCount: Int?
-    var eventCount: Int?
-    var socials: [String: String]?
-    var imageData: Data?
+    var memberCount: Int? = 0
+    var eventCount: Int? = 0
+    var socials: [String: String]? = [:]
+    var imageData: Data? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
