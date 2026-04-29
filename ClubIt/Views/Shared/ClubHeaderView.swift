@@ -30,11 +30,12 @@ struct ClubHeaderView: View {
                 
                 Spacer()
                 
-                Image(systemName: "chevron.right")
-                    .font(.caption.bold())
-                    .foregroundColor(.secondary.opacity(0.3))
+//                Image(systemName: "chevron.right")
+//                    .font(.caption.bold())
+//                    .foregroundColor(.secondary.opacity(0.3))
             }
             .padding(16)
+            .contentShape(.rect)
             .glassEffect(in: .rect(cornerRadius: 24))
             .padding(.horizontal)
         }

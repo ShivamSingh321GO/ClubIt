@@ -43,13 +43,13 @@ struct AddActivityFormView: View {
             .navigationTitle("New Activity")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("",systemImage: "xmark") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("",systemImage: "checkmark") {
                         addActivity()
                     }

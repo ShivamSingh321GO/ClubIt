@@ -109,7 +109,6 @@ struct ActivityCard: View {
                     lineWidth: 1
                 )
         )
-        .padding(.horizontal, 16)
         .contentShape(Rectangle())
         .onTapGesture {
             onTap?(activity)

@@ -91,7 +91,7 @@ struct CreateGroupView: View {
             .navigationTitle("Create new group")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
@@ -99,7 +99,7 @@ struct CreateGroupView: View {
                     }
                 }
                 
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         appSession.chatStore.createGroupChat(
                             name: groupName,

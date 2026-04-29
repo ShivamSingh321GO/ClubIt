@@ -65,7 +65,7 @@ struct EditEventView: View {
                         Text(category.rawValue).tag(category)
                     }
                 }
-                .pickerStyle(.menu)
+               
             } header: {
                 Text("Basic Info")
             }
@@ -124,7 +124,7 @@ struct EditEventView: View {
                     Text("Individual").tag(RegistrationType.individual)
                     Text("Team").tag(RegistrationType.team)
                 }
-                .pickerStyle(.segmented)
+               
                 
                 if registrationType == .team {
                     NavigationLink {
@@ -184,7 +184,7 @@ struct EditEventView: View {
                         .disabled(isBooked)
                     }
                 }
-                .pickerStyle(.menu)
+                .pickerStyle(.navigationLink)
             } header: {
                 Text("Venue")
             }

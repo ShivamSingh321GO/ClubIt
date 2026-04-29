@@ -61,7 +61,7 @@ struct CreateNewEventView: View {
                         Text(category.displayName).tag(category)
                     }
                 }
-                .pickerStyle(.menu)
+
             } header: {
                 Text("Basic Info")
             }
@@ -123,7 +123,7 @@ struct CreateNewEventView: View {
                     Text("Team")
                         .tag(RegistrationType.team)
                 }
-                .pickerStyle(.menu)
+                
                 
                 if registrationType == .team {
                     NavigationLink {

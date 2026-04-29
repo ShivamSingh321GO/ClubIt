@@ -67,7 +67,7 @@ struct AddResourceItemView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                     }
@@ -111,7 +111,7 @@ struct AddResourceItemView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                         .padding(.horizontal)
@@ -125,7 +125,7 @@ struct AddResourceItemView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
@@ -133,7 +133,7 @@ struct AddResourceItemView: View {
                 }
             }
             
-            ToolbarItem(placement: .confirmationAction) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     onSave(universityItems.filter { !$0.name.isEmpty }, rentalItems.filter { !$0.name.isEmpty })
                     dismiss()

@@ -12,7 +12,7 @@ struct StudentHomeView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
                         // Events Registered
-                        if !isSearchActive && !appSession.studentDashboardStore.registeredEvents.isEmpty {
+                        if !isSearchActive {
                             eventsRegisteredSection
                         }
                         
@@ -66,28 +66,55 @@ struct StudentHomeView: View {
     
     private var eventsRegisteredSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Events registered")
-                .font(.title2)
-                .bold()
-                .padding(.horizontal)
+            HStack {
+                Text("Events registered")
+                    .font(.title2)
+                    .bold()
+                
+                Spacer()
+                
+                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                    Image(systemName: "calendar")
+                        .font(.title3)
+                        .foregroundColor(.orange)
+                        .padding(8)
+                        .background(.orange.opacity(0.1), in: Circle())
+                }
+            }
+            .padding(.horizontal)
             
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 16) {
-                    ForEach(appSession.studentDashboardStore.registeredEvents) { event in
-                        NavigationLink(value: event) {
-                            EventCardView(event: event)
-                        }
-                        .buttonStyle(.plain)
-                        .scrollTransition(.interactive, axis: .horizontal) { content, phase in
-                            content
-                                .scaleEffect(phase.isIdentity ? 1 : 0.98)
-                                .opacity(phase.isIdentity ? 1 : 0.9)
+            if appSession.studentDashboardStore.registeredEvents.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "calendar.badge.plus")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary.opacity(0.5))
+                    Text("No events registered yet")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+                .glassEffect(in: .rect(cornerRadius: 20))
+                .padding(.horizontal)
+            } else {
+                ScrollView(.horizontal) {
+                    LazyHStack(spacing: 16) {
+                        ForEach(appSession.studentDashboardStore.registeredEvents) { event in
+                            NavigationLink(value: event) {
+                                EventCardView(event: event)
+                            }
+                            .buttonStyle(.plain)
+                            .scrollTransition(.interactive, axis: .horizontal) { content, phase in
+                                content
+                                    .scaleEffect(phase.isIdentity ? 1 : 0.98)
+                                    .opacity(phase.isIdentity ? 1 : 0.9)
+                            }
                         }
                     }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
+                .scrollIndicators(.hidden)
             }
-            .scrollIndicators(.hidden)
         }
     }
     

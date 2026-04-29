@@ -20,7 +20,8 @@ struct ActivityListView: View {
                         ActivityCard(activity: activity) { tappedActivity in
                             appSession.selectedActivity = tappedActivity
                         }
-                            .contextMenu {
+                        .padding(.horizontal, 16)
+                        .contextMenu {
                                 if appSession.currentRole == .clubLead {
                                     Button(role: .destructive) {
                                         Task {

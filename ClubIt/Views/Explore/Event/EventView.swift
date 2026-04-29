@@ -75,54 +75,56 @@ struct EventView: View {
                             .buttonStyle(.plain)
                         }
                     }
-                    .padding(.trailing, 85)
+                    .padding(.trailing, shouldShowToggle ? 85 : 0)
                 }
                 .mask(
                     LinearGradient(
                         stops: [
                             .init(color: .black, location: 0),
-                            .init(color: .black, location: 0.7),
-                            .init(color: .clear, location: 0.95)
+                            .init(color: .black, location: shouldShowToggle ? 0.7 : 1.0),
+                            .init(color: .clear, location: 1.0)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 
-                VStack(spacing: -3) {
-                    Text("CLUB\nFOLLOWED")
-                        .multilineTextAlignment(.center)
-                        .font(.system(size: 9, weight: .black))
-                        .lineLimit(2)
-                        .foregroundStyle(scope == .followed ? .orange : .secondary)
-                    
-                    Toggle("", isOn: Binding(
-                        get: { scope == .followed },
-                        set: { newValue in
-                            triggerRefresh {
-                                scope = newValue ? .followed : .allEvents
+                if shouldShowToggle {
+                    VStack(spacing: -3) {
+                        Text(appSession.currentRole == .clubLead || appSession.currentRole == .clubMember ? "MY\nEVENTS" : "CLUB\nFOLLOWED")
+                            .multilineTextAlignment(.center)
+                            .font(.system(size: 9, weight: .black))
+                            .lineLimit(2)
+                            .foregroundStyle(scope == .followed ? .orange : .secondary)
+                        
+                        Toggle("", isOn: Binding(
+                            get: { scope == .followed },
+                            set: { newValue in
+                                triggerRefresh {
+                                    scope = newValue ? .followed : .allEvents
+                                }
                             }
-                        }
-                    ))
-                    .toggleStyle(SwitchToggleStyle(tint: .orange))
-                    .labelsHidden()
-                    .scaleEffect(0.72)
-                }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 10)
-                .background(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .clear, location: 0),
-                            .init(color: Color(.systemBackground).opacity(0.6), location: 0.4),
-                            .init(color: Color(.systemBackground).opacity(0.9), location: 1.0)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                        ))
+                        .toggleStyle(SwitchToggleStyle(tint: .orange))
+                        .labelsHidden()
+                        .scaleEffect(0.72)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .background(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .clear, location: 0),
+                                .init(color: Color(.systemBackground).opacity(0.6), location: 0.4),
+                                .init(color: Color(.systemBackground).opacity(0.9), location: 1.0)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .blur(radius: 8)
                     )
-                    .blur(radius: 8)
-                )
-                .padding(.trailing, 4)
+                    .padding(.trailing, 4)
+                }
             }
             
             ZStack {
@@ -175,6 +177,10 @@ struct EventView: View {
         }
     }
     
+    private var shouldShowToggle: Bool {
+        appSession.currentRole != .faculty && appSession.currentRole != .president
+    }
+    
     private var filteredEvents: [Event] {
         eventStore.events.filter { event in
             let matchesScope: Bool
@@ -183,7 +189,11 @@ struct EventView: View {
             case .allEvents:
                 matchesScope = true
             case .followed:
-                matchesScope = appSession.clubStore.followedClubIds.contains(event.clubId)
+                if appSession.currentRole == .clubLead || appSession.currentRole == .clubMember {
+                    matchesScope = event.clubId == appSession.currentUser?.clubId
+                } else {
+                    matchesScope = appSession.clubStore.followedClubIds.contains(event.clubId)
+                }
             }
             
             let matchesCategory: Bool

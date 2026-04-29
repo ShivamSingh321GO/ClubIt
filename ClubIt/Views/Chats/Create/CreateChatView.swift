@@ -62,7 +62,7 @@ struct CreateChatView: View {
             .navigationBarTitleDisplayMode(.inline)
             
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
@@ -70,7 +70,7 @@ struct CreateChatView: View {
                     }
                 }
                 
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         if let user = selectedUser {
                             appSession.chatStore.createIndividualChat(with: user)
@@ -78,8 +78,7 @@ struct CreateChatView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "checkmark")
-                            .font(.title3)
-                            .foregroundColor(.blue)
+                            
                     }
                     .disabled(selectedUser == nil)
                 }

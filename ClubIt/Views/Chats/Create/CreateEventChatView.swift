@@ -96,7 +96,7 @@ struct CreateEventChatView: View {
             .navigationTitle("Create a new event chat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
@@ -104,7 +104,7 @@ struct CreateEventChatView: View {
                     }
                 }
                 
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         appSession.chatStore.createEventChat(
                             name: eventName,

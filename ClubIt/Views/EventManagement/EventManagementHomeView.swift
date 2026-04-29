@@ -40,6 +40,9 @@ struct EventManagementHomeView: View {
                             
                             HomeVenuesModule()
                         }
+                        
+                        ClubItCalendarView()
+                            .padding(.top, 8)
                     }
                     .padding(.horizontal)
                     .padding(.top, 12)

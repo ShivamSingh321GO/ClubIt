@@ -130,7 +130,7 @@ struct ClubProfileBody: View {
                         }
                         .padding(.top, 8)
                         
-                        if showFollowButton {
+                        if showFollowButton && appSession.currentRole == .student {
                             let isFollowing = appSession.clubStore.followedClubIds.contains(club.id)
                             Button {
                                 withAnimation {
@@ -157,7 +157,6 @@ struct ClubProfileBody: View {
             }
             .padding(20)
             .glassEffect(in: RoundedRectangle(cornerRadius: 20))
-            .padding(.horizontal, 16)
             
             if showExtraSections {
                 // MARK: - Activities
@@ -170,7 +169,6 @@ struct ClubProfileBody: View {
                     }
                     .font(.title2)
                     .bold()
-                    .padding(.horizontal, 16)
                     
                     VStack(spacing: 12) {
                         let activities = appSession.activityStore.activities.prefix(2)
@@ -181,7 +179,6 @@ struct ClubProfileBody: View {
                                 .padding()
                                 .frame(maxWidth: .infinity)
                                 .glassEffect(in: .rect(cornerRadius: 20))
-                                .padding(.horizontal, 16)
                         } else {
                             ForEach(activities) { activity in
                                 ActivityCard(activity: activity) { tappedActivity in
@@ -218,7 +215,6 @@ struct ClubProfileBody: View {
                     }
                     .font(.title2)
                     .bold()
-                    .padding(.horizontal, 16)
                     
                     HStack(spacing: 16) {
                         NavigationLink(destination: ClubImagesView()) {
@@ -240,9 +236,9 @@ struct ClubProfileBody: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, 12)
                 }
             }
         }
+        .padding(.horizontal, 16)
     }
 }

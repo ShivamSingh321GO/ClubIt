@@ -55,7 +55,7 @@ struct CreateAnnouncementView: View {
                     }
                 }
                 
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         saveAnnouncement()
                     } label: {

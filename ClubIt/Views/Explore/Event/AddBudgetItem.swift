@@ -57,9 +57,10 @@ struct AddBudgetItemView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.bordered)
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
+                
             }
         }
         .listStyle(.insetGrouped)
@@ -67,7 +68,7 @@ struct AddBudgetItemView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
@@ -75,7 +76,7 @@ struct AddBudgetItemView: View {
                 }
             }
             
-            ToolbarItem(placement: .confirmationAction) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     onSave(items.filter { !$0.name.isEmpty })
                     dismiss()

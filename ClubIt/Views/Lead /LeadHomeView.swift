@@ -34,25 +34,9 @@ struct LeadHomeView: View {
                             HomeApprovalsModule(user: user) { id in
                                 selectedEventId = id
                             }
-
                             
-    //                        HStack {
-    //                            Text("Upcoming events")
-    //                            
-    //                            NavigationLink(destination: ExploreView(selectedTab: .events)) {
-    //                                Image(systemName: "chevron.right")
-    //                            }
-    //                            
-    //                            Spacer()
-    //                            
-    //                            NavigationLink(destination: CalendarView()) {
-    //                                Image(systemName: "calendar")
-    //                            }
-    //                        }
-    //                        .font(.title2)
-    //                        .bold()
-    //                        
-    //                        UpcomingEventsModule(user: user)
+                            ClubItCalendarView()
+                                .padding(.top, 8)
                         }
                         .padding(.horizontal)
                         .navigationTitle("Home")

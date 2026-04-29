@@ -39,7 +39,7 @@ struct AddTaskView: View {
     private var filteredEvents: [Event] {
         guard let clubId = appSession.currentUser?.clubId else { return [] }
         return appSession.eventStore.events.filter { 
-            $0.clubId == clubId && $0.status == .approved 
+            $0.clubId == clubId && ($0.status == .approved || $0.status == .published)
         }
     }
     
@@ -69,7 +69,7 @@ struct AddTaskView: View {
                             Text(event.name).tag(UUID?.some(event.id))
                         }
                     }
-                    .pickerStyle(.menu)
+                    
                 }
                 
                 Section("Assignment") {
@@ -78,7 +78,6 @@ struct AddTaskView: View {
                             Text(type.rawValue).tag(type)
                         }
                     }
-                    .pickerStyle(.segmented)
                     
                     if assignmentType == .club {
                         Picker("Select Club", selection: $selectedOtherClubId) {
@@ -89,7 +88,7 @@ struct AddTaskView: View {
                                 }
                             }
                         }
-                        .pickerStyle(.menu)
+                       
                         .onChange(of: selectedOtherClubId) { _, newValue in
                             if let clubId = newValue {
                                 selectedClubLeadId = appSession.clubStore.allClubs.first(where: { $0.id == clubId })?.clubLeadId
@@ -103,7 +102,7 @@ struct AddTaskView: View {
                                     Text(lead.name).tag(UUID?.some(lead.id))
                                 }
                             }
-                            .pickerStyle(.menu)
+                           
                         }
                     }
                     
@@ -114,7 +113,7 @@ struct AddTaskView: View {
                                 Text(member.name).tag(UUID?.some(member.id))
                             }
                         }
-                        .pickerStyle(.menu)
+                     
                     }
                 }
                 
@@ -124,7 +123,7 @@ struct AddTaskView: View {
                             Text(p.rawValue.capitalized).tag(p)
                         }
                     }
-                    .pickerStyle(.menu)
+                   
                     
                     DatePicker("Deadline", selection: $deadline)
                 }

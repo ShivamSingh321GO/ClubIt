@@ -116,26 +116,6 @@ struct LeadEventApprovalDetailView: View {
             .overlay(alignment: .bottom) {
                 if replyingToItemId != nil {
                     replyInputOverlay()
-                } else if isAllApproved && event.status == .approved {
-                    Button {
-                        Task {
-                            try? await appSession.eventStore.updateEventStatus(id: event.id, status: .published)
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: "paperplane.fill")
-                            Text("Publish Event")
-                                .fontWeight(.bold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(16)
-                        .padding()
-                        .shadow(radius: 10)
-                    }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
         } else {

@@ -22,7 +22,7 @@ struct CreateAchievementView: View {
                             Text(type.title).tag(type)
                         }
                     }
-                    .pickerStyle(.menu)
+                    
                 }
                 
                 Section() {

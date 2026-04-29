@@ -46,24 +46,8 @@ struct ClubMemberHomeView: View {
                             }
                         }
                         
-                        // Upcoming Events Section
-                        HStack {
-                            Text("Upcoming Events")
-                            
-                            NavigationLink(destination: ExploreView(selectedTab: .events)) {
-                                Image(systemName: "chevron.right")
-                            }
-                            
-                            Spacer()
-                            
-                            NavigationLink(destination: CalendarView()) {
-                                Image(systemName: "calendar")
-                            }
-                        }
-                        .font(.title2)
-                        .bold()
-                        
-                        UpcomingEventsModule(user: user)
+                        ClubItCalendarView()
+                            .padding(.top, 8)
                     }
                     .padding()
                     .navigationTitle("Home")
