@@ -130,7 +130,6 @@ struct Event: Identifiable, Hashable, Codable {
         case status
         case registrationDeadline = "registration_deadline"
         case bannerImage = "banner_image"
-        case imageData = "image_data"
         case agenda
         case registrationForm = "registration_form"
         case createdAt = "created_at"
@@ -194,7 +193,6 @@ struct Event: Identifiable, Hashable, Codable {
         
         registrationDeadline = dateStringDecoder(.registrationDeadline)
         bannerImage = try? container.decode(String.self, forKey: .bannerImage)
-        imageData = try? container.decode(Data.self, forKey: .imageData)
         agenda = try? container.decode(String.self, forKey: .agenda)
         registrationForm = try? container.decode([RegistrationFormField].self, forKey: .registrationForm)
         createdAt = dateStringDecoder(.createdAt) ?? Date()

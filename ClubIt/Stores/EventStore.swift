@@ -9,6 +9,7 @@
 import Foundation
 import Observation
 import Supabase
+import SwiftUI
 
 @Observable
 final class EventStore {
@@ -29,13 +30,54 @@ final class EventStore {
     
     @MainActor
     func createEvent(_ event: Event) async throws {
+        // 1. Initial Local Update: Show the event immediately using local image data
+        await MainActor.run {
+            withAnimation {
+                var localEvent = event
+                // Ensure it's at the top of the list
+                if let index = self.events.firstIndex(where: { $0.id == localEvent.id }) {
+                    self.events[index] = localEvent
+                } else {
+                    self.events.insert(localEvent, at: 0)
+                }
+            }
+        }
+
+        // 2. Upload and Database Sync
+        var eventToSave = event
+        if let imageData = event.imageData {
+            let fileName = "\(UUID().uuidString).jpg"
+            _ = try await client.storage
+                .from("event-images")
+                .upload(
+                    path: fileName,
+                    file: imageData,
+                    options: FileOptions(contentType: "image/jpeg")
+                )
+            
+            let publicURL = try client.storage
+                .from("event-images")
+                .getPublicURL(path: fileName)
+            
+            eventToSave.bannerImage = "\(publicURL.absoluteString)?t=\(Int(Date().timeIntervalSince1970))"
+            eventToSave.imageData = nil 
+        }
+        
         try await client
             .from("events")
-            .insert(event)
+            .insert(eventToSave)
             .execute()
         
-        // Add locally to avoid full refresh if preferred, but refresh is safer
-        try? await fetchAllEvents()
+        // 3. Final Local Update: Transition from local data to remote URL after propagation
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        
+        await MainActor.run {
+            withAnimation {
+                if let index = self.events.firstIndex(where: { $0.id == eventToSave.id }) {
+                    self.events[index] = eventToSave
+                }
+            }
+        }
     }
     
     @MainActor

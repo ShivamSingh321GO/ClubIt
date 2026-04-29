@@ -160,6 +160,7 @@ struct EventView: View {
                                             event: event,
                                             isMyEvent: isMyEvent(event)
                                         )
+                                        .id("\(event.id)-\(event.bannerImage ?? "")")
                                     }
                                     .buttonStyle(.plain)
                                     .transition(.asymmetric(

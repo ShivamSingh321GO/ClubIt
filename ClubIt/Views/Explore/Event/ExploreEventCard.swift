@@ -14,6 +14,14 @@ struct ExploreEventCard: View {
     let event: Event
     let isMyEvent: Bool
     
+    private var liveEvent: Event {
+        appSession.eventStore.events.first(where: { $0.id == event.id }) ?? event
+    }
+    
+    private var bannerImage: String? {
+        liveEvent.bannerImage
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             bannerSection
@@ -21,7 +29,7 @@ struct ExploreEventCard: View {
             VStack(alignment: .leading, spacing: 16) {
                 // Title Section
                 HStack(alignment: .top) {
-                    Text(event.title)
+                    Text(liveEvent.title)
                         .font(.title3)
                         .fontWeight(.bold)
                         .lineLimit(1)
@@ -98,20 +106,50 @@ struct ExploreEventCard: View {
     private var bannerSection: some View {
         ZStack(alignment: .top) {
             Group {
-                if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
+                if let imageData = liveEvent.imageData, let uiImage = UIImage(data: imageData) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
-                } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Image(bannerImage)
-                        .resizable()
-                        .scaledToFill()
+                        .frame(height: 200)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                } else if let banner = bannerImage, !banner.isEmpty {
+                    if banner.lowercased().hasPrefix("http") {
+                        AsyncImage(url: URL(string: banner)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            case .failure(_):
+                                placeholderBanner
+                            case .empty:
+                                ZStack {
+                                    Color.orange.opacity(0.1)
+                                    ProgressView()
+                                }
+                            @unknown default:
+                                placeholderBanner
+                            }
+                        }
+                        .id(banner)
+                        .frame(height: 200)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                    } else {
+                        Image(banner)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 200)
+                            .frame(maxWidth: .infinity)
+                            .clipped()
+                    }
                 } else {
                     placeholderBanner
+                        .frame(height: 200)
+                        .frame(maxWidth: .infinity)
                 }
             }
-            .frame(height: 200)
-            .frame(maxWidth: .infinity)
             .clipShape(RoundedRectangle(cornerRadius: 22))
             
             HStack(alignment: .top) {

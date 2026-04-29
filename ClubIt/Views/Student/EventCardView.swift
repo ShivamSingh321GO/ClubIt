@@ -16,11 +16,32 @@ struct EventCardView: View {
             
             ZStack {
                 if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Image(bannerImage)
-                        .resizable()
-                        .scaledToFill()
+                    if bannerImage.lowercased().hasPrefix("http") {
+                        AsyncImage(url: URL(string: bannerImage)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            case .failure(_):
+                                Image(systemName: "photo")
+                                    .font(.largeTitle)
+                                    .foregroundStyle(.secondary)
+                            case .empty:
+                                ProgressView()
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
                         .frame(width: 280, height: 140)
                         .clipped()
+                    } else {
+                        Image(bannerImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 280, height: 140)
+                            .clipped()
+                    }
                 } else {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color(.systemGray5))

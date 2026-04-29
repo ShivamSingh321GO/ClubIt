@@ -11,11 +11,11 @@ struct ClubItCalendarView: View {
     
     var body: some View {
         let content = VStack(alignment: .leading, spacing: 20) {
-            if !standalone {
+//            if !standalone {
                 Text("Calendar")
                     .font(.title2)
                     .bold()
-            }
+//            }
             
             VStack(spacing: 16) {
                 // Month Header
@@ -104,9 +104,10 @@ struct ClubItCalendarView: View {
                 }
             }
         }
-        .navigationTitle("Calendar")
-        .navigationBarTitleDisplayMode(standalone ? .inline : .automatic)
-        .padding(.horizontal, standalone ? 16 : 0)
+            
+//        .navigationTitle("Calendar")
+//        .navigationBarTitleDisplayMode(standalone ? .inline : .automatic)
+//        .padding(.horizontal, standalone ? 16 : 0)
         
         if standalone {
             ScrollView(showsIndicators: false) {
