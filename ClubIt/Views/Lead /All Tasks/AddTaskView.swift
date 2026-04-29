@@ -36,6 +36,13 @@ struct AddTaskView: View {
         return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
     }
     
+    private var filteredEvents: [Event] {
+        guard let clubId = appSession.currentUser?.clubId else { return [] }
+        return appSession.eventStore.events.filter { 
+            $0.clubId == clubId && $0.status == .approved 
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -58,7 +65,7 @@ struct AddTaskView: View {
                     // Using .menu style for better response in sheets
                     Picker("Related Event", selection: $selectedEventId) {
                         Text("None / General Task").tag(UUID?.none)
-                        ForEach(appSession.eventStore.events) { event in
+                        ForEach(filteredEvents) { event in
                             Text(event.name).tag(UUID?.some(event.id))
                         }
                     }

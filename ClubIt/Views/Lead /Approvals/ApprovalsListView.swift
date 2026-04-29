@@ -28,43 +28,63 @@ struct ApprovalsListView: View {
         
         let uniqueEvents = Array(Set(sortedApprovals.compactMap { $0.eventId }))
         
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 16) {
-                if sortedApprovals.isEmpty {
-                    ContentUnavailableView(
-                        appSession.currentRole == .president ? "No Budget Requests" : "No Approvals Sent",
-                        systemImage: appSession.currentRole == .president ? "indianrupeesign.circle" : "paperplane",
-                        description: Text(appSession.currentRole == .president ? "Pending budget requests will appear here." : "Created events will generate approval requests here.")
-                    )
-                    .padding(.top, 40)
-                } else {
-                    LazyVStack(spacing: 16) {
-                        ForEach(uniqueEvents, id: \.self) { eventId in
-                            if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
-                                if appSession.currentRole == .president {
-                                    if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
-                                        NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
-                                            EventManagementEventApprovalCard(event: event, club: club)
+        ZStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    if sortedApprovals.isEmpty {
+                        ContentUnavailableView(
+                            appSession.currentRole == .president ? "No Budget Requests" : "No Approvals Sent",
+                            systemImage: appSession.currentRole == .president ? "indianrupeesign.circle" : "paperplane",
+                            description: Text(appSession.currentRole == .president ? "Pending budget requests will appear here." : "Created events will generate approval requests here.")
+                        )
+                        .padding(.top, 40)
+                    } else {
+                        LazyVStack(spacing: 16) {
+                            ForEach(uniqueEvents, id: \.self) { eventId in
+                                if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
+                                    if appSession.currentRole == .president {
+                                        if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                                            NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
+                                                EventManagementEventApprovalCard(event: event, club: club)
+                                            }
+                                            .buttonStyle(.plain)
                                         }
-                                        .buttonStyle(.plain)
-                                    }
-                                } else {
-                                    if let approval = sortedApprovals.first(where: { $0.eventId == eventId }) {
-                                        Button {
-                                            selectedEventId = event.id
-                                        } label: {
-                                            LeadApprovalEventCard(event: event, approval: approval)
+                                    } else {
+                                        if let approval = sortedApprovals.first(where: { $0.eventId == eventId }) {
+                                            Button {
+                                                selectedEventId = event.id
+                                            } label: {
+                                                LeadApprovalEventCard(event: event, approval: approval)
+                                            }
+                                            .buttonStyle(.plain)
                                         }
-                                        .buttonStyle(.plain)
                                     }
                                 }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
+                .padding(.vertical)
             }
-            .padding(.vertical)
+            .refreshable {
+                await appSession.refreshData()
+            }
+            
+            if appSession.isRefreshing {
+                VStack {
+                    ProgressView()
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                    Text("Updating approvals...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.1))
+                .transition(.opacity)
+            }
         }
 
         .navigationTitle(appSession.currentRole == .president ? "Budget Requests" : "Approval Requests")

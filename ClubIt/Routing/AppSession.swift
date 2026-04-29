@@ -14,6 +14,7 @@ final class AppSession {
     var currentUser: User?
     var currentRole: AppRole?
     var isLoggedIn: Bool = false
+    var isRefreshing: Bool = false
     
     var activeDashboardTab: Int = 0
     var activeExploreTab: Int = 0
@@ -81,6 +82,7 @@ final class AppSession {
     @MainActor
     func refreshData() async {
         guard isLoggedIn, let user = currentUser else { return }
+        isRefreshing = true
         
         print("DEBUG: Starting Data Refresh for \(user.name)...")
         
@@ -129,6 +131,7 @@ final class AppSession {
         self.studentDashboardStore.registeredEventIds = self.registeredEventIds
         
         print("DEBUG: Data Sync Sequence Complete")
+        isRefreshing = false
     }
 
     func signOut() {

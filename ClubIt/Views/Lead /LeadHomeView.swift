@@ -7,73 +7,93 @@ struct LeadHomeView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                if let user = appSession.currentUser {
-                    VStack(alignment: .leading, spacing: 24) {
-                        HStack {
-                            Text("Tasks")
-                            NavigationLink(destination: TasksListView(user: user)) {
-                                Image(systemName: "chevron.right")
+            ZStack {
+                ScrollView(showsIndicators: false) {
+                    if let user = appSession.currentUser {
+                        VStack(alignment: .leading, spacing: 24) {
+                            HStack {
+                                Text("Tasks")
+                                NavigationLink(destination: TasksListView(user: user)) {
+                                    Image(systemName: "chevron.right")
+                                }
                             }
-                        }
-                        .font(.title2)
-                        .bold()
-                        
-                        HomeTasksModule(user: user)
-                        
-                        HStack {
-                            Text("Approval Requests")
-                            NavigationLink(destination: ApprovalsListView(user: user)) {
-                                Image(systemName: "chevron.right")
-                            }
-                        }
-                        .font(.title2)
-                        .bold()
-                        
-                        HomeApprovalsModule(user: user) { id in
-                            selectedEventId = id
-                        }
-
-                        
-//                        HStack {
-//                            Text("Upcoming events")
-//                            
-//                            NavigationLink(destination: ExploreView(selectedTab: .events)) {
-//                                Image(systemName: "chevron.right")
-//                            }
-//                            
-//                            Spacer()
-//                            
-//                            NavigationLink(destination: CalendarView()) {
-//                                Image(systemName: "calendar")
-//                            }
-//                        }
-//                        .font(.title2)
-//                        .bold()
-//                        
-//                        UpcomingEventsModule(user: user)
-                    }
-                    .padding(.horizontal)
-                    .navigationTitle("Home")
-                    .toolbarTitleDisplayMode(.inlineLarge)
-                    .navigationDestination(item: $selectedEventId) { id in
-                        LeadEventApprovalDetailView(eventId: id)
-                    }
-                    .toolbar {
-                        ToolbarItemGroup(placement: .topBarTrailing) {
-                            NavigationLink {
-                                LeadNotificationView()
-                            } label: {
-                                Image(systemName: "bell")
-                            }
+                            .font(.title2)
+                            .bold()
                             
-                            NavigationLink {
-                                LeadProfileView()
-                            } label: {
-                                Image(systemName: "person.circle")
+                            HomeTasksModule(user: user)
+                            
+                            HStack {
+                                Text("Approval Requests")
+                                NavigationLink(destination: ApprovalsListView(user: user)) {
+                                    Image(systemName: "chevron.right")
+                                }
+                            }
+                            .font(.title2)
+                            .bold()
+                            
+                            HomeApprovalsModule(user: user) { id in
+                                selectedEventId = id
+                            }
+
+                            
+    //                        HStack {
+    //                            Text("Upcoming events")
+    //                            
+    //                            NavigationLink(destination: ExploreView(selectedTab: .events)) {
+    //                                Image(systemName: "chevron.right")
+    //                            }
+    //                            
+    //                            Spacer()
+    //                            
+    //                            NavigationLink(destination: CalendarView()) {
+    //                                Image(systemName: "calendar")
+    //                            }
+    //                        }
+    //                        .font(.title2)
+    //                        .bold()
+    //                        
+    //                        UpcomingEventsModule(user: user)
+                        }
+                        .padding(.horizontal)
+                        .navigationTitle("Home")
+                        .toolbarTitleDisplayMode(.inlineLarge)
+                        .navigationDestination(item: $selectedEventId) { id in
+                            LeadEventApprovalDetailView(eventId: id)
+                        }
+                        .toolbar {
+                            ToolbarItemGroup(placement: .topBarTrailing) {
+                                NavigationLink {
+                                    LeadNotificationView()
+                                } label: {
+                                    Image(systemName: "bell")
+                                }
+                                
+                                NavigationLink {
+                                    LeadProfileView()
+                                } label: {
+                                    Image(systemName: "person.circle")
+                                }
                             }
                         }
                     }
+                }
+                .refreshable {
+                    await appSession.refreshData()
+                }
+                
+                if appSession.isRefreshing {
+                    VStack {
+                        ProgressView()
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(12)
+                        Text("Loading data...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.1))
+                    .transition(.opacity)
                 }
             }
         }

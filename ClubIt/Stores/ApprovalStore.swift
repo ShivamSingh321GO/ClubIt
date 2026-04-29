@@ -65,6 +65,20 @@ final class ApprovalStore {
             remarkMessages[approvalId] = [newRemark]
         }
     }
+
+    @MainActor
+    func addRemarks(_ remarks: [RemarkMessage]) async throws {
+        try await client.from("remarks").insert(remarks).execute()
+        // Update locally
+        for remark in remarks {
+            if var current = remarkMessages[remark.approvalId] {
+                current.append(remark)
+                remarkMessages[remark.approvalId] = current
+            } else {
+                remarkMessages[remark.approvalId] = [remark]
+            }
+        }
+    }
     
     @MainActor
     func fetchBudgets(eventId: UUID? = nil) async throws {
@@ -93,6 +107,12 @@ final class ApprovalStore {
         
         try? await fetchApprovals()
     }
+
+    @MainActor
+    func submitApprovalRequests(_ approvals: [Approval]) async throws {
+        try await client.from("approvals").insert(approvals).execute()
+        try? await fetchApprovals()
+    }
     
     @MainActor
     func addBudget(_ budget: Budget) async throws {
@@ -103,6 +123,14 @@ final class ApprovalStore {
         
         try? await fetchBudgets(eventId: budget.eventId)
     }
+
+    @MainActor
+    func addBudgets(_ budgets: [Budget]) async throws {
+        try await client.from("budgets").insert(budgets).execute()
+        if let first = budgets.first {
+            try? await fetchBudgets(eventId: first.eventId)
+        }
+    }
     
     @MainActor
     func addResource(_ resource: Resource) async throws {
@@ -112,6 +140,14 @@ final class ApprovalStore {
             .execute()
         
         try? await fetchResources(eventId: resource.eventId)
+    }
+
+    @MainActor
+    func addResources(_ resources: [Resource]) async throws {
+        try await client.from("resources").insert(resources).execute()
+        if let first = resources.first {
+            try? await fetchResources(eventId: first.eventId)
+        }
     }
     
     func approvals(for eventId: UUID) -> [Approval] {

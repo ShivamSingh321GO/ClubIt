@@ -43,54 +43,67 @@ struct TasksListView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Filter
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(TaskFilter.allCases, id: \.self) { filter in
-                            FilterPill(
-                                title: "\(filter.rawValue) (\(count(for: filter)))",
-                                isSelected: selectedFilter == filter,
-                                action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        selectedFilter = filter
+            ZStack {
+                VStack(spacing: 0) {
+                    // Filter
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(TaskFilter.allCases, id: \.self) { filter in
+                                FilterPill(
+                                    title: "\(filter.rawValue) (\(count(for: filter)))",
+                                    isSelected: selectedFilter == filter,
+                                    action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            selectedFilter = filter
+                                        }
                                     }
-                                }
-                            )
-                        }
-                    }
-                }
-                .padding()
-                
-                // Tasks List
-                if filteredTasks.isEmpty {
-                    Spacer()
-                    VStack(spacing: 16) {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.secondary)
-                        
-                        Text("No tasks found")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                } else {
-                    ScrollView {
-                        VStack(alignment: .leading) {
-                            ForEach(Array(filteredTasks.enumerated()), id: \.element.id) { (index, task) in
-                                TaskRowView(task: task, now: appSession.currentTime)
+                                )
                             }
                         }
                     }
-                    .padding(.horizontal)
-                    .refreshable {
-                        do {
-                            try await appSession.taskStore.fetchTasks()
-                        } catch {
-                            print("DEBUG ERROR: Refresh tasks failed: \(error)")
+                    .padding()
+                    
+                    // Tasks List
+                    if filteredTasks.isEmpty {
+                        Spacer()
+                        VStack(spacing: 16) {
+                            Image(systemName: "checkmark.circle")
+                                .font(.system(size: 60))
+                                .foregroundStyle(.secondary)
+                            
+                            Text("No tasks found")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                    } else {
+                        ScrollView {
+                            VStack(alignment: .leading) {
+                                ForEach(Array(filteredTasks.enumerated()), id: \.element.id) { (index, task) in
+                                    TaskRowView(task: task, now: appSession.currentTime)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .refreshable {
+                            await appSession.refreshData()
                         }
                     }
+                }
+                
+                if appSession.isRefreshing {
+                    VStack {
+                        ProgressView()
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(12)
+                        Text("Updating tasks...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.1))
+                    .transition(.opacity)
                 }
             }
             .toolbar {
