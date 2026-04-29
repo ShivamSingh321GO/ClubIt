@@ -165,7 +165,7 @@ struct LeadEventApprovalDetailView: View {
                             ("Rental Cost", "₹\(String(format: "%.0f", resource.cost ?? 0))"),
                             ("Vendor", resource.vendorName ?? "N/A")
                         ] : []),
-                        remarks: resource.remarks,
+                        approvalId: appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id,
                         onReply: {
                             replyingToItemId = resource.id
                             replyingToType = .resource
@@ -190,7 +190,7 @@ struct LeadEventApprovalDetailView: View {
                         ("Location", event?.location ?? "N/A"),
                         ("Event Date", formatDateShort(event?.startDate ?? Date()))
                     ],
-                    remarks: approval.remarks,
+                    approvalId: approval.id,
                     onReply: {
                         replyingToItemId = approval.id
                         replyingToType = .venue
@@ -221,7 +221,7 @@ struct LeadEventApprovalDetailView: View {
                             ("Quantity", "\(budget.quantity)"),
                             ("Total", "₹\(String(format: "%.0f", budget.totalAmount))")
                         ],
-                        remarks: budget.remarks,
+                        approvalId: appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id,
                         onReply: {
                             replyingToItemId = budget.id
                             replyingToType = .budget
@@ -235,68 +235,41 @@ struct LeadEventApprovalDetailView: View {
     
     @ViewBuilder
     private func replyInputOverlay() -> some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack(spacing: 12) {
-                TextField("Type your reply...", text: $replyText)
-                    .padding(10)
-                    .background(Color.secondary.opacity(0.1))
-                    .cornerRadius(12)
-                
-                Button(action: sendReply) {
-                    Image(systemName: "paperplane.fill")
-                        .foregroundColor(.white)
-                        .padding(10)
-                        .background(Color.blue)
-                        .clipShape(Circle())
-                }
-                .disabled(replyText.trimmingCharacters(in: .whitespaces).isEmpty)
-                
-                Button(action: {
-                    replyingToItemId = nil
-                    replyingToType = nil
-                    replyText = ""
-                }) {
-                    Image(systemName: "xmark")
-                        .foregroundColor(.secondary)
-                        .padding(10)
-                }
+        GlobalReplyBar(
+            text: $replyText,
+            onSend: sendReply,
+            onCancel: {
+                replyingToItemId = nil
+                replyingToType = nil
+                replyText = ""
             }
-            .padding()
-            .background(.ultraThinMaterial)
-        }
+        )
     }
     
     private func sendReply() {
         guard let id = replyingToItemId, let type = replyingToType, let user = appSession.currentUser else { return }
         
-        let newRemark = Remark(id: UUID(), text: replyText,
-            authorId: user.id,
-            createdAt: Date()
-        )
+        // Find the correct approval ID for this item
+        let approvalId: UUID? = {
+            if type == .venue || type == .event { return id }
+            return appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == id })?.id
+        }()
+        
+        guard let finalApprovalId = approvalId else {
+            print("ERROR: Could not find approval ID for reply")
+            return
+        }
+        
+        let contentToSend = replyText // Capture here
         
         Task {
             do {
-                switch type {
-                case .resource:
-                    if let index = appSession.approvalStore.resources.firstIndex(where: { $0.id == id }) {
-                        var remarks = appSession.approvalStore.resources[index].remarks
-                        remarks.append(newRemark)
-                        try await appSession.approvalStore.updateResourceStatus(id: id, status: appSession.approvalStore.resources[index].status, remarks: remarks)
-                    }
-                case .venue, .event:
-                    if let index = appSession.approvalStore.approvals.firstIndex(where: { $0.id == id }) {
-                        var remarks = appSession.approvalStore.approvals[index].remarks
-                        remarks.append(newRemark)
-                        try await appSession.approvalStore.updateApproval(id: id, status: appSession.approvalStore.approvals[index].status, remarks: remarks)
-                    }
-                case .budget:
-                    if let index = appSession.approvalStore.budgets.firstIndex(where: { $0.id == id }) {
-                        var remarks = appSession.approvalStore.budgets[index].remarks
-                        remarks.append(newRemark)
-                        try await appSession.approvalStore.updateBudgetStatus(id: id, status: appSession.approvalStore.budgets[index].status, remarks: remarks)
-                    }
-                }
+                try await appSession.approvalStore.addRemark(
+                    approvalId: finalApprovalId,
+                    authorId: user.id,
+                    content: contentToSend
+                )
+                print("DEBUG: Remark sent successfully to approval \(finalApprovalId)")
             } catch {
                 print("Error sending reply: \(error)")
             }
@@ -356,7 +329,7 @@ struct LeadDetailClubHeaderView: View {
             .controlSize(.small)
         }
         .padding(16)
-        .glassEffect(in: .rect(cornerRadius: 24))
+        .glassEffect(in: .rect(cornerRadius: 20))
         .sheet(isPresented: $isShowingEditEvent) {
             NavigationStack {
                 EditEventView(event: event) { updatedEvent in
@@ -421,15 +394,14 @@ struct SummaryCard: View {
 }
 
 struct LeadItemApprovalCard: View {
+    @Environment(AppSession.self) var appSession
     let title: String
     let icon: String
     let iconColor: Color
     let status: String
     let details: [(String, String)]
-    let remarks: [Remark]
+    let approvalId: UUID? // Changed from [Remark]
     let onReply: () -> Void
-    
-    @State private var showAllRemarks = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -454,7 +426,7 @@ struct LeadItemApprovalCard: View {
                     .clipShape(Capsule())
             }
             
-            Divider().opacity(0.3)
+            Divider()
             
             // Details Grid
             VStack(alignment: .leading, spacing: 12) {
@@ -471,13 +443,13 @@ struct LeadItemApprovalCard: View {
                     }
                 }
                 
-                if !remarks.isEmpty {
+                if let approvalId = approvalId {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("REMARKS")
                             .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
                         
-                        RemarkConversationView(remarks: remarks)
+                        RemarkConversationView(approvalId: approvalId)
                     }
                     .padding(.top, 4)
                 }

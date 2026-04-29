@@ -35,7 +35,7 @@ final class EventStore {
             .execute()
         
         // Add locally to avoid full refresh if preferred, but refresh is safer
-        try await fetchAllEvents()
+        try? await fetchAllEvents()
     }
     
     @MainActor

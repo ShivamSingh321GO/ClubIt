@@ -46,7 +46,7 @@ struct HomeApprovalCard: View {
                     HStack(spacing: 12) {
                         Button {
                             Task {
-                                try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved, remarks: [])
+                                try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
                             }
                         } label: {
                             Text("Approve")
@@ -60,7 +60,7 @@ struct HomeApprovalCard: View {
                         
                         Button {
                             Task {
-                                try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: [])
+                                try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected)
                             }
                         } label: {
                             Text("Reject")

@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 enum ApprovalType: String, Codable {
     case event
     case budget
@@ -21,21 +20,32 @@ enum ApprovalStatus: String, Codable {
     case rejected
 }
 
-
-struct Remark: Identifiable, Codable {
+struct Remark: Identifiable, Codable, Hashable {
     var id: UUID
-    var text: String
+    var approvalId: UUID
     var authorId: UUID
+    var content: String
     var createdAt: Date
     
     enum CodingKeys: String, CodingKey {
         case id
-        case text
+        case approvalId = "approval_id"
         case authorId = "author_id"
+        case content
         case createdAt = "created_at"
+    }
+    
+    init(id: UUID = UUID(), approvalId: UUID, authorId: UUID, content: String, createdAt: Date = Date()) {
+        self.id = id
+        self.approvalId = approvalId
+        self.authorId = authorId
+        self.content = content
+        self.createdAt = createdAt
     }
 }
 
+// Keep RemarkMessage as an alias for now to avoid breaking other files
+typealias RemarkMessage = Remark
 
 struct Approval: Identifiable, Codable {
     var id: UUID
@@ -48,7 +58,7 @@ struct Approval: Identifiable, Codable {
     var approvalRelatedId: UUID?     
     
     var status: ApprovalStatus
-    var remarks: [Remark]
+    var remarks: [Remark]?
     
     var createdAt: Date
     var updatedAt: Date?
@@ -66,7 +76,7 @@ struct Approval: Identifiable, Codable {
         case updatedAt = "updated_at"
     }
 
-    init(id: UUID, type: ApprovalType, senderId: UUID?, receiverId: UUID?, eventId: UUID?, approvalRelatedId: UUID?, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, updatedAt: Date? = nil) {
+    init(id: UUID, type: ApprovalType, senderId: UUID?, receiverId: UUID?, eventId: UUID?, approvalRelatedId: UUID?, status: ApprovalStatus, remarks: [Remark]? = [], createdAt: Date, updatedAt: Date? = nil) {
         self.id = id
         self.type = type
         self.senderId = senderId
@@ -74,12 +84,11 @@ struct Approval: Identifiable, Codable {
         self.eventId = eventId
         self.approvalRelatedId = approvalRelatedId
         self.status = status
-        self.remarks = remarks
+        self.remarks = remarks ?? []
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
 }
-
 
 struct Budget: Identifiable, Codable {
     var id: UUID
@@ -97,7 +106,7 @@ struct Budget: Identifiable, Codable {
     var status: ApprovalStatus
     var addedBy: UUID?
     
-    var remarks: [Remark]
+    var remarks: [Remark]?
     var createdAt: Date
     var approvedAt: Date?
 
@@ -114,7 +123,7 @@ struct Budget: Identifiable, Codable {
         case approvedAt = "approved_at"
     }
 
-    init(id: UUID, eventId: UUID?, itemName: String, unitPrice: Double, quantity: Int, status: ApprovalStatus, addedBy: UUID?, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    init(id: UUID, eventId: UUID?, itemName: String, unitPrice: Double, quantity: Int, status: ApprovalStatus, addedBy: UUID?, remarks: [Remark]? = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.itemName = itemName
@@ -122,7 +131,7 @@ struct Budget: Identifiable, Codable {
         self.quantity = quantity
         self.status = status
         self.addedBy = addedBy
-        self.remarks = remarks
+        self.remarks = remarks ?? []
         self.createdAt = createdAt
         self.approvedAt = approvedAt
     }

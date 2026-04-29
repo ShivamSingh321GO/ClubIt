@@ -8,6 +8,10 @@ struct PresidentClubBudgetDetailView: View {
     @State private var showingBudgetApprovalAlert = false
     @State private var budgetToApprove: Budget?
     
+    // Reply states
+    @State private var replyingToApprovalId: UUID? = nil
+    @State private var replyText: String = ""
+    
     var body: some View {
         let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
         let clubEventIds = Set(clubEvents.map { $0.id })
@@ -188,6 +192,14 @@ struct PresidentClubBudgetDetailView: View {
                                 onApprove: {
                                     budgetToApprove = budget
                                     showingBudgetApprovalAlert = true
+                                },
+                                onReply: {
+                                    withAnimation {
+                                        if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id {
+                                            replyingToApprovalId = approvalId
+                                            replyText = ""
+                                        }
+                                    }
                                 }
                             )
                         }
@@ -216,6 +228,29 @@ struct PresidentClubBudgetDetailView: View {
                 Text("Are you sure you want to approve the budget for '\(budget.itemName)'?")
             }
         }
+        .overlay(alignment: .bottom) {
+            if let approvalId = replyingToApprovalId {
+                GlobalReplyBar(
+                    text: $replyText,
+                    onSend: {
+                        let content = replyText
+                        Task {
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: approvalId,
+                                authorId: appSession.currentUser?.id ?? UUID(),
+                                content: content
+                            )
+                        }
+                        replyText = ""
+                        replyingToApprovalId = nil
+                    },
+                    onCancel: {
+                        replyingToApprovalId = nil
+                        replyText = ""
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -224,8 +259,7 @@ struct PresidentBudgetRequestCard: View {
     let budget: Budget
     let onReject: () -> Void
     let onApprove: () -> Void
-    @State private var replyText: String = ""
-    @State private var showingReply: Bool = false
+    let onReply: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -270,43 +304,27 @@ struct PresidentBudgetRequestCard: View {
                     }
                 }
                 
-                if !budget.remarks.isEmpty {
+                if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("REMARKS")
                             .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
                         
-                        RemarkConversationView(remarks: budget.remarks)
+                        RemarkConversationView(approvalId: approvalId)
                     }
                     .padding(.top, 4)
                 }
                 
-                if showingReply {
-                    ReplyInputView(replyText: $replyText, onSend: {
-                        let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                        Task {
-                            var remarks = budget.remarks
-                            remarks.append(newRemark)
-                            try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: budget.status, remarks: remarks)
-                        }
-                        replyText = ""
-                        showingReply = false
-                    }, onCancel: {
-                        showingReply = false
-                        replyText = ""
-                    })
-                } else {
-                    Button(action: { withAnimation { showingReply = true } }) {
-                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                            .font(.caption.bold())
-                            .foregroundColor(.blue)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .background(Color.blue.opacity(0.1))
-                            .clipShape(Capsule())
-                    }
-                    .padding(.top, 4)
+                Button(action: onReply) {
+                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                        .font(.caption.bold())
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Capsule())
                 }
+                .padding(.top, 4)
             }
             
             if budget.status == .pending {
@@ -429,9 +447,16 @@ struct PresidentBudgetRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
-                    Task {
-                        try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected, remarks: newRemark)
+                    if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id {
+                        let finalRemark = remark
+                        Task {
+                            try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected)
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: approvalId,
+                                authorId: appSession.currentUser?.id ?? UUID(),
+                                content: finalRemark
+                            )
+                        }
                     }
                     dismiss()
                 }) {

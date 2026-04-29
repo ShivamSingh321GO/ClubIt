@@ -79,9 +79,17 @@ struct FacultyApprovalDetailView: View {
         .alert("Confirm Action", isPresented: $showingConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button(targetStatus == .approved ? "Approve" : "Reject", role: targetStatus == .approved ? .none : .destructive) {
+                let contentToSave = remark // Capture here
                 Task {
-                    let newRemark = remark.isEmpty ? [] : [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
-                    try? await appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus, remarks: newRemark)
+                    try? await appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus)
+                    
+                    if !contentToSave.isEmpty {
+                        try? await appSession.approvalStore.addRemark(
+                            approvalId: approval.id,
+                            authorId: appSession.currentUser?.id ?? UUID(),
+                            content: contentToSave
+                        )
+                    }
                     
                     if targetStatus == .approved {
                         await appSession.checkAndAutoApproveEvent(eventId: approval.eventId ?? UUID())
@@ -117,9 +125,14 @@ struct FacultyApprovalDetailView: View {
                     Spacer()
                     
                     Button("Submit Rejection") {
+                        let contentToSave = remark // Capture here
                         Task {
-                            let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
-                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: newRemark)
+                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected)
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: approval.id,
+                                authorId: appSession.currentUser?.id ?? UUID(),
+                                content: contentToSave
+                            )
                             showingRemarkPrompt = false
                             dismiss()
                         }

@@ -68,7 +68,7 @@ struct LeadApprovalEventCard: View {
             
             Spacer()
             
-            VStack(alignment: .trailing, spacing: 6) {
+            VStack(alignment: .center, spacing: 6) {
                 if isApproved {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.title3)
@@ -102,12 +102,12 @@ struct LeadApprovalEventCard: View {
             }
 
             
-            Image(systemName: "chevron.right")
-                .font(.caption.bold())
-                .foregroundColor(.secondary.opacity(0.3))
+//            Image(systemName: "chevron.right")
+//                .font(.caption.bold())
+//                .foregroundColor(.secondary.opacity(0.3))
         }
         .padding(16)
-        .glassEffect(in: .rect(cornerRadius: 24))
+        .glassEffect(in: .rect(cornerRadius: 20))
         .contentShape(.rect)
     }
 }

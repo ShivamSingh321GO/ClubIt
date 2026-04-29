@@ -169,7 +169,9 @@ struct DynamicRegistrationFormView: View {
         // Complete registration
         Task {
             await appSession.registerForEvent(id: event.id)
-            dismiss()
+            await MainActor.run {
+                dismiss()
+            }
         }
     }
 }

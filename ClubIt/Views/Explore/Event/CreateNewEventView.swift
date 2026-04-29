@@ -375,6 +375,19 @@ struct CreateNewEventView: View {
             createdAt: Date()
         )
 
+        print("DEBUG: Attempting to create event:")
+        print("  - ID: \(newEvent.id)")
+        print("  - Name: \(newEvent.name)")
+        print("  - ClubID: \(newEvent.clubId)")
+        print("  - CreatedBy: \(newEvent.createdBy)")
+        print("  - Status: \(newEvent.status.rawValue)")
+        
+        if currentUser.clubId == nil {
+            print("WARNING: currentUser.clubId is NIL! RLS will likely fail.")
+            errorMessage = "Error: Your user account is not linked to any club. Please contact your administrator."
+            return
+        }
+
         Task {
             do {
                 // 1. Save the main event
@@ -414,11 +427,16 @@ struct CreateNewEventView: View {
                         eventId: newEvent.id,
                         approvalRelatedId: budgetId,
                         status: .pending,
-                        remarks: [Remark(id: UUID(), text: "Budget approval requested for \(item.name)", authorId: currentUser.id, createdAt: Date())],
+                        remarks: [],
                         createdAt: Date(),
                         updatedAt: nil
                     )
                     try await appSession.approvalStore.submitApprovalRequest(budgetApproval)
+                    try await appSession.approvalStore.addRemark(
+                        approvalId: budgetApproval.id,
+                        authorId: currentUser.id,
+                        content: "Budget approval requested for \(item.name)"
+                    )
                 }
                 
                 // 3. Save Resource Items & Create Individual Approvals
@@ -445,11 +463,16 @@ struct CreateNewEventView: View {
                         eventId: newEvent.id,
                         approvalRelatedId: resourceId,
                         status: .pending,
-                        remarks: [Remark(id: UUID(), text: "Resource approval requested for \(item.name)", authorId: currentUser.id, createdAt: Date())],
+                        remarks: [],
                         createdAt: Date(),
                         updatedAt: nil
                     )
                     try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                    try await appSession.approvalStore.addRemark(
+                        approvalId: resApproval.id,
+                        authorId: currentUser.id,
+                        content: "Resource approval requested for \(item.name)"
+                    )
                 }
                 
                 for item in rentalResources {
@@ -478,11 +501,16 @@ struct CreateNewEventView: View {
                         eventId: newEvent.id,
                         approvalRelatedId: resourceId,
                         status: .pending,
-                        remarks: [Remark(id: UUID(), text: "Resource approval requested for \(item.name)", authorId: currentUser.id, createdAt: Date())],
+                        remarks: [],
                         createdAt: Date(),
                         updatedAt: nil
                     )
                     try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                    try await appSession.approvalStore.addRemark(
+                        approvalId: resApproval.id,
+                        authorId: currentUser.id,
+                        content: "Resource approval requested for \(item.name)"
+                    )
                 }
 
                 // 4. Generate Main Event and Venue Approvals
@@ -494,11 +522,16 @@ struct CreateNewEventView: View {
                     eventId: newEvent.id,
                     approvalRelatedId: newEvent.id,
                     status: .pending,
-                    remarks: [Remark(id: UUID(), text: "Event creation approval requested", authorId: currentUser.id, createdAt: Date())],
+                    remarks: [],
                     createdAt: Date(),
                     updatedAt: nil
                 )
                 try await appSession.approvalStore.submitApprovalRequest(eventApproval)
+                try await appSession.approvalStore.addRemark(
+                    approvalId: eventApproval.id,
+                    authorId: currentUser.id,
+                    content: "Event creation approval requested"
+                )
                 
                 let venueApproval = Approval(
                     id: UUID(),
@@ -508,14 +541,21 @@ struct CreateNewEventView: View {
                     eventId: newEvent.id,
                     approvalRelatedId: newEvent.id, // Linking to the event for venue context
                     status: .pending,
-                    remarks: [Remark(id: UUID(), text: "Venue booking approval requested for \(venue)", authorId: currentUser.id, createdAt: Date())],
+                    remarks: [],
                     createdAt: Date(),
                     updatedAt: nil
                 )
                 try await appSession.approvalStore.submitApprovalRequest(venueApproval)
+                try await appSession.approvalStore.addRemark(
+                    approvalId: venueApproval.id,
+                    authorId: currentUser.id,
+                    content: "Venue booking approval requested for \(venue)"
+                )
                 
-                onSave(newEvent)
-                dismiss()
+                await MainActor.run {
+                    onSave(newEvent)
+                    dismiss()
+                }
             } catch {
                 errorMessage = "Failed to save event: \(error.localizedDescription)"
             }

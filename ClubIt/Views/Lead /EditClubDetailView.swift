@@ -176,7 +176,9 @@ struct EditClubDetailView: View {
                     logo: logo,
                     imageData: imageData
                 )
-                dismiss()
+                await MainActor.run {
+                    dismiss()
+                }
             } catch {
                 print("DEBUG ERROR: Failed to update club: \(error)")
             }

@@ -384,28 +384,34 @@ struct EditEventView: View {
                 // Venue Approval re-submission
                 if let venueApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .venue }) {
                     if venueApproval.status == .rejected || event.location != venue {
-                        var remarks = venueApproval.remarks
-                        remarks.append(Remark(id: UUID(), text: "Venue details updated: \(venue). Resubmitted for approval.", authorId: currentUser.id, createdAt: Date()))
-                        try await appSession.approvalStore.updateApproval(id: venueApproval.id, status: .pending, remarks: remarks)
+                        try await appSession.approvalStore.updateApproval(id: venueApproval.id, status: .pending)
+                        try await appSession.approvalStore.addRemark(
+                            approvalId: venueApproval.id,
+                            authorId: currentUser.id,
+                            content: "Venue details updated: \(venue). Resubmitted for approval."
+                        )
                     }
                 }
 
-                // Budget collection status check
-                if let budgetApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .budget }) {
-                    let hasChanges = budgetItems.contains { draft in
-                        if let existing = appSession.approvalStore.budgets.first(where: { $0.id == draft.id }) {
-                            let wasRejected = existing.status == .rejected
-                            let dataChanged = existing.itemName != draft.name || 
-                                             existing.unitPrice != (Double(draft.price) ?? 0) || 
-                                             existing.quantity != draft.quantity
-                            return wasRejected || dataChanged
+                // Budget collection check (We'll handle remarks per item now)
+                let allDraftBudgets = budgetItems
+                for draft in allDraftBudgets {
+                    if let existing = appSession.approvalStore.budgets.first(where: { $0.id == draft.id }) {
+                        let dataChanged = existing.itemName != draft.name || 
+                                         existing.unitPrice != (Double(draft.price) ?? 0) || 
+                                         existing.quantity != draft.quantity
+                        
+                        if dataChanged || existing.status == .rejected {
+                            // Find specific approval for this budget item
+                            if let itemApproval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == draft.id }) {
+                                try? await appSession.approvalStore.updateApproval(id: itemApproval.id, status: .pending)
+                                try? await appSession.approvalStore.addRemark(
+                                    approvalId: itemApproval.id,
+                                    authorId: currentUser.id,
+                                    content: "Budget item updated: \(draft.name). Resubmitted."
+                                )
+                            }
                         }
-                        return true // New item
-                    }
-                    if hasChanges {
-                        var remarks = budgetApproval.remarks
-                        remarks.append(Remark(id: UUID(), text: "Budget updated/items added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
-                        try await appSession.approvalStore.updateApproval(id: budgetApproval.id, status: .pending, remarks: remarks)
                     }
                 }
 
@@ -426,7 +432,8 @@ struct EditEventView: View {
                         }
                         try await appSession.approvalStore.updateBudget(updated)
                     } else {
-                        let newBudget = Budget(id: UUID(),
+                        let newBudgetId = UUID()
+                        let newBudget = Budget(id: newBudgetId,
                             eventId: event.id,
                             itemName: draft.name,
                             unitPrice: Double(draft.price) ?? 0,
@@ -437,24 +444,51 @@ struct EditEventView: View {
                             createdAt: Date()
                         )
                         try await appSession.approvalStore.addBudget(newBudget)
+                        
+                        // Create matching Approval entry
+                        let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
+                        let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+
+                        let budgetApproval = Approval(
+                            id: UUID(),
+                            type: .budget,
+                            senderId: currentUser.id,
+                            receiverId: facultyId,
+                            eventId: event.id,
+                            approvalRelatedId: newBudgetId,
+                            status: .pending,
+                            remarks: [],
+                            createdAt: Date(),
+                            updatedAt: nil
+                        )
+                        try await appSession.approvalStore.submitApprovalRequest(budgetApproval)
+                        try await appSession.approvalStore.addRemark(
+                            approvalId: budgetApproval.id,
+                            authorId: currentUser.id,
+                            content: "New budget item added: \(draft.name)"
+                        )
                     }
                 }
 
-                // Resource collection status check
-                if let resourceApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .resource }) {
-                    let allDraftResources = universityResources + rentalResources
-                    let hasChanges = allDraftResources.contains { draft in
-                        if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
-                            let wasRejected = existing.status == .rejected
-                            let dataChanged = existing.name != draft.name || existing.quantity != draft.quantity || (existing.vendorName != draft.vendorName && existing.type == .external)
-                            return wasRejected || dataChanged
+                // Resource collection check (We'll handle remarks per item now)
+                let allDraftResources = universityResources + rentalResources
+                for draft in allDraftResources {
+                    if let existing = appSession.approvalStore.resources.first(where: { $0.id == draft.id }) {
+                        let dataChanged = existing.name != draft.name || 
+                                         existing.quantity != draft.quantity || 
+                                         (existing.vendorName != draft.vendorName && existing.type == .external)
+                        
+                        if dataChanged || existing.status == .rejected {
+                            // Find specific approval for this resource item
+                            if let itemApproval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == draft.id }) {
+                                try? await appSession.approvalStore.updateApproval(id: itemApproval.id, status: .pending)
+                                try? await appSession.approvalStore.addRemark(
+                                    approvalId: itemApproval.id,
+                                    authorId: currentUser.id,
+                                    content: "Resource item updated: \(draft.name). Resubmitted."
+                                )
+                            }
                         }
-                        return true // New item
-                    }
-                    if hasChanges {
-                        var remarks = resourceApproval.remarks
-                        remarks.append(Remark(id: UUID(), text: "Resources updated/added. Resubmitted.", authorId: currentUser.id, createdAt: Date()))
-                        try await appSession.approvalStore.updateApproval(id: resourceApproval.id, status: .pending, remarks: remarks)
                     }
                 }
 
@@ -472,8 +506,9 @@ struct EditEventView: View {
                         }
                         try await appSession.approvalStore.updateResource(updated)
                     } else {
+                        let newResId = UUID()
                         let newRes = Resource(
-                            id: UUID(),
+                            id: newResId,
                             eventId: event.id,
                             name: draft.name,
                             quantity: draft.quantity,
@@ -484,6 +519,28 @@ struct EditEventView: View {
                             createdAt: Date()
                         )
                         try await appSession.approvalStore.addResource(newRes)
+                        
+                        let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
+                        let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+
+                        let resApproval = Approval(
+                            id: UUID(),
+                            type: .resource,
+                            senderId: currentUser.id,
+                            receiverId: facultyId,
+                            eventId: event.id,
+                            approvalRelatedId: newResId,
+                            status: .pending,
+                            remarks: [],
+                            createdAt: Date(),
+                            updatedAt: nil
+                        )
+                        try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                        try await appSession.approvalStore.addRemark(
+                            approvalId: resApproval.id,
+                            authorId: currentUser.id,
+                            content: "New university resource added: \(draft.name)"
+                        )
                     }
                 }
 
@@ -505,8 +562,9 @@ struct EditEventView: View {
                         }
                         try await appSession.approvalStore.updateResource(updated)
                     } else {
+                        let newResId = UUID()
                         let newRes = Resource(
-                            id: UUID(),
+                            id: newResId,
                             eventId: event.id,
                             name: draft.name,
                             quantity: draft.quantity,
@@ -519,11 +577,35 @@ struct EditEventView: View {
                             createdAt: Date()
                         )
                         try await appSession.approvalStore.addResource(newRes)
+                        
+                        let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
+                        let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+
+                        let resApproval = Approval(
+                            id: UUID(),
+                            type: .resource,
+                            senderId: currentUser.id,
+                            receiverId: facultyId,
+                            eventId: event.id,
+                            approvalRelatedId: newResId,
+                            status: .pending,
+                            remarks: [],
+                            createdAt: Date(),
+                            updatedAt: nil
+                        )
+                        try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                        try await appSession.approvalStore.addRemark(
+                            approvalId: resApproval.id,
+                            authorId: currentUser.id,
+                            content: "New rental resource added: \(draft.name)"
+                        )
                     }
                 }
 
-                onSave(updatedEvent)
-                dismiss()
+                await MainActor.run {
+                    onSave(updatedEvent)
+                    dismiss()
+                }
             } catch {
                 errorMessage = "Failed to update event: \(error.localizedDescription)"
             }

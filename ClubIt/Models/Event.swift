@@ -185,8 +185,8 @@ struct Event: Identifiable, Hashable, Codable {
         maxParticipants = (try? container.decode(Int.self, forKey: .maxParticipants)) ?? 0
         registrationType = try? container.decode(RegistrationType.self, forKey: .registrationType)
         location = (try? container.decode(String.self, forKey: .location)) ?? ""
-        clubId = try container.decode(UUID.self, forKey: .clubId)
-        createdBy = try container.decode(UUID.self, forKey: .createdBy)
+        clubId = (try? container.decode(UUID.self, forKey: .clubId)) ?? UUID()
+        createdBy = (try? container.decode(UUID.self, forKey: .createdBy)) ?? UUID()
         
         // Robust Enum Decoding
         category = (try? container.decode(EventCategory.self, forKey: .category)) ?? .technical
@@ -233,7 +233,7 @@ struct EventApproval: Identifiable, Codable {
     var approvalType: ApprovalType
     var status: ApprovalStatus
     
-    var remarks: [Remark]
+    var remarks: [Remark]?
     
     var createdAt: Date
     var approvedAt: Date?
@@ -250,14 +250,14 @@ struct EventApproval: Identifiable, Codable {
         case approvedAt = "approved_at"
     }
 
-    init(id: UUID, eventId: UUID, approvedBy: UUID, requestedBy: UUID, approvalType: ApprovalType, status: ApprovalStatus, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    init(id: UUID, eventId: UUID, approvedBy: UUID, requestedBy: UUID, approvalType: ApprovalType, status: ApprovalStatus, remarks: [Remark]? = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.approvedBy = approvedBy
         self.requestedBy = requestedBy
         self.approvalType = approvalType
         self.status = status
-        self.remarks = remarks
+        self.remarks = remarks ?? []
         self.createdAt = createdAt
         self.approvedAt = approvedAt
     }
@@ -296,7 +296,7 @@ struct Resource: Identifiable, Codable {
     
     var addedBy: UUID?
     
-    var remarks: [Remark]
+    var remarks: [Remark]?
     var createdAt: Date
     var approvedAt: Date?
 
@@ -317,7 +317,7 @@ struct Resource: Identifiable, Codable {
         case approvedAt = "approved_at"
     }
 
-    init(id: UUID, eventId: UUID?, name: String, quantity: Int, type: ResourceType, status: ResourceStatus, cost: Double? = nil, vendorName: String? = nil, issuedAt: Date? = nil, returnedAt: Date? = nil, addedBy: UUID?, remarks: [Remark] = [], createdAt: Date, approvedAt: Date? = nil) {
+    init(id: UUID, eventId: UUID?, name: String, quantity: Int, type: ResourceType, status: ResourceStatus, cost: Double? = nil, vendorName: String? = nil, issuedAt: Date? = nil, returnedAt: Date? = nil, addedBy: UUID?, remarks: [Remark]? = [], createdAt: Date, approvedAt: Date? = nil) {
         self.id = id
         self.eventId = eventId
         self.name = name
@@ -329,7 +329,7 @@ struct Resource: Identifiable, Codable {
         self.issuedAt = issuedAt
         self.returnedAt = returnedAt
         self.addedBy = addedBy
-        self.remarks = remarks
+        self.remarks = remarks ?? []
         self.createdAt = createdAt
         self.approvedAt = approvedAt
     }

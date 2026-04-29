@@ -15,6 +15,10 @@ struct ClubResourcesDetailView: View {
     @State private var showingVenueApprovalAlert = false
     @State private var venueToApprove: Approval?
     
+    // Reply states
+    @State private var replyingToApprovalId: UUID? = nil
+    @State private var replyText: String = ""
+    
     var body: some View {
         let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
         let allClubVenueApprovals = appSession.approvalStore.approvals.filter { 
@@ -43,6 +47,12 @@ struct ClubResourcesDetailView: View {
                         onApprove: { approval in
                             venueToApprove = approval
                             showingVenueApprovalAlert = true
+                        },
+                        onReply: { approval in
+                            withAnimation {
+                                replyingToApprovalId = approval.id
+                                replyText = ""
+                            }
                         }
                     )
                 } else {
@@ -76,6 +86,14 @@ struct ClubResourcesDetailView: View {
                         onApprove: { resource in
                             resourceToApprove = resource
                             showingResourceApprovalAlert = true
+                        },
+                        onReply: { resource in
+                            withAnimation {
+                                if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id {
+                                    replyingToApprovalId = approvalId
+                                    replyText = ""
+                                }
+                            }
                         }
                     )
                 }
@@ -117,6 +135,29 @@ struct ClubResourcesDetailView: View {
             if let approval = venueToApprove,
                let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
                 Text("Are you sure you want to approve the venue booking for '\(event.location)'?")
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let approvalId = replyingToApprovalId {
+                GlobalReplyBar(
+                    text: $replyText,
+                    onSend: {
+                        let content = replyText
+                        Task {
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: approvalId,
+                                authorId: appSession.currentUser?.id ?? UUID(),
+                                content: content
+                            )
+                        }
+                        replyText = ""
+                        replyingToApprovalId = nil
+                    },
+                    onCancel: {
+                        replyingToApprovalId = nil
+                        replyText = ""
+                    }
+                )
             }
         }
     }
@@ -173,6 +214,7 @@ struct ResourceListView: View {
     let resources: [Resource]
     let onReject: (Resource) -> Void
     let onApprove: (Resource) -> Void
+    let onReply: (Resource) -> Void
     
     var body: some View {
         if resources.isEmpty {
@@ -183,7 +225,10 @@ struct ResourceListView: View {
                     FacultyResourceRequestCard(
                         resource: resource,
                         onReject: { onReject(resource) },
-                        onApprove: { onApprove(resource) }
+                        onApprove: { onApprove(resource) },
+                        onReply: {
+                            onReply(resource)
+                        }
                     )
                 }
             }
@@ -196,6 +241,7 @@ struct VenueListView: View {
     let approvals: [Approval]
     let onReject: (Approval) -> Void
     let onApprove: (Approval) -> Void
+    let onReply: (Approval) -> Void
     
     var body: some View {
         if approvals.isEmpty {
@@ -206,7 +252,10 @@ struct VenueListView: View {
                     FacultyVenueApprovalCard(
                         approval: approval,
                         onReject: { onReject(approval) },
-                        onApprove: { onApprove(approval) }
+                        onApprove: { onApprove(approval) },
+                        onReply: {
+                            onReply(approval)
+                        }
                     )
                 }
             }
@@ -229,8 +278,7 @@ struct FacultyResourceRequestCard: View {
     let resource: Resource
     let onReject: () -> Void
     let onApprove: () -> Void
-    @State private var replyText: String = ""
-    @State private var showingReply: Bool = false
+    let onReply: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -277,43 +325,27 @@ struct FacultyResourceRequestCard: View {
                     }
                 }
                 
-                if !resource.remarks.isEmpty {
+                if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("REMARKS")
                             .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
                         
-                        RemarkConversationView(remarks: resource.remarks)
+                        RemarkConversationView(approvalId: approvalId)
                     }
                     .padding(.top, 4)
                 }
                 
-                if showingReply {
-                    ReplyInputView(replyText: $replyText, onSend: {
-                        let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                        Task {
-                            var remarks = resource.remarks
-                            remarks.append(newRemark)
-                            try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: resource.status, remarks: remarks)
-                        }
-                        replyText = ""
-                        showingReply = false
-                    }, onCancel: {
-                        showingReply = false
-                        replyText = ""
-                    })
-                } else {
-                    Button(action: { withAnimation { showingReply = true } }) {
-                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                            .font(.caption.bold())
-                            .foregroundColor(.blue)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .background(Color.blue.opacity(0.1))
-                            .clipShape(Capsule())
-                    }
-                    .padding(.top, 4)
+                Button(action: onReply) {
+                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                        .font(.caption.bold())
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Capsule())
                 }
+                .padding(.top, 4)
             }
             
             // MARK: - Action Buttons
@@ -369,8 +401,7 @@ struct FacultyVenueApprovalCard: View {
     let approval: Approval
     let onReject: () -> Void
     let onApprove: () -> Void
-    @State private var replyText: String = ""
-    @State private var showingReply: Bool = false
+    let onReply: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -410,43 +441,25 @@ struct FacultyVenueApprovalCard: View {
                     }
                 }
                 
-                if !approval.remarks.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("REMARKS")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundColor(.secondary)
-                        
-                        RemarkConversationView(remarks: approval.remarks)
-                    }
-                    .padding(.top, 4)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("REMARKS")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(.secondary)
+                    
+                    RemarkConversationView(approvalId: approval.id)
                 }
+                .padding(.top, 4)
                 
-                if showingReply {
-                    ReplyInputView(replyText: $replyText, onSend: {
-                        let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                        Task {
-                            var remarks = approval.remarks
-                            remarks.append(newRemark)
-                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: approval.status, remarks: remarks)
-                        }
-                        replyText = ""
-                        showingReply = false
-                    }, onCancel: {
-                        showingReply = false
-                        replyText = ""
-                    })
-                } else {
-                    Button(action: { withAnimation { showingReply = true } }) {
-                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                            .font(.caption.bold())
-                            .foregroundColor(.blue)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .background(Color.blue.opacity(0.1))
-                            .clipShape(Capsule())
-                    }
-                    .padding(.top, 4)
+                Button(action: onReply) {
+                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                        .font(.caption.bold())
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Capsule())
                 }
+                .padding(.top, 4)
             }
             
             if approval.status == .pending {
@@ -594,13 +607,13 @@ struct FacultyVenueRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
-                    if let onReject = onReject {
-                        onReject(remark)
-                    } else {
-                        Task {
-                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: newRemark)
-                        }
+                    Task {
+                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected)
+                        try? await appSession.approvalStore.addRemark(
+                            approvalId: approval.id,
+                            authorId: appSession.currentUser?.id ?? UUID(),
+                            content: remark
+                        )
                     }
                     dismiss()
                 }) {
@@ -710,9 +723,16 @@ struct FacultyRemarkSheet: View {
                 Spacer()
                 
                 Button(action: {
-                    let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
-                    Task {
-                        try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected, remarks: newRemark)
+                    if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id {
+                        let finalRemark = remark
+                        Task {
+                            try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected)
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: approvalId,
+                                authorId: appSession.currentUser?.id ?? UUID(),
+                                content: finalRemark
+                            )
+                        }
                     }
                     dismiss()
                 }) {

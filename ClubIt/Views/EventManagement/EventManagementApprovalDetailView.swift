@@ -3,6 +3,7 @@ import SwiftUI
 
 struct EventManagementApprovalDetailView: View {
     @Environment(AppSession.self) var appSession
+    @Environment(\.dismiss) private var dismiss
     let club: Club
     let event: Event
     
@@ -25,6 +26,10 @@ struct EventManagementApprovalDetailView: View {
     @State private var selectedEventApprovalForRemark: Approval?
     @State private var showingEventApprovalAlert = false
     @State private var eventToApprove: Approval?
+    
+    // Reply states
+    @State private var replyingToApprovalId: UUID? = nil
+    @State private var replyText: String = ""
     
     var body: some View {
         let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
@@ -52,8 +57,13 @@ struct EventManagementApprovalDetailView: View {
                 .padding(.horizontal)
                 
                 // MARK: - Global Timestamp
-                let allRequests = allClubResources.map { $0.createdAt } + allClubVenueApprovals.map { $0.createdAt } + allClubBudgets.map { $0.createdAt } + allClubEventApprovals.map { $0.createdAt }
-                if let latestRequest = allRequests.sorted(by: { $0 > $1 }).first {
+                let resDates = allClubResources.map { $0.createdAt }
+                let venueDates = allClubVenueApprovals.map { $0.createdAt }
+                let budgetDates = allClubBudgets.map { $0.createdAt }
+                let eventDates = allClubEventApprovals.map { $0.createdAt }
+                let allDates = resDates + venueDates + budgetDates + eventDates
+                
+                if let latestRequest = allDates.sorted(by: { $0 > $1 }).first {
                     HStack {
                         Image(systemName: "clock.fill")
                         Text("Requested on \(formatDate(latestRequest))")
@@ -89,6 +99,9 @@ struct EventManagementApprovalDetailView: View {
         }
         .sheet(item: $selectedBudgetForRemark) { budget in
             PresidentBudgetRemarkSheet(budget: budget)
+        }
+        .sheet(item: $selectedEventApprovalForRemark) { approval in
+            FacultyVenueRemarkSheet(approval: approval)
         }
         // Resource Alert
         .alert("Confirm Approval", isPresented: $showingResourceApprovalAlert) {
@@ -169,14 +182,28 @@ struct EventManagementApprovalDetailView: View {
                 Text("Are you sure you want to approve the creation of event '\(event.name)'?")
             }
         }
-        .sheet(item: $selectedEventApprovalForRemark) { approval in
-            FacultyVenueRemarkSheet(approval: approval, onReject: { remark in
-                let newRemark = [Remark(id: UUID(), text: remark, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())]
-                Task {
-                    try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected, remarks: newRemark)
-                }
-                // Removed .cancelled status update
-            })
+        .overlay(alignment: .bottom) {
+            if let approvalId = replyingToApprovalId {
+                GlobalReplyBar(
+                    text: $replyText,
+                    onSend: {
+                        let content = replyText
+                        Task {
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: approvalId,
+                                authorId: appSession.currentUser?.id ?? UUID(),
+                                content: content
+                            )
+                        }
+                        replyText = ""
+                        replyingToApprovalId = nil
+                    },
+                    onCancel: {
+                        replyingToApprovalId = nil
+                        replyText = ""
+                    }
+                )
+            }
         }
     }
     
@@ -204,6 +231,12 @@ struct EventManagementApprovalDetailView: View {
                             onApprove: {
                                 eventToApprove = approval
                                 showingEventApprovalAlert = true
+                            },
+                            onReply: {
+                                withAnimation {
+                                    replyingToApprovalId = approval.id
+                                    replyText = ""
+                                }
                             }
                         )
                     }
@@ -295,6 +328,14 @@ struct EventManagementApprovalDetailView: View {
                 onApprove: { resource in
                     resourceToApprove = resource
                     showingResourceApprovalAlert = true
+                },
+                onReply: { resource in
+                    withAnimation {
+                        if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id {
+                            replyingToApprovalId = approvalId
+                            replyText = ""
+                        }
+                    }
                 }
             )
         }
@@ -310,6 +351,12 @@ struct EventManagementApprovalDetailView: View {
             onApprove: { approval in
                 venueToApprove = approval
                 showingVenueApprovalAlert = true
+            },
+            onReply: { approval in
+                withAnimation {
+                    replyingToApprovalId = approval.id
+                    replyText = ""
+                }
             }
         )
     }
@@ -408,6 +455,14 @@ struct EventManagementApprovalDetailView: View {
                             onApprove: {
                                 budgetToApprove = budget
                                 showingBudgetApprovalAlert = true
+                            },
+                            onReply: {
+                                withAnimation {
+                                    if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id {
+                                        replyingToApprovalId = approvalId
+                                        replyText = ""
+                                    }
+                                }
                             }
                         )
                     }
@@ -438,8 +493,7 @@ struct EventApprovalRequestCard: View {
     let approval: Approval
     let onReject: () -> Void
     let onApprove: () -> Void
-    @State private var replyText: String = ""
-    @State private var showingReply: Bool = false
+    let onReply: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -467,43 +521,25 @@ struct EventApprovalRequestCard: View {
             }
             .foregroundColor(.secondary)
             
-            if !approval.remarks.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("REMARKS")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundColor(.secondary)
-                    
-                    RemarkConversationView(remarks: approval.remarks)
-                }
-                .padding(.top, 4)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("REMARKS")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundColor(.secondary)
+                
+                RemarkConversationView(approvalId: approval.id)
             }
+            .padding(.top, 4)
             
-            if showingReply {
-                ReplyInputView(replyText: $replyText, onSend: {
-                    let newRemark = Remark(id: UUID(), text: replyText, authorId: appSession.currentUser?.id ?? UUID(), createdAt: Date())
-                    Task {
-                        var remarks = approval.remarks
-                        remarks.append(newRemark)
-                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: approval.status, remarks: remarks)
-                    }
-                    replyText = ""
-                    showingReply = false
-                }, onCancel: {
-                    showingReply = false
-                    replyText = ""
-                })
-            } else {
-                Button(action: { withAnimation { showingReply = true } }) {
-                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                        .font(.caption.bold())
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Capsule())
-                }
-                .padding(.top, 4)
+            Button(action: onReply) {
+                Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                    .font(.caption.bold())
+                    .foregroundColor(.blue)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(Color.blue.opacity(0.1))
+                    .clipShape(Capsule())
             }
+            .padding(.top, 4)
             
             if approval.status == .pending {
                 HStack(spacing: 12) {

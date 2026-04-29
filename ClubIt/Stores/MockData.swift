@@ -269,7 +269,7 @@ struct MockData {
         let leadId = clubLeadUser.id
         
         return [
-            Approval(id: UUID(), type: .event, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [Remark(id: UUID(), text: "Event creation approval requested", authorId: leadId, createdAt: Date().addingTimeInterval(-172800))], createdAt: Date().addingTimeInterval(-172800), updatedAt: Date()),
+            Approval(id: UUID(), type: .event, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [Remark(id: UUID(), approvalId: UUID(), authorId: leadId, content: "Event creation approval requested", createdAt: Date().addingTimeInterval(-172800))], createdAt: Date().addingTimeInterval(-172800), updatedAt: Date()),
             Approval(id: UUID(), type: .resource, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [], createdAt: Date().addingTimeInterval(-7200), updatedAt: Date()),
             Approval(id: UUID(), type: .budget, senderId: leadId, receiverId: presidentId, eventId: musicNightId, approvalRelatedId: UUID(), status: .pending, remarks: [], createdAt: Date().addingTimeInterval(-3600), updatedAt: Date()),
             Approval(id: UUID(), type: .venue, senderId: leadId, receiverId: facultyVenue.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [], createdAt: Date().addingTimeInterval(-86400), updatedAt: Date())
@@ -286,14 +286,14 @@ struct MockData {
         return [
             // Technojam University Resources
             Resource(id: UUID(), eventId: techSummitId, name: "Projectors", quantity: 5, type: .university, status: .pending, addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-172800)),
-            Resource(id: UUID(), eventId: techSummitId, name: "Extension Boards", quantity: 10, type: .university, status: .approved, addedBy: leadId, remarks: [Remark(id: UUID(), text: "Approved for the event", authorId: eventManagementFacultyId, createdAt: Date().addingTimeInterval(-80000))], createdAt: Date().addingTimeInterval(-86400)),
+            Resource(id: UUID(), eventId: techSummitId, name: "Extension Boards", quantity: 10, type: .university, status: .approved, addedBy: leadId, remarks: [Remark(id: UUID(), approvalId: UUID(), authorId: eventManagementFacultyId, content: "Approved for the event", createdAt: Date().addingTimeInterval(-80000))], createdAt: Date().addingTimeInterval(-86400)),
             
             // Lingo Freaks External Rentals
             Resource(id: UUID(), eventId: musicNightId, name: "Concert Stage Lights", quantity: 12, type: .external, status: .pending, cost: 15000, vendorName: "Bright Events", addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-129600)),
             Resource(id: UUID(), eventId: musicNightId, name: "Professional Sound System", quantity: 1, type: .external, status: .pending, cost: 25000, vendorName: "Echo Pro Audio", addedBy: leadId, remarks: [
-                Remark(id: UUID(), text: "Cost seems a bit high. Can we negotiate?", authorId: eventManagementFacultyId, createdAt: Date().addingTimeInterval(-70000)),
-                Remark(id: UUID(), text: "Already negotiated, this is the best price.", authorId: leadId, createdAt: Date().addingTimeInterval(-60000)),
-                Remark(id: UUID(), text: "Okay, please provide the quotation.", authorId: eventManagementFacultyId, createdAt: Date().addingTimeInterval(-50000))
+                Remark(id: UUID(), approvalId: UUID(), authorId: eventManagementFacultyId, content: "Cost seems a bit high. Can we negotiate?", createdAt: Date().addingTimeInterval(-70000)),
+                Remark(id: UUID(), approvalId: UUID(), authorId: leadId, content: "Already negotiated, this is the best price.", createdAt: Date().addingTimeInterval(-60000)),
+                Remark(id: UUID(), approvalId: UUID(), authorId: eventManagementFacultyId, content: "Okay, please provide the quotation.", createdAt: Date().addingTimeInterval(-50000))
             ], createdAt: Date().addingTimeInterval(-86400)),
             Resource(id: UUID(), eventId: musicNightId, name: "Plastic Chairs", quantity: 200, type: .external, status: .approved, cost: 2000, vendorName: "Local Rentals", addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-43200)),
             
