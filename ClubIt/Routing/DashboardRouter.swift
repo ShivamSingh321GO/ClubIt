@@ -16,8 +16,10 @@ struct DashboardRouter: View {
             switch appSession.currentRole {
             case .admin:
                 AdminDashboardView()
-            case .faculty, .president:
+            case .faculty:
                 EventManagementDashboardView()
+            case .president:
+                PresidentDashboardView()
             case .vicePresident:
                 VicePresidentDashboardView()
             case .clubLead:

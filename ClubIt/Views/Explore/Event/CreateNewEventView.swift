@@ -45,6 +45,7 @@ struct CreateNewEventView: View {
     @State private var customFormFields: [RegistrationFormField] = []
     @State private var isSaving = false
     @State private var currentEventId = UUID()
+    @State private var selectedClubId: UUID? = nil
 
 
     
@@ -52,6 +53,19 @@ struct CreateNewEventView: View {
     
     var body: some View {
         Form {
+            if appSession.currentUser?.role == .president {
+                Section {
+                    Picker("Associated Club", selection: $selectedClubId) {
+                        Text("Select Club").tag(nil as UUID?)
+                        ForEach(appSession.clubStore.allClubs) { club in
+                            Text(club.name).tag(club.id as UUID?)
+                        }
+                    }
+                } header: {
+                    Text("Club Association")
+                }
+            }
+            
             Section {
                 TextField("Event Name", text: $eventName)
                     .textInputAutocapitalization(.words)
@@ -354,6 +368,21 @@ struct CreateNewEventView: View {
             return
         }
         
+        let resolvedClubId: UUID
+        if currentUser.role == .president {
+            guard let chosenClubId = selectedClubId else {
+                errorMessage = "Please select an associated club."
+                return
+            }
+            resolvedClubId = chosenClubId
+        } else {
+            guard let userClubId = currentUser.clubId else {
+                errorMessage = "Error: Your user account is not linked to any club."
+                return
+            }
+            resolvedClubId = userClubId
+        }
+        
         let newEvent = Event(
             id: currentEventId,
             name: trimmedName,
@@ -368,7 +397,7 @@ struct CreateNewEventView: View {
             maxParticipants: Int(participants) ?? 0,
             registrationType: registrationType,
             location: venue,
-            clubId: currentUser.clubId ?? UUID(),
+            clubId: resolvedClubId,
             createdBy: currentUser.id,
             category: selectedCategory,
             status: .pending,
@@ -387,7 +416,7 @@ struct CreateNewEventView: View {
         print("  - CreatedBy: \(newEvent.createdBy)")
         print("  - Status: \(newEvent.status.rawValue)")
         
-        if currentUser.clubId == nil {
+        if currentUser.role != .president && currentUser.clubId == nil {
             print("WARNING: currentUser.clubId is NIL! RLS will likely fail.")
             errorMessage = "Error: Your user account is not linked to any club. Please contact your administrator."
             return
@@ -401,6 +430,7 @@ struct CreateNewEventView: View {
                 let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
                 let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
                 let facultyId = club?.facultyId ?? eventManagementTeamID
+                let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
                 
                 var budgetsToSave: [Budget] = []
                 var resourcesToSave: [Resource] = []
@@ -428,7 +458,7 @@ struct CreateNewEventView: View {
                         id: UUID(),
                         type: .budget,
                         senderId: currentUser.id,
-                        receiverId: facultyId,
+                        receiverId: presidentUserId,
                         eventId: newEvent.id,
                         approvalRelatedId: budgetId,
                         status: .pending,

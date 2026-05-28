@@ -14,10 +14,6 @@ struct PresidentDashboardView: View {
                 PresidentHomeView()
             }
             
-            Tab("Manage", systemImage: "person.3") {
-                PresidentClubsView()
-            }
-            
             Tab("Explore", systemImage: "calendar") {
                 ExploreView()
             }

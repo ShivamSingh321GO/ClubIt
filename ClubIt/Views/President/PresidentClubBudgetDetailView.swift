@@ -327,7 +327,7 @@ struct PresidentBudgetRequestCard: View {
                 .padding(.top, 4)
             }
             
-            if budget.status == .pending {
+            if budget.status == .pending && appSession.currentUser?.role == .president {
                 HStack(spacing: 12) {
                     Button(action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")

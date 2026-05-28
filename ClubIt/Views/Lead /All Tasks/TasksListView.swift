@@ -107,7 +107,7 @@ struct TasksListView: View {
                 }
             }
             .toolbar {
-                if appSession.currentRole ?? .clubMember == .clubLead {
+                if appSession.currentRole ?? .clubMember == .clubLead || appSession.currentRole ?? .clubMember == .president {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             showingAddTaskForm = true

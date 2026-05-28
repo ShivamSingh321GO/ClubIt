@@ -48,13 +48,15 @@ struct EventManagementApprovalDetailView: View {
                 ClubHeaderView(club: club, event: event)
                 
                 // MARK: - Segmented Filter (3 Segments)
-                Picker("Select Category", selection: $selectedTab) {
-                    Text("Venue (\(allClubVenueApprovals.count))").tag("Venue")
-                    Text("Budget (\(allClubBudgets.count))").tag("Budget")
-                    Text("Resource (\(allClubResources.count))").tag("Resource")
+                if appSession.currentUser?.role != .president {
+                    Picker("Select Category", selection: $selectedTab) {
+                        Text("Venue (\(allClubVenueApprovals.count))").tag("Venue")
+                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
+                        Text("Resource (\(allClubResources.count))").tag("Resource")
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
                 
                 // MARK: - Global Timestamp
                 let resDates = allClubResources.map { $0.createdAt }
@@ -203,6 +205,11 @@ struct EventManagementApprovalDetailView: View {
                         replyText = ""
                     }
                 )
+            }
+        }
+        .onAppear {
+            if appSession.currentUser?.role == .president {
+                selectedTab = "Budget"
             }
         }
     }

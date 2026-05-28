@@ -43,6 +43,14 @@ struct AddTaskView: View {
         }
     }
     
+    private var availableAssignmentTypes: [AssignmentType] {
+        if appSession.currentUser?.role == .president {
+            return [.myself, .club]
+        } else {
+            return [.myself, .clubMember, .club]
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -74,7 +82,7 @@ struct AddTaskView: View {
                 
                 Section("Assignment") {
                     Picker("Assign To", selection: $assignmentType) {
-                        ForEach(AssignmentType.allCases) { type in
+                        ForEach(availableAssignmentTypes) { type in
                             Text(type.rawValue).tag(type)
                         }
                     }
@@ -194,9 +202,10 @@ struct AddTaskView: View {
             }
         }
         
+        let defaultClubId = appSession.clubStore.allClubs.first?.id ?? UUID()
         let taskToSave = Tasks(
             id: initialTask?.id ?? UUID(),
-            clubId: currentUser.clubId ?? UUID(),
+            clubId: targetClubId ?? currentUser.clubId ?? defaultClubId,
             targetClubId: targetClubId,
             eventId: selectedEventId,
             title: title,

@@ -446,14 +446,13 @@ struct EditEventView: View {
                         try await appSession.approvalStore.addBudget(newBudget)
                         
                         // Create matching Approval entry
-                        let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
-                        let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                        let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
 
                         let budgetApproval = Approval(
                             id: UUID(),
                             type: .budget,
                             senderId: currentUser.id,
-                            receiverId: facultyId,
+                            receiverId: presidentUserId,
                             eventId: event.id,
                             approvalRelatedId: newBudgetId,
                             status: .pending,

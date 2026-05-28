@@ -122,7 +122,7 @@ struct ExploreView: View {
         }
         
         switch role {
-        case .clubLead:
+        case .clubLead, .president:
             return true
         default:
             return false

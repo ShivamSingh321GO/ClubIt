@@ -56,16 +56,15 @@ struct EventManagementEventApprovalCard: View {
             $0.eventId == event.id && $0.status == .pending 
         }
         
-        let totalPending = pendingResources.count + pendingVenues.count + pendingBudgets.count
+        let totalPending = appSession.currentUser?.role == .president ? pendingBudgets.count : (pendingResources.count + pendingVenues.count + pendingBudgets.count)
         
-        let isRejected = appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .rejected } ||
-
-                         appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .rejected } ||
-                         appSession.approvalStore.budgets.contains { $0.eventId == event.id && $0.status == .rejected }
+        let isRejected = appSession.currentUser?.role == .president ? 
+            appSession.approvalStore.budgets.contains { $0.eventId == event.id && $0.status == .rejected } :
+            (appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .rejected } ||
+             appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .rejected } ||
+             appSession.approvalStore.budgets.contains { $0.eventId == event.id && $0.status == .rejected })
         
         let isApproved = totalPending == 0 && !isRejected
-
-
         
         HStack(spacing: 16) {
             // Club Logo/Initials
@@ -92,14 +91,16 @@ struct EventManagementEventApprovalCard: View {
                     .minimumScaleFactor(0.5)
                 
                 HStack(spacing: 8) {
-                    if pendingEvents.count > 0 {
-                        IndicatorTag(icon: "calendar", count: pendingEvents.count, color: .orange)
-                    }
-                    if pendingResources.count > 0 {
-                        IndicatorTag(icon: "cart.fill", count: pendingResources.count, color: .blue)
-                    }
-                    if pendingVenues.count > 0 {
-                        IndicatorTag(icon: "mappin.and.ellipse", count: pendingVenues.count, color: .purple)
+                    if appSession.currentUser?.role != .president {
+                        if pendingEvents.count > 0 {
+                            IndicatorTag(icon: "calendar", count: pendingEvents.count, color: .orange)
+                        }
+                        if pendingResources.count > 0 {
+                            IndicatorTag(icon: "cart.fill", count: pendingResources.count, color: .blue)
+                        }
+                        if pendingVenues.count > 0 {
+                            IndicatorTag(icon: "mappin.and.ellipse", count: pendingVenues.count, color: .purple)
+                        }
                     }
                     if pendingBudgets.count > 0 {
                         IndicatorTag(icon: "indianrupeesign.circle.fill", count: pendingBudgets.count, color: .green)
