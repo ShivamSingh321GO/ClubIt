@@ -1,12 +1,24 @@
 import Foundation
 import Observation
+import Supabase
 
 @Observable
 final class VenueStore {
+    private var client: SupabaseClient { SupabaseManager.shared.client }
     var allVenues: [Venue] = []
     
     init() {
         self.allVenues = mockVenues()
+    }
+    
+    @MainActor
+    func fetchVenues() async throws {
+        self.allVenues = try await client
+            .from("venues")
+            .select()
+            .execute()
+            .value
+        print("DEBUG: Fetched \(allVenues.count) venues from Supabase")
     }
     
     private func mockVenues() -> [Venue] {

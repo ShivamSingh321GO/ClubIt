@@ -155,15 +155,23 @@ final class ApprovalStore {
     }
     
     @MainActor
-    func updateApproval(id: UUID, status: ApprovalStatus) async throws {
+    func updateApproval(id: UUID, status: ApprovalStatus, approvalRelatedId: UUID? = nil) async throws {
+        var updateDict: [String: String] = ["status": status.rawValue]
+        if let relatedId = approvalRelatedId {
+            updateDict["approval_related_id"] = relatedId.uuidString
+        }
+        
         try await client
             .from("approvals")
-            .update(["status": status.rawValue])
+            .update(updateDict)
             .eq("id", value: id)
             .execute()
             
         if let index = approvals.firstIndex(where: { $0.id == id }) {
             approvals[index].status = status
+            if let relatedId = approvalRelatedId {
+                approvals[index].approvalRelatedId = relatedId
+            }
             approvals[index].updatedAt = Date()
         }
     }

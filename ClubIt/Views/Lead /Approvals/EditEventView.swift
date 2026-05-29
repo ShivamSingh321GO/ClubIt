@@ -384,7 +384,12 @@ struct EditEventView: View {
                 // Venue Approval re-submission
                 if let venueApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .venue }) {
                     if venueApproval.status == .rejected || event.location != venue {
-                        try await appSession.approvalStore.updateApproval(id: venueApproval.id, status: .pending)
+                        let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
+                        try await appSession.approvalStore.updateApproval(
+                            id: venueApproval.id,
+                            status: .pending,
+                            approvalRelatedId: selectedVenue?.id
+                        )
                         try await appSession.approvalStore.addRemark(
                             approvalId: venueApproval.id,
                             authorId: currentUser.id,

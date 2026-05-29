@@ -579,13 +579,14 @@ struct CreateNewEventView: View {
                     createdAt: Date()
                 ))
                 
+                let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
                 let venueApproval = Approval(
                     id: UUID(),
                     type: .venue,
                     senderId: currentUser.id,
                     receiverId: facultyId,
                     eventId: newEvent.id,
-                    approvalRelatedId: newEvent.id,
+                    approvalRelatedId: selectedVenue?.id ?? newEvent.id,
                     status: .pending,
                     remarks: [],
                     createdAt: Date(),

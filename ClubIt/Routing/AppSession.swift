@@ -114,6 +114,7 @@ final class AppSession {
         async let registrationsTask: Void = { try? await registrationStore.fetchRegistrations() }()
         async let tasksTask: Void = { try? await taskStore.fetchTasks() }()
         async let announcementsTask: Void = { try? await announcementStore.fetchAnnouncements() }()
+        async let venuesTask: Void = { try? await venueStore.fetchVenues() }()
         
         await clubsTask
         await usersTask
@@ -124,6 +125,7 @@ final class AppSession {
         await registrationsTask
         await tasksTask
         await announcementsTask
+        await venuesTask
         
         // 3. Sync registrations
         let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
