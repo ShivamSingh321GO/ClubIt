@@ -7,6 +7,19 @@ struct EventManagementApprovalClubsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 let allEventsWithApprovals = appSession.eventStore.events.filter { event in
+                    // If the club has a VP, hide the event from EMT/President until the VP has approved it
+                    let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })
+                    if let vpId = club?.vicePresidentId, appSession.currentUser?.role != .vicePresident {
+                        let vpApproval = appSession.approvalStore.approvals.first(where: { 
+                            $0.eventId == event.id && 
+                            $0.type == .event && 
+                            $0.receiverId == vpId 
+                        })
+                        if vpApproval?.status != .approved {
+                            return false
+                        }
+                    }
+                    
                     let hasEvents = appSession.approvalStore.approvals.contains { $0.eventId == event.id }
                     let hasResources = appSession.approvalStore.resources.contains { $0.eventId == event.id }
                     let hasBudgets = appSession.approvalStore.budgets.contains { $0.eventId == event.id }

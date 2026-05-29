@@ -39,6 +39,16 @@ final class AppSession {
     
     var selectedTask: Tasks? = nil
     var selectedActivity: Activity? = nil
+    
+    var currentUserClubId: UUID? {
+        if let clubId = currentUser?.clubId {
+            return clubId
+        }
+        if currentUser?.role == .vicePresident {
+            return clubStore.allClubs.first(where: { $0.vicePresidentId == currentUser?.id })?.id
+        }
+        return nil
+    }
 
     var currentTime: Date = Date()
     private var timer: Timer?
@@ -219,6 +229,121 @@ final class AppSession {
                 try? await approvalStore.updateApproval(id: eventApproval.id, status: .approved)
             }
             try? await eventStore.updateEventStatus(id: eventId, status: .approved)
+        }
+    }
+    
+    @MainActor
+    func forwardVPApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
+        let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+        let facultyId = club.facultyId ?? eventManagementTeamID
+        let presidentUserId = clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
+        
+        let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
+        let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
+        
+        var approvalsToSave: [Approval] = []
+        var remarksToSave: [RemarkMessage] = []
+        
+        // 1. Budget Approvals
+        for budget in eventBudgets {
+            let budgetApproval = Approval(
+                id: UUID(),
+                type: .budget,
+                senderId: senderId,
+                receiverId: presidentUserId,
+                eventId: eventId,
+                approvalRelatedId: budget.id,
+                status: .pending,
+                remarks: [],
+                createdAt: Date(),
+                updatedAt: nil
+            )
+            approvalsToSave.append(budgetApproval)
+            remarksToSave.append(RemarkMessage(
+                id: UUID(),
+                approvalId: budgetApproval.id,
+                authorId: senderId,
+                content: "Forwarded: Budget approval requested for \(budget.itemName)",
+                createdAt: Date()
+            ))
+        }
+        
+        // 2. Resource Approvals
+        for resource in eventResources {
+            let resApproval = Approval(
+                id: UUID(),
+                type: .resource,
+                senderId: senderId,
+                receiverId: facultyId,
+                eventId: eventId,
+                approvalRelatedId: resource.id,
+                status: .pending,
+                remarks: [],
+                createdAt: Date(),
+                updatedAt: nil
+            )
+            approvalsToSave.append(resApproval)
+            remarksToSave.append(RemarkMessage(
+                id: UUID(),
+                approvalId: resApproval.id,
+                authorId: senderId,
+                content: "Forwarded: Resource approval requested for \(resource.name)",
+                createdAt: Date()
+            ))
+        }
+        
+        // 3. Faculty Event Approval
+        let facultyEventApproval = Approval(
+            id: UUID(),
+            type: .event,
+            senderId: senderId,
+            receiverId: facultyId,
+            eventId: eventId,
+            approvalRelatedId: eventId,
+            status: .pending,
+            remarks: [],
+            createdAt: Date(),
+            updatedAt: nil
+        )
+        approvalsToSave.append(facultyEventApproval)
+        remarksToSave.append(RemarkMessage(
+            id: UUID(),
+            approvalId: facultyEventApproval.id,
+            authorId: senderId,
+            content: "Forwarded: Event creation approval requested",
+            createdAt: Date()
+        ))
+        
+        // 4. Venue Booking Approval
+        if let event = eventStore.events.first(where: { $0.id == eventId }) {
+            let selectedVenue = venueStore.allVenues.first(where: { $0.name == event.location })
+            let venueApproval = Approval(
+                id: UUID(),
+                type: .venue,
+                senderId: senderId,
+                receiverId: facultyId,
+                eventId: eventId,
+                approvalRelatedId: selectedVenue?.id ?? eventId,
+                status: .pending,
+                remarks: [],
+                createdAt: Date(),
+                updatedAt: nil
+            )
+            approvalsToSave.append(venueApproval)
+            remarksToSave.append(RemarkMessage(
+                id: UUID(),
+                approvalId: venueApproval.id,
+                authorId: senderId,
+                content: "Forwarded: Venue booking approval requested for \(event.location)",
+                createdAt: Date()
+            ))
+        }
+        
+        if !approvalsToSave.isEmpty {
+            try await approvalStore.submitApprovalRequests(approvalsToSave)
+        }
+        if !remarksToSave.isEmpty {
+            try await approvalStore.addRemarks(remarksToSave)
         }
     }
 }

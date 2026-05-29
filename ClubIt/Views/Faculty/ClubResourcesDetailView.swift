@@ -349,7 +349,7 @@ struct FacultyResourceRequestCard: View {
             }
             
             // MARK: - Action Buttons
-            if resource.status == .pending {
+            if resource.status == .pending && appSession.currentUser?.role == .faculty {
                 HStack(spacing: 12) {
                     Button(action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
@@ -462,7 +462,7 @@ struct FacultyVenueApprovalCard: View {
                 .padding(.top, 4)
             }
             
-            if approval.status == .pending {
+            if approval.status == .pending && appSession.currentUser?.role == .faculty {
                 HStack(spacing: 12) {
                     Button(action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")

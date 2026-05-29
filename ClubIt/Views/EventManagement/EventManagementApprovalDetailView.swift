@@ -32,65 +32,13 @@ struct EventManagementApprovalDetailView: View {
     @State private var replyText: String = ""
     
     var body: some View {
-        let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
-        let allClubVenueApprovals = appSession.approvalStore.approvals.filter { 
-            $0.eventId == event.id && $0.type == .venue 
-        }
-        let allClubBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
-        let allClubEventApprovals = appSession.approvalStore.approvals.filter { 
-            $0.eventId == event.id && $0.type == .event 
-        }
-        
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 24) {
-                
-                // MARK: - Club Header
-                ClubHeaderView(club: club, event: event)
-                
-                // MARK: - Segmented Filter (3 Segments)
-                if appSession.currentUser?.role != .president {
-                    Picker("Select Category", selection: $selectedTab) {
-                        Text("Venue (\(allClubVenueApprovals.count))").tag("Venue")
-                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
-                        Text("Resource (\(allClubResources.count))").tag("Resource")
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
-                }
-                
-                // MARK: - Global Timestamp
-                let resDates = allClubResources.map { $0.createdAt }
-                let venueDates = allClubVenueApprovals.map { $0.createdAt }
-                let budgetDates = allClubBudgets.map { $0.createdAt }
-                let eventDates = allClubEventApprovals.map { $0.createdAt }
-                let allDates = resDates + venueDates + budgetDates + eventDates
-                
-                if let latestRequest = allDates.sorted(by: { $0 > $1 }).first {
-                    HStack {
-                        Image(systemName: "clock.fill")
-                        Text("Requested on \(formatDate(latestRequest))")
-                    }
-                    .font(.caption.bold())
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-                    .padding(.top, -8)
-                }
-                
-                // MARK: - Content List
-                switch selectedTab {
-                case "Venue":
-                    venueSection(allClubVenueApprovals)
-                case "Budget":
-                    budgetSection(allClubBudgets)
-                case "Resource":
-                    resourceSection(allClubResources)
-                default:
-                    EmptyView()
-                }
+        Group {
+            if appSession.currentUser?.role == .vicePresident {
+                vpDraftReviewView()
+            } else {
+                standardApprovalView()
             }
-            .padding(.vertical)
         }
-        .navigationTitle("Approval Management")
         .navigationBarTitleDisplayMode(.inline)
         // Sheets
         .sheet(item: $selectedResourceForRemark) { resource in
@@ -172,16 +120,28 @@ struct EventManagementApprovalDetailView: View {
             Button("Approve") {
                 if let approval = eventToApprove {
                     Task {
-                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
-                        // Sync event status
-                        try? await appSession.eventStore.updateEventStatus(id: approval.eventId ?? UUID(), status: .approved)
+                        if appSession.currentUser?.role == .vicePresident {
+                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                            if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
+                               let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                                try? await appSession.forwardVPApproval(
+                                    eventId: event.id,
+                                    club: club,
+                                    senderId: appSession.currentUser?.id ?? UUID()
+                                )
+                            }
+                        } else {
+                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                            // Sync event status
+                            try? await appSession.eventStore.updateEventStatus(id: approval.eventId ?? UUID(), status: .approved)
+                        }
                     }
                 }
             }
         } message: {
             if let approval = eventToApprove,
                let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
-                Text("Are you sure you want to approve the creation of event '\(event.name)'?")
+                Text(appSession.currentUser?.role == .vicePresident ? "Are you sure you want to approve and forward event '\(event.name)'?" : "Are you sure you want to approve the creation of event '\(event.name)'?")
             }
         }
         .overlay(alignment: .bottom) {
@@ -516,6 +476,289 @@ struct EventManagementApprovalDetailView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+    
+    @ViewBuilder
+    private func standardApprovalView() -> some View {
+        let allClubResources = appSession.approvalStore.resources.filter { resource in
+            resource.eventId == event.id &&
+            appSession.approvalStore.approvals.contains { $0.approvalRelatedId == resource.id && $0.type == .resource }
+        }
+        let allClubVenueApprovals = appSession.approvalStore.approvals.filter { 
+            $0.eventId == event.id && $0.type == .venue 
+        }
+        let allClubBudgets = appSession.approvalStore.budgets.filter { budget in
+            budget.eventId == event.id &&
+            appSession.approvalStore.approvals.contains { $0.approvalRelatedId == budget.id && $0.type == .budget }
+        }
+        let allClubEventApprovals = appSession.approvalStore.approvals.filter { 
+            $0.eventId == event.id && $0.type == .event 
+        }
+        
+        let venueApprovalsToDisplay: [Approval] = {
+            if allClubVenueApprovals.isEmpty && !event.location.isEmpty {
+                return [Approval(
+                    id: UUID(),
+                    type: .venue,
+                    senderId: event.createdBy,
+                    receiverId: club.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!,
+                    eventId: event.id,
+                    approvalRelatedId: event.id,
+                    status: .pending,
+                    remarks: [],
+                    createdAt: event.createdAt,
+                    updatedAt: nil
+                )]
+            }
+            return allClubVenueApprovals
+        }()
+        
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+                // MARK: - Club Header
+                ClubHeaderView(club: club, event: event)
+                
+                // MARK: - Segmented Filter (3 Segments)
+                if appSession.currentUser?.role != .president {
+                    Picker("Select Category", selection: $selectedTab) {
+                        Text("Venue (\(venueApprovalsToDisplay.count))").tag("Venue")
+                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
+                        Text("Resource (\(allClubResources.count))").tag("Resource")
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+                }
+                
+                // MARK: - Global Timestamp
+                let resDates = allClubResources.map { $0.createdAt }
+                let venueDates = venueApprovalsToDisplay.map { $0.createdAt }
+                let budgetDates = allClubBudgets.map { $0.createdAt }
+                let eventDates = allClubEventApprovals.map { $0.createdAt }
+                let allDates = resDates + venueDates + budgetDates + eventDates
+                
+                if let latestRequest = allDates.sorted(by: { $0 > $1 }).first {
+                    HStack {
+                        Image(systemName: "clock.fill")
+                        Text("Requested on \(formatDate(latestRequest))")
+                    }
+                    .font(.caption.bold())
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                    .padding(.top, -8)
+                }
+                
+                // MARK: - Content List
+                switch selectedTab {
+                case "Venue":
+                    venueSection(venueApprovalsToDisplay)
+                case "Budget":
+                    budgetSection(allClubBudgets)
+                case "Resource":
+                    resourceSection(allClubResources)
+                default:
+                    EmptyView()
+                }
+            }
+            .padding(.vertical)
+        }
+        .navigationTitle("Approval Management")
+    }
+    
+    @ViewBuilder
+    private func vpDraftReviewView() -> some View {
+        let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
+        let allClubBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
+        let allClubEventApprovals = appSession.approvalStore.approvals.filter { 
+            $0.eventId == event.id && $0.type == .event 
+        }
+        let vpApproval = allClubEventApprovals.first(where: { $0.receiverId == appSession.currentUser?.id && $0.type == .event })
+        
+        ZStack(alignment: .bottom) {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    ClubHeaderView(club: club, event: event)
+                    
+                    // Event Details Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Event Details")
+                            .font(.headline)
+                            .foregroundColor(.orange)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Label("Date & Time", systemImage: "calendar")
+                                    .font(.subheadline.bold())
+                                Spacer()
+                                Text("\(event.startDate.formatted(date: .abbreviated, time: .shortened))")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            HStack {
+                                Label("Venue requested", systemImage: "mappin.and.ellipse")
+                                    .font(.subheadline.bold())
+                                Spacer()
+                                Text(event.location)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            if !event.description.isEmpty {
+                                Divider()
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Description")
+                                        .font(.subheadline.bold())
+                                    Text(event.description)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        .padding()
+                        .glassEffect(in: .rect(cornerRadius: 20))
+                    }
+                    .padding(.horizontal)
+                    
+                    // Budgets Requested
+                    if !allClubBudgets.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            let totalBudget = allClubBudgets.reduce(0) { $0 + $1.totalAmount }
+                            HStack {
+                                Text("Budgets Requested (\(allClubBudgets.count))")
+                                    .font(.headline)
+                                Spacer()
+                                Text("Total: ₹\(String(format: "%.0f", totalBudget))")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(.orange)
+                            }
+                            
+                            VStack(spacing: 8) {
+                                ForEach(allClubBudgets) { budget in
+                                    HStack {
+                                        Text(budget.itemName)
+                                            .font(.subheadline)
+                                        Spacer()
+                                        Text("\(budget.quantity) x ₹\(String(format: "%.0f", budget.unitPrice))")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(.vertical, 4)
+                                    if budget.id != allClubBudgets.last?.id {
+                                        Divider().opacity(0.3)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .glassEffect(in: .rect(cornerRadius: 20))
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    // Resources Requested
+                    if !allClubResources.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Resources Requested (\(allClubResources.count))")
+                                .font(.headline)
+                            
+                            VStack(spacing: 8) {
+                                ForEach(allClubResources) { res in
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(res.name)
+                                                .font(.subheadline)
+                                            Text(res.type == .university ? "University Resource" : "External Rental")
+                                                .font(.system(size: 10))
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                        Text("Qty: \(res.quantity)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(.vertical, 4)
+                                    if res.id != allClubResources.last?.id {
+                                        Divider().opacity(0.3)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .glassEffect(in: .rect(cornerRadius: 20))
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    // Remarks History
+                    if let approval = vpApproval {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Remarks & Conversation")
+                                .font(.headline)
+                            
+                            RemarkConversationView(approvalId: approval.id)
+                                .padding()
+                                .glassEffect(in: .rect(cornerRadius: 20))
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    // Spacer for bottom sticky bar
+                    Color.clear.frame(height: 110)
+                }
+                .padding(.vertical)
+            }
+            
+            // Sticky Bottom Toolbar
+            if let approval = vpApproval {
+                VStack(spacing: 0) {
+                    Divider()
+                    
+                    if approval.status == .pending {
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                selectedEventApprovalForRemark = approval
+                            }) {
+                                Label("Reject", systemImage: "xmark.circle")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(.red)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color.red.opacity(0.1))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                            .buttonStyle(.plain)
+                            
+                            Button(action: {
+                                eventToApprove = approval
+                                showingEventApprovalAlert = true
+                            }) {
+                                Label("Approve Draft", systemImage: "checkmark.circle.fill")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color.green)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 16)
+                        .padding(.bottom, 24)
+                    } else {
+                        HStack {
+                            Text("Draft Review Completed:")
+                                .font(.headline)
+                            Spacer()
+                            ApprovalStatusBadge(status: approval.status)
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 20)
+                    }
+                }
+                .background(.ultraThinMaterial)
+            }
+        }
+        .navigationTitle("Event Draft Review")
     }
 }
 

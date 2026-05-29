@@ -17,25 +17,117 @@ struct LeadEventApprovalDetailView: View {
         guard let event = event else { return nil }
         return appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })
     }
+
+    private var allClubResources: [Resource] {
+        guard let event = event else { return [] }
+        return appSession.approvalStore.resources.filter { $0.eventId == event.id }
+    }
+    
+    private var allClubVenueApprovals: [Approval] {
+        guard let event = event else { return [] }
+        let realVenueApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .venue }
+        if realVenueApprovals.isEmpty && !event.location.isEmpty {
+            return [Approval(
+                id: UUID(),
+                type: .venue,
+                senderId: event.createdBy,
+                receiverId: club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!,
+                eventId: event.id,
+                approvalRelatedId: event.id,
+                status: .pending,
+                remarks: [],
+                createdAt: event.createdAt,
+                updatedAt: nil
+            )]
+        }
+        return realVenueApprovals
+    }
+    
+    private var allClubBudgets: [Budget] {
+        guard let event = event else { return [] }
+        return appSession.approvalStore.budgets.filter { $0.eventId == event.id }
+    }
+    
+    private var mainApproval: Approval? {
+        guard let event = event else { return nil }
+        return appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event })
+    }
+    
+    private var isAnyRejected: Bool {
+        let isMainRejected = mainApproval?.status == .rejected
+        let isResRejected = allClubResources.contains { $0.status == .rejected }
+        let isVenueRejected = allClubVenueApprovals.contains { $0.status == .rejected }
+        let isBudgetRejected = allClubBudgets.contains { $0.status == .rejected }
+        return isMainRejected || isResRejected || isVenueRejected || isBudgetRejected
+    }
+    
+    private var isAllApproved: Bool {
+        let isMainApproved = mainApproval?.status == .approved
+        let isResApproved = allClubResources.isEmpty || allClubResources.allSatisfy { $0.status == .approved }
+        let isVenueApproved = allClubVenueApprovals.isEmpty || allClubVenueApprovals.allSatisfy { $0.status == .approved }
+        let isBudgetApproved = allClubBudgets.isEmpty || allClubBudgets.allSatisfy { $0.status == .approved }
+        return isMainApproved && isResApproved && isVenueApproved && isBudgetApproved
+    }
+    
+    private var hasVP: Bool {
+        guard let club = club else { return false }
+        return club.vicePresidentId != nil
+    }
+    
+    private var vpUser: User? {
+        guard let club = club, let vpId = club.vicePresidentId else { return nil }
+        return appSession.clubStore.allUsers.first(where: { $0.id == vpId })
+    }
+    
+    private var vpApproval: Approval? {
+        guard let event = event, let club = club, let vpId = club.vicePresidentId else { return nil }
+        return appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event && $0.receiverId == vpId })
+    }
+    
+    private var vpRejectionRemark: String? {
+        guard let approval = vpApproval else { return nil }
+        if let lastRemark = approval.remarks?.last?.content {
+            return lastRemark
+        }
+        return appSession.approvalStore.remarkMessages[approval.id]?.last?.content
+    }
+    
+    private var step1Color: Color {
+        guard let approval = vpApproval else { return .orange }
+        switch approval.status {
+        case .pending: return .orange
+        case .approved: return .green
+        case .rejected: return .red
+        }
+    }
+    
+    private var step1Icon: String {
+        guard let approval = vpApproval else { return "clock.fill" }
+        switch approval.status {
+        case .pending: return "clock.fill"
+        case .approved: return "checkmark"
+        case .rejected: return "xmark"
+        }
+    }
+    
+    private var step2Color: Color {
+        if !hasVP || vpApproval?.status == .approved {
+            return isAllApproved ? .green : .orange
+        } else {
+            return .secondary
+        }
+    }
+    
+    private var step2Icon: String {
+        if !hasVP || vpApproval?.status == .approved {
+            return isAllApproved ? "checkmark" : "clock.fill"
+        } else {
+            return "lock.fill"
+        }
+    }
     
     var body: some View {
         if let event = event, let club = club {
-            let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
-            let allClubVenueApprovals = appSession.approvalStore.approvals.filter { 
-                $0.eventId == event.id && $0.type == .venue 
-            }
-            let allClubBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
-            
-            let mainApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event })
-            let isAnyRejected = mainApproval?.status == .rejected ||
-                               allClubResources.contains { $0.status == .rejected } ||
-                               allClubVenueApprovals.contains { $0.status == .rejected } ||
-                               allClubBudgets.contains { $0.status == .rejected }
-            
-            let isAllApproved = mainApproval?.status == .approved &&
-                               (allClubResources.isEmpty || allClubResources.allSatisfy { $0.status == .approved }) &&
-                               (allClubVenueApprovals.isEmpty || allClubVenueApprovals.allSatisfy { $0.status == .approved }) &&
-                               (allClubBudgets.isEmpty || allClubBudgets.allSatisfy { $0.status == .approved })
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
@@ -44,34 +136,103 @@ struct LeadEventApprovalDetailView: View {
                     LeadDetailClubHeaderView(club: club, event: event)
                         .padding(.horizontal)
                     
-                    // Overall Status Banner
-                    
-                    Group {
-                        if isAllApproved {
-                            HStack {
-                                Image(systemName: "checkmark.seal.fill")
-                                Text("Event Fully Approved")
-                                    .font(.headline)
-                                Spacer()
-                            }
-                            .padding()
-                            .background(Color.green.opacity(0.1))
-                            .foregroundColor(.green)
-                            .cornerRadius(16)
+                    // Two-Stage Approval Status Tracker
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("APPROVAL FLOW STATUS")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.secondary)
                             .padding(.horizontal)
-                        } else if isAnyRejected {
-                            HStack {
-                                Image(systemName: "xmark.seal.fill")
-                                Text("Event Request Rejected")
-                                    .font(.headline)
-                                Spacer()
+                        
+                        VStack(alignment: .leading, spacing: 20) {
+                            if hasVP {
+                                // Step 1: Vice President Draft Review
+                                HStack(alignment: .top, spacing: 12) {
+                                    VStack {
+                                        Circle()
+                                            .fill(step1Color)
+                                            .frame(width: 24, height: 24)
+                                            .overlay(
+                                                Image(systemName: step1Icon)
+                                                    .font(.system(size: 10, weight: .bold))
+                                                    .foregroundColor(.white)
+                                            )
+                                        
+                                        Rectangle()
+                                            .fill(step2Color.opacity(0.3))
+                                            .frame(width: 2, height: 30)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Step 1: Vice President Draft Approval")
+                                            .font(.subheadline.bold())
+                                            .foregroundColor(step1Color)
+                                        
+                                        if let vp = vpUser {
+                                            Text("Reviewer: \(vp.name)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        
+                                        if let approval = vpApproval {
+                                            Text("Status: \(approval.status.rawValue.uppercased())")
+                                                .font(.caption.bold())
+                                                .foregroundColor(step1Color)
+                                            
+                                            // If rejected, show the remark
+                                            if approval.status == .rejected {
+                                                if let remark = vpRejectionRemark {
+                                                    Text("Remark: \"\(remark)\"")
+                                                        .font(.caption.italic())
+                                                        .foregroundColor(.red)
+                                                        .padding(.top, 4)
+                                                }
+                                            }
+                                        } else {
+                                            Text("Status: PENDING")
+                                                .font(.caption.bold())
+                                                .foregroundColor(.orange)
+                                        }
+                                    }
+                                    Spacer()
+                                }
                             }
-                            .padding()
-                            .background(Color.red.opacity(0.1))
-                            .foregroundColor(.red)
-                            .cornerRadius(16)
-                            .padding(.horizontal)
+                            
+                            // Step 2: Faculty & President Final Approvals
+                            HStack(alignment: .top, spacing: 12) {
+                                Circle()
+                                    .fill(step2Color)
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Image(systemName: step2Icon)
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.white)
+                                    )
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(hasVP ? "Step 2: Faculty & President Final Review" : "Final Review (Faculty & President)")
+                                        .font(.subheadline.bold())
+                                        .foregroundColor(step2Color)
+                                    
+                                    if !hasVP || vpApproval?.status == .approved {
+                                        Text(isAllApproved ? "Event is fully approved and ready to publish!" : "Awaiting final budget, venue, and resource approvals.")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Text("Locked until Vice President approves the draft.")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
                         }
+                        .padding()
+                        .background(Color.primary.opacity(0.03))
+                        .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        )
+                        .padding(.horizontal)
                     }
 
 
@@ -125,10 +286,12 @@ struct LeadEventApprovalDetailView: View {
     
     @ViewBuilder
     private func resourceSection(_ resources: [Resource]) -> some View {
+        let externalResources = resources.filter { $0.type == .external }
+        let totalRequestedRental = externalResources.reduce(0) { $0 + ($1.cost ?? 0) }
+        let approvedExternalResources = externalResources.filter { $0.status == .approved }
+        let totalApprovedRental = approvedExternalResources.reduce(0) { $0 + ($1.cost ?? 0) }
+        
         VStack(spacing: 20) {
-            let totalRequestedRental = resources.filter { $0.type == .external }.reduce(0) { $0 + ($1.cost ?? 0) }
-            let totalApprovedRental = resources.filter { $0.type == .external && $0.status == .approved }.reduce(0) { $0 + ($1.cost ?? 0) }
-            
             SummaryCardRow(requested: totalRequestedRental, approved: totalApprovedRental, label: "RENTAL")
             
             VStack(spacing: 16) {
@@ -183,10 +346,11 @@ struct LeadEventApprovalDetailView: View {
     
     @ViewBuilder
     private func budgetSection(_ budgets: [Budget]) -> some View {
+        let totalRequested = budgets.reduce(0) { $0 + $1.totalAmount }
+        let approvedBudgets = budgets.filter { $0.status == .approved }
+        let totalApproved = approvedBudgets.reduce(0) { $0 + $1.totalAmount }
+        
         VStack(spacing: 20) {
-            let totalRequested = budgets.reduce(0) { $0 + $1.totalAmount }
-            let totalApproved = budgets.filter { $0.status == .approved }.reduce(0) { $0 + $1.totalAmount }
-            
             SummaryCardRow(requested: totalRequested, approved: totalApproved, label: "BUDGET")
             
             VStack(spacing: 16) {

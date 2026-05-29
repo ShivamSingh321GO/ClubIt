@@ -380,21 +380,46 @@ struct EditEventView: View {
                 
                 let currentUser = appSession.currentUser!
 
-                // 3. Conditional Re-submission Logic
+                // Check if Vice President exists and event approval status
+                let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
+                let hasVP = club?.vicePresidentId != nil
+                let vpApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event && $0.receiverId == club?.vicePresidentId })
+                let isVPApproved = vpApproval?.status == .approved
+                let shouldCreateApprovalsForNewItems = !hasVP || isVPApproved
+
+                // 3. Conditional Re-submission Logic for VP
+                if let vicePresidentUserId = club?.vicePresidentId {
+                    if let eventApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event && $0.receiverId == vicePresidentUserId }) {
+                        if eventApproval.status == .rejected {
+                            try? await appSession.approvalStore.updateApproval(
+                                id: eventApproval.id,
+                                status: .pending
+                            )
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: eventApproval.id,
+                                authorId: currentUser.id,
+                                content: "Event details updated. Resubmitted for Vice President approval."
+                            )
+                        }
+                    }
+                }
+
                 // Venue Approval re-submission
-                if let venueApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .venue }) {
-                    if venueApproval.status == .rejected || event.location != venue {
-                        let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
-                        try await appSession.approvalStore.updateApproval(
-                            id: venueApproval.id,
-                            status: .pending,
-                            approvalRelatedId: selectedVenue?.id
-                        )
-                        try await appSession.approvalStore.addRemark(
-                            approvalId: venueApproval.id,
-                            authorId: currentUser.id,
-                            content: "Venue details updated: \(venue). Resubmitted for approval."
-                        )
+                if shouldCreateApprovalsForNewItems {
+                    if let venueApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .venue }) {
+                        if venueApproval.status == .rejected || event.location != venue {
+                            let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
+                            try await appSession.approvalStore.updateApproval(
+                                id: venueApproval.id,
+                                status: .pending,
+                                approvalRelatedId: selectedVenue?.id
+                            )
+                            try await appSession.approvalStore.addRemark(
+                                approvalId: venueApproval.id,
+                                authorId: currentUser.id,
+                                content: "Venue details updated: \(venue). Resubmitted for approval."
+                            )
+                        }
                     }
                 }
 
@@ -450,27 +475,29 @@ struct EditEventView: View {
                         )
                         try await appSession.approvalStore.addBudget(newBudget)
                         
-                        // Create matching Approval entry
-                        let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
+                        if shouldCreateApprovalsForNewItems {
+                            // Create matching Approval entry
+                            let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
 
-                        let budgetApproval = Approval(
-                            id: UUID(),
-                            type: .budget,
-                            senderId: currentUser.id,
-                            receiverId: presidentUserId,
-                            eventId: event.id,
-                            approvalRelatedId: newBudgetId,
-                            status: .pending,
-                            remarks: [],
-                            createdAt: Date(),
-                            updatedAt: nil
-                        )
-                        try await appSession.approvalStore.submitApprovalRequest(budgetApproval)
-                        try await appSession.approvalStore.addRemark(
-                            approvalId: budgetApproval.id,
-                            authorId: currentUser.id,
-                            content: "New budget item added: \(draft.name)"
-                        )
+                            let budgetApproval = Approval(
+                                id: UUID(),
+                                type: .budget,
+                                senderId: currentUser.id,
+                                receiverId: presidentUserId,
+                                eventId: event.id,
+                                approvalRelatedId: newBudgetId,
+                                status: .pending,
+                                remarks: [],
+                                createdAt: Date(),
+                                updatedAt: nil
+                            )
+                            try await appSession.approvalStore.submitApprovalRequest(budgetApproval)
+                            try await appSession.approvalStore.addRemark(
+                                approvalId: budgetApproval.id,
+                                authorId: currentUser.id,
+                                content: "New budget item added: \(draft.name)"
+                            )
+                        }
                     }
                 }
 
@@ -524,27 +551,29 @@ struct EditEventView: View {
                         )
                         try await appSession.approvalStore.addResource(newRes)
                         
-                        let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
-                        let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                        if shouldCreateApprovalsForNewItems {
+                            let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
+                            let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
 
-                        let resApproval = Approval(
-                            id: UUID(),
-                            type: .resource,
-                            senderId: currentUser.id,
-                            receiverId: facultyId,
-                            eventId: event.id,
-                            approvalRelatedId: newResId,
-                            status: .pending,
-                            remarks: [],
-                            createdAt: Date(),
-                            updatedAt: nil
-                        )
-                        try await appSession.approvalStore.submitApprovalRequest(resApproval)
-                        try await appSession.approvalStore.addRemark(
-                            approvalId: resApproval.id,
-                            authorId: currentUser.id,
-                            content: "New university resource added: \(draft.name)"
-                        )
+                            let resApproval = Approval(
+                                id: UUID(),
+                                type: .resource,
+                                senderId: currentUser.id,
+                                receiverId: facultyId,
+                                eventId: event.id,
+                                approvalRelatedId: newResId,
+                                status: .pending,
+                                remarks: [],
+                                createdAt: Date(),
+                                updatedAt: nil
+                            )
+                            try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                            try await appSession.approvalStore.addRemark(
+                                approvalId: resApproval.id,
+                                authorId: currentUser.id,
+                                content: "New university resource added: \(draft.name)"
+                            )
+                        }
                     }
                 }
 
@@ -582,27 +611,29 @@ struct EditEventView: View {
                         )
                         try await appSession.approvalStore.addResource(newRes)
                         
-                        let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
-                        let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                        if shouldCreateApprovalsForNewItems {
+                            let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
+                            let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
 
-                        let resApproval = Approval(
-                            id: UUID(),
-                            type: .resource,
-                            senderId: currentUser.id,
-                            receiverId: facultyId,
-                            eventId: event.id,
-                            approvalRelatedId: newResId,
-                            status: .pending,
-                            remarks: [],
-                            createdAt: Date(),
-                            updatedAt: nil
-                        )
-                        try await appSession.approvalStore.submitApprovalRequest(resApproval)
-                        try await appSession.approvalStore.addRemark(
-                            approvalId: resApproval.id,
-                            authorId: currentUser.id,
-                            content: "New rental resource added: \(draft.name)"
-                        )
+                            let resApproval = Approval(
+                                id: UUID(),
+                                type: .resource,
+                                senderId: currentUser.id,
+                                receiverId: facultyId,
+                                eventId: event.id,
+                                approvalRelatedId: newResId,
+                                status: .pending,
+                                remarks: [],
+                                createdAt: Date(),
+                                updatedAt: nil
+                            )
+                            try await appSession.approvalStore.submitApprovalRequest(resApproval)
+                            try await appSession.approvalStore.addRemark(
+                                approvalId: resApproval.id,
+                                authorId: currentUser.id,
+                                content: "New rental resource added: \(draft.name)"
+                            )
+                        }
                     }
                 }
 

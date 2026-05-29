@@ -7,11 +7,12 @@ struct FacultyApprovalsModule: View {
     var body: some View {
         let assignedClubIds = Set(appSession.clubStore.allClubs.filter { $0.facultyId == user.id }.map { $0.id })
         let eventsWithApprovals = appSession.eventStore.events.filter { event in
-            assignedClubIds.contains(event.clubId) && (
-                appSession.approvalStore.approvals.contains { $0.eventId == event.id } ||
-                appSession.approvalStore.resources.contains { $0.eventId == event.id } ||
-                appSession.approvalStore.budgets.contains { $0.eventId == event.id }
-            )
+            appSession.approvalStore.approvals.contains { 
+                $0.eventId == event.id && 
+                ($0.type == .venue || $0.type == .resource || $0.type == .event) && 
+                $0.receiverId == user.id && 
+                $0.status == .pending
+            }
         }.sorted(by: { $0.createdAt > $1.createdAt })
         
         VStack(alignment: .leading, spacing: 16) {

@@ -6,7 +6,12 @@ struct PresidentApprovalsModule: View {
 
     var body: some View {
         let eventsWithApprovals = appSession.eventStore.events.filter { event in
-            appSession.approvalStore.budgets.contains { $0.eventId == event.id }
+            appSession.approvalStore.approvals.contains { 
+                $0.eventId == event.id && 
+                $0.type == .budget && 
+                $0.receiverId == user.id && 
+                $0.status == .pending
+            }
         }.sorted(by: { $0.startDate > $1.startDate })
         
         VStack(alignment: .leading, spacing: 16) {

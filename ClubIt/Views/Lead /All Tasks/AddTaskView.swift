@@ -27,8 +27,8 @@ struct AddTaskView: View {
     @State private var isFirstAppear = true
     
     private var clubMembers: [User] {
-        guard let clubId = appSession.currentUser?.clubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
+        guard let clubId = appSession.currentUserClubId else { return [] }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && ($0.role == .clubMember || $0.role == .clubLead) && $0.id != appSession.currentUser?.id }
     }
     
     private var availableClubLeads: [User] {
@@ -37,7 +37,7 @@ struct AddTaskView: View {
     }
     
     private var filteredEvents: [Event] {
-        guard let clubId = appSession.currentUser?.clubId else { return [] }
+        guard let clubId = appSession.currentUserClubId else { return [] }
         return appSession.eventStore.events.filter { 
             $0.clubId == clubId && ($0.status == .approved || $0.status == .published)
         }
@@ -190,9 +190,10 @@ struct AddTaskView: View {
             assignedToId = currentUser.id
             assignedToRole = currentUser.role
         case .clubMember:
-            if let memberId = selectedMemberId {
+            if let memberId = selectedMemberId,
+               let member = appSession.clubStore.allUsers.first(where: { $0.id == memberId }) {
                 assignedToId = memberId
-                assignedToRole = .clubMember
+                assignedToRole = member.role
             }
         case .club:
             if let clubId = selectedOtherClubId, let leadId = selectedClubLeadId {
@@ -205,7 +206,7 @@ struct AddTaskView: View {
         let defaultClubId = appSession.clubStore.allClubs.first?.id ?? UUID()
         let taskToSave = Tasks(
             id: initialTask?.id ?? UUID(),
-            clubId: targetClubId ?? currentUser.clubId ?? defaultClubId,
+            clubId: targetClubId ?? appSession.currentUserClubId ?? defaultClubId,
             targetClubId: targetClubId,
             eventId: selectedEventId,
             title: title,
