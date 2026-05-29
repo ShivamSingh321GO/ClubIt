@@ -4,7 +4,7 @@ struct MockData {
     static let instituteId = UUID()
     
     // Static IDs for Council
-    static let presidentId = UUID()
+    static let presidentId = UUID(uuidString: "db2cc487-3f38-473c-893c-20e352dfdd6b")!
     static let vpTechId = UUID()
     static let vpLitId = UUID()
     static let vpBizId = UUID()

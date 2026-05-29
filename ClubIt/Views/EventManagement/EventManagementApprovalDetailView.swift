@@ -382,99 +382,131 @@ struct EventManagementApprovalDetailView: View {
             .frame(maxWidth: .infinity)
             .padding(.top, 60)
         } else {
-            VStack(spacing: 20) {
-                // MARK: - Budget Summary Cards
-                let totalRequested = budgets.reduce(0) { $0 + $1.totalAmount }
-                let totalApproved = budgets.filter { $0.status == .approved }.reduce(0) { $0 + $1.totalAmount }
-                
-                HStack(spacing: 12) {
-                    // Requested Card
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.orange.opacity(0.1))
-                                    .frame(width: 32, height: 32)
-                                Image(systemName: "clock.arrow.circlepath")
-                                    .font(.caption)
-                                    .foregroundColor(.orange)
-                            }
-                            Spacer()
-                            Text("REQUESTED")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Text("₹\(String(format: "%.0f", totalRequested))")
-                            .font(.title3.bold())
-                            .foregroundColor(.primary)
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(.ultraThinMaterial)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
-                            )
-                    )
+            if appSession.currentUser?.role == .faculty {
+                VStack(spacing: 20) {
+                    let totalRequested = budgets.reduce(0) { $0 + $1.totalAmount }
+                    let anyRejected = budgets.contains { $0.status == .rejected }
+                    let allApproved = budgets.allSatisfy { $0.status == .approved }
+                    let status: ApprovalStatus = anyRejected ? .rejected : (allApproved ? .approved : .pending)
                     
-                    // Approved Card
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 16) {
                         HStack {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.green.opacity(0.1))
-                                    .frame(width: 32, height: 32)
-                                Image(systemName: "checkmark.shield.fill")
-                                    .font(.caption)
-                                    .foregroundColor(.green)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Budget Approval Overview")
+                                    .font(.headline)
+                                Text("Total Estimated Amount: ₹\(String(format: "%.0f", totalRequested))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
                             }
                             Spacer()
-                            Text("APPROVED")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.secondary)
+                            ApprovalStatusBadge(status: status)
                         }
                         
-                        Text("₹\(String(format: "%.0f", totalApproved))")
-                            .font(.title3.bold())
-                            .foregroundColor(.primary)
+                        Divider().opacity(0.5)
+                        
+                        Text(status == .approved ? "The budget request has been approved by the President." : (status == .rejected ? "The budget request was rejected by the President." : "The budget request is currently pending President's approval."))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(.ultraThinMaterial)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
-                            )
-                    )
+                    .padding(20)
+                    .glassEffect(in: .rect(cornerRadius: 24))
                 }
                 .padding(.horizontal)
-
-                VStack(spacing: 16) {
-                    ForEach(budgets.sorted(by: { $0.createdAt > $1.createdAt })) { budget in
-                        PresidentBudgetRequestCard(
-                            budget: budget,
-                            onReject: { selectedBudgetForRemark = budget },
-                            onApprove: {
-                                budgetToApprove = budget
-                                showingBudgetApprovalAlert = true
-                            },
-                            onReply: {
-                                withAnimation {
-                                    if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id {
-                                        replyingToApprovalId = approvalId
-                                        replyText = ""
-                                    }
+            } else {
+                VStack(spacing: 20) {
+                    // MARK: - Budget Summary Cards
+                    let totalRequested = budgets.reduce(0) { $0 + $1.totalAmount }
+                    let totalApproved = budgets.filter { $0.status == .approved }.reduce(0) { $0 + $1.totalAmount }
+                    
+                    HStack(spacing: 12) {
+                        // Requested Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.orange.opacity(0.1))
+                                        .frame(width: 32, height: 32)
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .font(.caption)
+                                        .foregroundColor(.orange)
                                 }
+                                Spacer()
+                                Text("REQUESTED")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.secondary)
                             }
+                            
+                            Text("₹\(String(format: "%.0f", totalRequested))")
+                                .font(.title3.bold())
+                                .foregroundColor(.primary)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.ultraThinMaterial)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                                )
+                        )
+                        
+                        // Approved Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.green.opacity(0.1))
+                                        .frame(width: 32, height: 32)
+                                    Image(systemName: "checkmark.shield.fill")
+                                        .font(.caption)
+                                        .foregroundColor(.green)
+                                }
+                                Spacer()
+                                Text("APPROVED")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Text("₹\(String(format: "%.0f", totalApproved))")
+                                .font(.title3.bold())
+                                .foregroundColor(.primary)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.ultraThinMaterial)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                                )
                         )
                     }
+                    .padding(.horizontal)
+
+                    VStack(spacing: 16) {
+                        ForEach(budgets.sorted(by: { $0.createdAt > $1.createdAt })) { budget in
+                            PresidentBudgetRequestCard(
+                                budget: budget,
+                                onReject: { selectedBudgetForRemark = budget },
+                                onApprove: {
+                                    budgetToApprove = budget
+                                    showingBudgetApprovalAlert = true
+                                },
+                                onReply: {
+                                    withAnimation {
+                                        if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id {
+                                            replyingToApprovalId = approvalId
+                                            replyText = ""
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
             }
         }
     }
