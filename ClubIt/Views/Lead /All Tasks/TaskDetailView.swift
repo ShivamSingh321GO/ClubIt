@@ -30,8 +30,8 @@ struct TaskDetailView: View {
     
     private var canDelegate: Bool {
         let isAssignee = appSession.currentUser?.id == task.assignedTo
-        let isLeadOrPresident = appSession.currentUser?.role == .clubLead || appSession.currentUser?.role == .president
-        return isAssignee && isLeadOrPresident && task.delegatedToId == nil
+        let isEligibleRole = appSession.currentUser?.role == .clubLead || appSession.currentUser?.role == .president || appSession.currentUser?.role == .vicePresident
+        return isAssignee && isEligibleRole && task.delegatedToId == nil
     }
     
     var body: some View {

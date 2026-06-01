@@ -16,15 +16,19 @@ struct TaskRowView: View {
     }
     
     private var assignerName: String {
+        if task.assignedBy == appSession.currentUser?.id {
+            return "You"
+        }
         let user = appSession.clubStore.allUsers.first(where: { $0.id == task.assignedBy })
         return user?.name ?? "Unknown"
     }
     
     private var assigneeName: String {
-        if task.assignedTo == appSession.currentUser?.id {
+        let assigneeId = task.delegatedToId ?? task.assignedTo
+        if assigneeId == appSession.currentUser?.id {
             return "You"
         }
-        let user = appSession.clubStore.allUsers.first(where: { $0.id == task.assignedTo })
+        let user = appSession.clubStore.allUsers.first(where: { $0.id == assigneeId })
         return user?.name ?? "Unknown"
     }
     
@@ -34,10 +38,7 @@ struct TaskRowView: View {
     }
     
     private var assignmentInfo: String {
-        if let delegatedId = task.delegatedToId, let delegatedName = appSession.clubStore.allUsers.first(where: { $0.id == delegatedId })?.name {
-            // Flow: Assigner -> Delegate (hiding the middleman as requested)
-            return "\(assignerName) → \(delegatedName)"
-        } else if task.assignedTo == task.assignedBy {
+        if task.assignedTo == task.assignedBy && task.delegatedToId == nil {
             return "Self Assigned"
         } else if let clubName = targetClubName {
             return "\(assignerName) → \(clubName)"

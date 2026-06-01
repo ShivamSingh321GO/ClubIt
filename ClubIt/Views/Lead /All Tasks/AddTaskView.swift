@@ -9,6 +9,7 @@ struct AddTaskView: View {
         case myself = "Myself"
         case clubMember = "Club Member"
         case club = "Club"
+        case vicePresident = "Vice President"
         var id: String { self.rawValue }
     }
     
@@ -17,6 +18,7 @@ struct AddTaskView: View {
     @State private var selectedOtherClubId: UUID? = nil
     @State private var selectedMemberId: UUID? = nil
     @State private var selectedClubLeadId: UUID? = nil
+    @State private var selectedVicePresidentId: UUID? = nil
     @State private var title: String = ""
     @State private var description: String = ""
     @State private var priority: TaskPriority = .low
@@ -36,7 +38,14 @@ struct AddTaskView: View {
         return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
     }
     
+    private var vicePresidents: [User] {
+        return appSession.clubStore.allUsers.filter { $0.role == .vicePresident && $0.id != appSession.currentUser?.id }
+    }
+    
     private var filteredEvents: [Event] {
+        if appSession.currentUser?.role == .president {
+            return appSession.eventStore.events.filter { $0.status == .approved || $0.status == .published }
+        }
         guard let clubId = appSession.currentUserClubId else { return [] }
         return appSession.eventStore.events.filter { 
             $0.clubId == clubId && ($0.status == .approved || $0.status == .published)
@@ -44,7 +53,10 @@ struct AddTaskView: View {
     }
     
     private var availableAssignmentTypes: [AssignmentType] {
-        if appSession.currentUser?.role == .president {
+        let role = appSession.currentUser?.role
+        if role == .president {
+            return [.myself, .vicePresident, .club]
+        } else if role == .vicePresident {
             return [.myself, .club]
         } else {
             return [.myself, .clubMember, .club]
@@ -123,6 +135,15 @@ struct AddTaskView: View {
                         }
                      
                     }
+                    
+                    if assignmentType == .vicePresident {
+                        Picker("Select Vice President", selection: $selectedVicePresidentId) {
+                            Text("Select a VP").tag(UUID?.none)
+                            ForEach(vicePresidents) { vp in
+                                Text(vp.name).tag(UUID?.some(vp.id))
+                            }
+                        }
+                    }
                 }
                 
                 Section("Priority & Schedule") {
@@ -173,6 +194,9 @@ struct AddTaskView: View {
         } else if task.assignedToRole == .clubMember {
             assignmentType = .clubMember
             selectedMemberId = task.assignedTo
+        } else if task.assignedToRole == .vicePresident {
+            assignmentType = .vicePresident
+            selectedVicePresidentId = task.assignedTo
         } else {
             assignmentType = .myself
         }
@@ -200,6 +224,12 @@ struct AddTaskView: View {
                 assignedToId = leadId
                 assignedToRole = .clubLead
                 targetClubId = clubId
+            }
+        case .vicePresident:
+            if let vpId = selectedVicePresidentId,
+               let vp = appSession.clubStore.allUsers.first(where: { $0.id == vpId }) {
+                assignedToId = vpId
+                assignedToRole = vp.role
             }
         }
         
