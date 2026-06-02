@@ -375,6 +375,8 @@ struct CreateNewEventView: View {
                         (startDate < e.endDate) && (e.startDate < endDate)
                     }
                     
+                    let isInvalidTime = startDate >= endDate
+                    
                     Button {
                         if appSession.currentUser?.role == .president {
                             isShowingPublishConfirmation = true
@@ -390,12 +392,24 @@ struct CreateNewEventView: View {
                             .padding(.vertical, 8)
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(isVenueBooked || isSaving)
+                    .disabled(isVenueBooked || isSaving || isInvalidTime)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
                     
                     if isVenueBooked {
                         Text("Selected venue is unavailable for this time slot")
+                            .font(.caption2)
+                            .foregroundStyle(.red)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .listRowBackground(Color.clear)
+                    } else if startDate == endDate {
+                        Text("Start and End time cannot be the same")
+                            .font(.caption2)
+                            .foregroundStyle(.red)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .listRowBackground(Color.clear)
+                    } else if endDate < startDate {
+                        Text("End date must be after start date")
                             .font(.caption2)
                             .foregroundStyle(.red)
                             .frame(maxWidth: .infinity, alignment: .center)
