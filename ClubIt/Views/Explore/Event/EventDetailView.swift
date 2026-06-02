@@ -59,7 +59,7 @@ struct EventDetailView: View {
                         }
                         
                         // 6. Registration Progress
-                        if event.status != .pending {
+                        if event.status != .pending && (event.isRegistrationOpen ?? true) {
                             thinDivider
                                 .padding(.vertical, 18)
                             
@@ -247,8 +247,15 @@ struct EventDetailView: View {
     // MARK: - Organizer (Inline Row)
     
     private var organizerRow: some View {
-        Group {
-            if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+        let matchingClub = appSession.clubStore.allClubs.first { club in
+            if let clubIds = event.clubIds {
+                return clubIds.contains(club.id)
+            }
+            return club.id == event.clubId
+        }
+        
+        return Group {
+            if let club = matchingClub {
                 NavigationLink(destination: ClubDetailView(club: club)) {
                     organizerContent
                 }
@@ -271,7 +278,7 @@ struct EventDetailView: View {
                 )
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Organized by")
+                Text(event.clubId == nil ? "Associated Clubs" : "Organized by")
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 Text(organizerName)
@@ -379,12 +386,19 @@ struct EventDetailView: View {
                         .font(.headline)
                     
                     Group {
-                        Text("\(event.status == .approved ? 0 : (event.numberOfRegistrations ?? 0)) Registered / ")
-                        + Text("\(event.maxParticipants)")
-                            .font(.subheadline)
-                            .bold()
-                            .foregroundColor(.primary)
-                        + Text(" total")
+                        if event.maxParticipants >= 999999 {
+                            Text("\(event.status == .approved ? 0 : registrations.count) Registered")
+                                .font(.subheadline)
+                                .bold()
+                                .foregroundColor(.primary)
+                        } else {
+                            Text("\(event.status == .approved ? 0 : registrations.count) Registered / ")
+                            + Text("\(event.maxParticipants)")
+                                .font(.subheadline)
+                                .bold()
+                                .foregroundColor(.primary)
+                            + Text(" total")
+                        }
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -393,7 +407,15 @@ struct EventDetailView: View {
                 Spacer()
                 
                 if event.status != .approved {
-                    if appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants {
+                    if !(event.isRegistrationOpen ?? true) {
+                        Text("Closed")
+                            .font(.system(size: 10, weight: .heavy))
+                            .foregroundColor(.red)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.red.opacity(0.1))
+                            .clipShape(Capsule())
+                    } else if event.maxParticipants > 0 && event.maxParticipants < 999999 && appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants {
                         Text("Sold Out")
                             .font(.system(size: 10, weight: .heavy))
                             .foregroundColor(.red)
@@ -406,7 +428,7 @@ struct EventDetailView: View {
                             Circle()
                                 .fill(.blue)
                                 .frame(width: 4, height: 4)
-                            Text("\(event.maxParticipants - appSession.registrationStore.getRegistrations(for: event.id).count) slots left")
+                            Text(event.maxParticipants >= 999999 ? "Unlimited slots" : "\(event.maxParticipants - appSession.registrationStore.getRegistrations(for: event.id).count) slots left")
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundColor(.blue)
                         }
@@ -458,14 +480,16 @@ struct EventDetailView: View {
                     .controlSize(.large)
                     .tint(.orange)
                 } else {
-                    NavigationLink(destination: ManageParticipantsView(event: event)) {
-                        Text("View Participants")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
+                    if event.isRegistrationOpen ?? true {
+                        NavigationLink(destination: ManageParticipantsView(event: event)) {
+                            Text("View Participants")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .tint(.blue)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .tint(.blue)
                 }
             } else if appSession.currentRole == .faculty {
                 Button(action: {}) {
@@ -479,12 +503,13 @@ struct EventDetailView: View {
                 .padding(.top, 12)
             } else {
                 let isRegistered = appSession.registeredEventIds.contains(event.id)
-                let isFull = appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants
+                let isFull = event.maxParticipants > 0 && event.maxParticipants < 999999 && appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants
+                let isOpen = event.isRegistrationOpen ?? true
                 
                 Button {
                     if isRegistered {
                         isShowingWithdrawConfirmAlert = true
-                    } else if !isFull {
+                    } else if isOpen && !isFull {
                         if event.registrationType == .team {
                             isShowingRegistrationForm = true
                         } else {
@@ -492,14 +517,14 @@ struct EventDetailView: View {
                         }
                     }
                 } label: {
-                    Text(isRegistered ? "Withdraw Registration" : (isFull ? "Event Full" : "Register Now"))
+                    Text(isRegistered ? "Withdraw Registration" : (!isOpen ? "Registration Closed" : (isFull ? "Event Full" : "Register Now")))
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .tint(isRegistered ? .red : (isFull ? .secondary : .orange))
-                .disabled(!isRegistered && isFull)
+                .tint(isRegistered ? .red : (!isOpen ? .secondary : (isFull ? .secondary : .orange)))
+                .disabled((!isRegistered && isFull) || (!isRegistered && !isOpen))
             }
         }
     }
@@ -535,11 +560,18 @@ struct EventDetailView: View {
     }
     
     private var organizerName: String {
-        appSession.clubStore.allClubs.first { $0.id == event.clubId }?.name ?? "Event Organizer"
+        if let clubIds = event.clubIds, !clubIds.isEmpty {
+            let names = clubIds.compactMap { id in appSession.clubStore.allClubs.first(where: { $0.id == id })?.name }
+            return names.joined(separator: ", ")
+        }
+        if let clubId = event.clubId {
+            return appSession.clubStore.allClubs.first { $0.id == clubId }?.name ?? "Event Organizer"
+        }
+        return "Council Event"
     }
     
     private var registrationProgress: Double {
-        guard event.maxParticipants > 0 else { return 0 }
+        guard event.maxParticipants > 0 && event.maxParticipants < 999999 else { return 0 }
         return min(Double(event.numberOfRegistrations ?? 0) / Double(event.maxParticipants), 1.0)
     }
     

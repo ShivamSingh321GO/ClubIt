@@ -178,7 +178,7 @@ final class AppSession {
         let currentCount = registrationStore.getRegistrations(for: id).count
         
         // First Come First Serve: Check if full before allowing new registration
-        if !registeredEventIds.contains(id) && currentCount >= event.maxParticipants {
+        if !registeredEventIds.contains(id) && event.maxParticipants > 0 && event.maxParticipants < 999999 && currentCount >= event.maxParticipants {
             print("Registration failed: Event is full")
             return
         }

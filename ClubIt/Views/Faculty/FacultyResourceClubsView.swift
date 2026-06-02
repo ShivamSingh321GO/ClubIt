@@ -13,10 +13,13 @@ struct FacultyResourceClubsView: View {
                     let clubIds = Set(assignedClubs.map { $0.id })
                     
                     let eventsWithPending = appSession.eventStore.events.filter { event in
-                        clubIds.contains(event.clubId) && (
-                            appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .pending } ||
-                            appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .venue && $0.status == .pending }
-                        )
+                        if let clubId = event.clubId {
+                            return clubIds.contains(clubId) && (
+                                appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .pending } ||
+                                appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .venue && $0.status == .pending }
+                            )
+                        }
+                        return false
                     }.sorted(by: { $0.startDate > $1.startDate })
                     
                     if eventsWithPending.isEmpty {
@@ -24,7 +27,7 @@ struct FacultyResourceClubsView: View {
                     } else {
                         LazyVStack(spacing: 16) {
                             ForEach(eventsWithPending) { event in
-                                if let club = assignedClubs.first(where: { $0.id == event.clubId }) {
+                                if let clubId = event.clubId, let club = assignedClubs.first(where: { $0.id == clubId }) {
                                     NavigationLink(destination: ClubResourcesDetailView(club: club, event: event)) {
                                         FacultyEventResourceCard(event: event, club: club)
                                     }

@@ -46,7 +46,9 @@ struct CreateNewEventView: View {
     @State private var isSaving = false
     @State private var showSuccessView = false
     @State private var currentEventId = UUID()
-    @State private var selectedClubId: UUID? = nil
+    @State private var selectedClubIds: Set<UUID> = []
+    @State private var isShowingPublishConfirmation = false
+    @State private var isRegistrationOpen = true
 
 
     
@@ -54,6 +56,7 @@ struct CreateNewEventView: View {
     
     var body: some View {
         if showSuccessView {
+            let isPresident = appSession.currentUser?.role == .president
             VStack(spacing: 28) {
                 Spacer()
                 
@@ -61,17 +64,17 @@ struct CreateNewEventView: View {
                     Circle()
                         .fill(Color.orange.opacity(0.1))
                         .frame(width: 88, height: 88)
-                    Image(systemName: "doc.text.badge.plus")
+                    Image(systemName: isPresident ? "checkmark.circle.fill" : "doc.text.badge.plus")
                         .font(.system(size: 44))
                         .foregroundColor(.orange)
                 }
                 
                 VStack(spacing: 12) {
-                    Text("Event Draft Created!")
+                    Text(isPresident ? "Event Published!" : "Event Draft Created!")
                         .font(.title2.bold())
                         .multilineTextAlignment(.center)
                     
-                    Text("Your event '\(eventName)' has been saved as a draft. It has been sent to the Vice President for initial review.")
+                    Text(isPresident ? "Your event '\(eventName)' has been successfully published and is now live for all users." : "Your event '\(eventName)' has been saved as a draft. It has been sent to the Vice President for initial review.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -82,14 +85,16 @@ struct CreateNewEventView: View {
                 Spacer()
                 
                 VStack(spacing: 14) {
-                    NavigationLink(destination: LeadEventApprovalDetailView(eventId: currentEventId)) {
-                        Text("View Event Draft")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .cornerRadius(16)
+                    if !isPresident {
+                        NavigationLink(destination: LeadEventApprovalDetailView(eventId: currentEventId)) {
+                            Text("View Event Draft")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.orange)
+                                .cornerRadius(16)
+                        }
                     }
                     
                     Button {
@@ -107,20 +112,36 @@ struct CreateNewEventView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
-            .navigationTitle("Draft Saved")
+            .navigationTitle(isPresident ? "Event Published" : "Draft Saved")
             .navigationBarBackButtonHidden(true)
         } else {
             Form {
                 if appSession.currentUser?.role == .president {
                     Section {
-                        Picker("Associated Club", selection: $selectedClubId) {
-                            Text("Select Club").tag(nil as UUID?)
-                            ForEach(appSession.clubStore.allClubs) { club in
-                                Text(club.name).tag(club.id as UUID?)
+                        NavigationLink {
+                            MultiClubSelectionView(selectedClubIds: $selectedClubIds)
+                        } label: {
+                            HStack {
+                                Text("Associated Clubs")
+                                Spacer()
+                                if selectedClubIds.isEmpty {
+                                    Text("None (All Clubs)")
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    Text("\(selectedClubIds.count) Clubs")
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
                     } header: {
                         Text("Club Association")
+                    }
+                    
+                    Section {
+                        Toggle("Open Registration", isOn: $isRegistrationOpen)
+                            .tint(.orange)
+                    } header: {
+                        Text("Registration Status")
                     }
                 }
                 
@@ -262,74 +283,76 @@ struct CreateNewEventView: View {
                     Text("Venue")
                 }
                 
-                Section {
-                    Button {
-                        isShowingAddBudgetItems = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundStyle(.blue)
-                            Text("Add Budget Items")
-                        }
-                    }
-                    .foregroundStyle(.primary)
-                    
-                    if !budgetItems.isEmpty {
-                        let total = budgetItems.reduce(0) { $0 + (Double($1.price) ?? 0) * Double($1.quantity) }
+                if appSession.currentUser?.role != .president {
+                    Section {
                         Button {
-                            isShowingBudgetSummary = true
+                            isShowingAddBudgetItems = true
                         } label: {
                             HStack {
-                                Text("\(budgetItems.count) \(budgetItems.count == 1 ? "item" : "items") added • Estimated Budget: ₹\(Int(total))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundStyle(.blue)
+                                Text("Add Budget Items")
                             }
                         }
-                        .buttonStyle(.plain)
-                    }
-                } header: {
-                    Text("Budget")
-                }
-
-                
-                Section {
-                    Button {
-                        isShowingAddResourcesItems = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundStyle(.blue)
-                            Text(universityResources.isEmpty && rentalResources.isEmpty ? "Add Resources Items" : "\(universityResources.count + rentalResources.count) Items Added")
+                        .foregroundStyle(.primary)
+                        
+                        if !budgetItems.isEmpty {
+                            let total = budgetItems.reduce(0) { $0 + (Double($1.price) ?? 0) * Double($1.quantity) }
+                            Button {
+                                isShowingBudgetSummary = true
+                            } label: {
+                                HStack {
+                                    Text("\(budgetItems.count) \(budgetItems.count == 1 ? "item" : "items") added • Estimated Budget: ₹\(Int(total))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
                         }
+                    } header: {
+                        Text("Budget")
                     }
-                    .foregroundStyle(.primary)
+
                     
-                    if !universityResources.isEmpty || !rentalResources.isEmpty {
+                    Section {
                         Button {
-                            isShowingResourceSummary = true
+                            isShowingAddResourcesItems = true
                         } label: {
                             HStack {
-                                Text("\(universityResources.count + rentalResources.count) \( (universityResources.count + rentalResources.count) == 1 ? "item" : "items") added")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundStyle(.blue)
+                                Text(universityResources.isEmpty && rentalResources.isEmpty ? "Add Resources Items" : "\(universityResources.count + rentalResources.count) Items Added")
                             }
                         }
-                        .buttonStyle(.plain)
+                        .foregroundStyle(.primary)
+                        
+                        if !universityResources.isEmpty || !rentalResources.isEmpty {
+                            Button {
+                                isShowingResourceSummary = true
+                            } label: {
+                                HStack {
+                                    Text("\(universityResources.count + rentalResources.count) \( (universityResources.count + rentalResources.count) == 1 ? "item" : "items") added")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } header: {
+                        Text("Resources")
                     }
-                } header: {
-                    Text("Resources")
                 }
 
                 Section {
-                    TextField("Expected Participants", text: $participants)
+                    TextField(appSession.currentUser?.role == .president ? "Expected Participants (Optional)" : "Expected Participants", text: $participants)
                         .keyboardType(.numberPad)
                 } header: {
                     Text("Participation & Support")
@@ -353,10 +376,14 @@ struct CreateNewEventView: View {
                     }
                     
                     Button {
-                        isSaving = true
-                        saveEvent()
+                        if appSession.currentUser?.role == .president {
+                            isShowingPublishConfirmation = true
+                        } else {
+                            isSaving = true
+                            saveEvent()
+                        }
                     } label: {
-                        Text("Send Approval")
+                        Text(appSession.currentUser?.role == .president ? "Publish Event" : "Send Approval")
                             .font(.headline)
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity)
@@ -399,6 +426,15 @@ struct CreateNewEventView: View {
             .sheet(isPresented: $isShowingResourceSummary) {
                 ResourceSummarySheet(universityItems: universityResources, rentalItems: rentalResources)
             }
+            .alert("Publish Event", isPresented: $isShowingPublishConfirmation) {
+                Button("Publish", role: .none) {
+                    isSaving = true
+                    saveEvent()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Are you sure you want to publish this event directly? It will be visible to all users immediately.")
+            }
         }
     }
     
@@ -426,19 +462,38 @@ struct CreateNewEventView: View {
             return
         }
         
-        let resolvedClubId: UUID
+        let resolvedClubId: UUID?
+        var resolvedClubIds: [UUID] = []
         if currentUser.role == .president {
-            guard let chosenClubId = selectedClubId else {
-                errorMessage = "Please select an associated club."
-                return
-            }
-            resolvedClubId = chosenClubId
+            resolvedClubId = nil
+            resolvedClubIds = Array(selectedClubIds)
         } else {
             guard let userClubId = currentUser.clubId else {
                 errorMessage = "Error: Your user account is not linked to any club."
                 return
             }
             resolvedClubId = userClubId
+            resolvedClubIds = [userClubId]
+        }
+        
+        let isPresident = currentUser.role == .president
+        let maxParticipantsVal: Int
+        if isPresident {
+            if participants.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                maxParticipantsVal = 999999
+            } else {
+                maxParticipantsVal = Int(participants) ?? 999999
+            }
+        } else {
+            guard !participants.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                errorMessage = "Please enter expected participants."
+                return
+            }
+            guard let parsed = Int(participants), parsed > 0 else {
+                errorMessage = "Expected participants must be a number greater than 0."
+                return
+            }
+            maxParticipantsVal = parsed
         }
         
         let newEvent = Event(
@@ -452,13 +507,15 @@ struct CreateNewEventView: View {
             endTime: endDate,
             numberOfVolunteers: 0,
             numberOfRegistrations: 0,
-            maxParticipants: Int(participants) ?? 0,
+            maxParticipants: maxParticipantsVal,
             registrationType: registrationType,
             location: venue,
             clubId: resolvedClubId,
+            clubIds: resolvedClubIds,
             createdBy: currentUser.id,
             category: selectedCategory,
-            status: .pending,
+            status: isPresident ? .published : .pending,
+            isRegistrationOpen: isRegistrationOpen,
             registrationDeadline: Calendar.current.date(byAdding: .day, value: -1, to: startDate) ?? startDate,
             bannerImage: nil,
             imageData: imageData,
@@ -482,200 +539,202 @@ struct CreateNewEventView: View {
 
         Task {
             do {
-                // 1. Save the main event
-                try await appSession.eventStore.createEvent(newEvent)
+                // 1. Save the main event (pass isCouncil if isPresident)
+                try await appSession.eventStore.createEvent(newEvent, isCouncil: isPresident)
                 
-                let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
-                let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
-                let facultyId = club?.facultyId ?? eventManagementTeamID
-                let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
-                
-                var budgetsToSave: [Budget] = []
-                var resourcesToSave: [Resource] = []
-                var approvalsToSave: [Approval] = []
-                var remarksToSave: [RemarkMessage] = []
-                
-                // 2. Prepare Budget Items
-                for item in budgetItems {
-                    let budgetId = UUID()
-                    let price = Double(item.price) ?? 0
-                    let budget = Budget(
-                        id: budgetId,
-                        eventId: newEvent.id,
-                        itemName: item.name,
-                        unitPrice: price,
-                        quantity: item.quantity,
-                        status: .pending,
-                        addedBy: currentUser.id,
-                        remarks: [],
-                        createdAt: Date()
-                    )
-                    budgetsToSave.append(budget)
-                }
-                
-                // 3. Prepare Resource Items
-                for item in universityResources {
-                    let resourceId = UUID()
-                    let resource = Resource(
-                        id: resourceId, 
-                        eventId: newEvent.id,
-                        name: item.name,
-                        quantity: item.quantity,
-                        type: .university,
-                        status: .pending,
-                        addedBy: currentUser.id,
-                        remarks: [],
-                        createdAt: Date()
-                    )
-                    resourcesToSave.append(resource)
-                }
-                
-                for item in rentalResources {
-                    let resourceId = UUID()
-                    let price = Double(item.price) ?? 0
-                    let resource = Resource(
-                        id: resourceId, 
-                        eventId: newEvent.id,
-                        name: item.name,
-                        quantity: item.quantity,
-                        type: .external,
-                        status: .pending,
-                        cost: price * Double(item.quantity),
-                        vendorName: item.vendorName,
-                        addedBy: currentUser.id,
-                        remarks: [],
-                        createdAt: Date()
-                    )
-                    resourcesToSave.append(resource)
-                }
-
-                // Check if Vice President exists for the club
-                if let vicePresidentUserId = club?.vicePresidentId {
-                    // Send to Vice President first as a draft
-                    let eventApproval = Approval(
-                        id: UUID(),
-                        type: .event,
-                        senderId: currentUser.id,
-                        receiverId: vicePresidentUserId,
-                        eventId: newEvent.id,
-                        approvalRelatedId: newEvent.id,
-                        status: .pending,
-                        remarks: [],
-                        createdAt: Date(),
-                        updatedAt: nil
-                    )
-                    approvalsToSave.append(eventApproval)
-                    remarksToSave.append(RemarkMessage(
-                        id: UUID(),
-                        approvalId: eventApproval.id,
-                        authorId: currentUser.id,
-                        content: "Draft event submitted to Vice President for approval",
-                        createdAt: Date()
-                    ))
-                } else {
-                    // Route directly to EMT and President
-                    for budget in budgetsToSave {
-                        let budgetApproval = Approval(
-                            id: UUID(),
-                            type: .budget,
-                            senderId: currentUser.id,
-                            receiverId: presidentUserId,
+                if !isPresident {
+                    let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
+                    let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                    let facultyId = club?.facultyId ?? eventManagementTeamID
+                    let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
+                    
+                    var budgetsToSave: [Budget] = []
+                    var resourcesToSave: [Resource] = []
+                    var approvalsToSave: [Approval] = []
+                    var remarksToSave: [RemarkMessage] = []
+                    
+                    // 2. Prepare Budget Items
+                    for item in budgetItems {
+                        let budgetId = UUID()
+                        let price = Double(item.price) ?? 0
+                        let budget = Budget(
+                            id: budgetId,
                             eventId: newEvent.id,
-                            approvalRelatedId: budget.id,
+                            itemName: item.name,
+                            unitPrice: price,
+                            quantity: item.quantity,
+                            status: .pending,
+                            addedBy: currentUser.id,
+                            remarks: [],
+                            createdAt: Date()
+                        )
+                        budgetsToSave.append(budget)
+                    }
+                    
+                    // 3. Prepare Resource Items
+                    for item in universityResources {
+                        let resourceId = UUID()
+                        let resource = Resource(
+                            id: resourceId, 
+                            eventId: newEvent.id,
+                            name: item.name,
+                            quantity: item.quantity,
+                            type: .university,
+                            status: .pending,
+                            addedBy: currentUser.id,
+                            remarks: [],
+                            createdAt: Date()
+                        )
+                        resourcesToSave.append(resource)
+                    }
+                    
+                    for item in rentalResources {
+                        let resourceId = UUID()
+                        let price = Double(item.price) ?? 0
+                        let resource = Resource(
+                            id: resourceId, 
+                            eventId: newEvent.id,
+                            name: item.name,
+                            quantity: item.quantity,
+                            type: .external,
+                            status: .pending,
+                            cost: price * Double(item.quantity),
+                            vendorName: item.vendorName,
+                            addedBy: currentUser.id,
+                            remarks: [],
+                            createdAt: Date()
+                        )
+                        resourcesToSave.append(resource)
+                    }
+
+                    // Check if Vice President exists for the club
+                    if let vicePresidentUserId = club?.vicePresidentId {
+                        // Send to Vice President first as a draft
+                        let eventApproval = Approval(
+                            id: UUID(),
+                            type: .event,
+                            senderId: currentUser.id,
+                            receiverId: vicePresidentUserId,
+                            eventId: newEvent.id,
+                            approvalRelatedId: newEvent.id,
                             status: .pending,
                             remarks: [],
                             createdAt: Date(),
                             updatedAt: nil
                         )
-                        approvalsToSave.append(budgetApproval)
+                        approvalsToSave.append(eventApproval)
                         remarksToSave.append(RemarkMessage(
                             id: UUID(),
-                            approvalId: budgetApproval.id,
+                            approvalId: eventApproval.id,
                             authorId: currentUser.id,
-                            content: "Budget approval requested for \(budget.itemName)",
+                            content: "Draft event submitted to Vice President for approval",
                             createdAt: Date()
                         ))
-                    }
-                    
-                    for resource in resourcesToSave {
-                        let resApproval = Approval(
+                    } else {
+                        // Route directly to EMT and President
+                        for budget in budgetsToSave {
+                            let budgetApproval = Approval(
+                                id: UUID(),
+                                type: .budget,
+                                senderId: currentUser.id,
+                                receiverId: presidentUserId,
+                                eventId: newEvent.id,
+                                approvalRelatedId: budget.id,
+                                status: .pending,
+                                remarks: [],
+                                createdAt: Date(),
+                                updatedAt: nil
+                            )
+                            approvalsToSave.append(budgetApproval)
+                            remarksToSave.append(RemarkMessage(
+                                id: UUID(),
+                                approvalId: budgetApproval.id,
+                                authorId: currentUser.id,
+                                content: "Budget approval requested for \(budget.itemName)",
+                                createdAt: Date()
+                            ))
+                        }
+                        
+                        for resource in resourcesToSave {
+                            let resApproval = Approval(
+                                id: UUID(),
+                                type: .resource,
+                                senderId: currentUser.id,
+                                receiverId: facultyId,
+                                eventId: newEvent.id,
+                                approvalRelatedId: resource.id,
+                                status: .pending,
+                                remarks: [],
+                                createdAt: Date(),
+                                updatedAt: nil
+                            )
+                            approvalsToSave.append(resApproval)
+                            remarksToSave.append(RemarkMessage(
+                                id: UUID(),
+                                approvalId: resApproval.id,
+                                authorId: currentUser.id,
+                                content: "Resource approval requested for \(resource.name)",
+                                createdAt: Date()
+                            ))
+                        }
+                        
+                        let eventApproval = Approval(
                             id: UUID(),
-                            type: .resource,
+                            type: .event,
                             senderId: currentUser.id,
                             receiverId: facultyId,
                             eventId: newEvent.id,
-                            approvalRelatedId: resource.id,
+                            approvalRelatedId: newEvent.id,
                             status: .pending,
                             remarks: [],
                             createdAt: Date(),
                             updatedAt: nil
                         )
-                        approvalsToSave.append(resApproval)
+                        approvalsToSave.append(eventApproval)
                         remarksToSave.append(RemarkMessage(
                             id: UUID(),
-                            approvalId: resApproval.id,
+                            approvalId: eventApproval.id,
                             authorId: currentUser.id,
-                            content: "Resource approval requested for \(resource.name)",
+                            content: "Event creation approval requested",
+                            createdAt: Date()
+                        ))
+                        
+                        let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
+                        let venueApproval = Approval(
+                            id: UUID(),
+                            type: .venue,
+                            senderId: currentUser.id,
+                            receiverId: facultyId,
+                            eventId: newEvent.id,
+                            approvalRelatedId: selectedVenue?.id ?? newEvent.id,
+                            status: .pending,
+                            remarks: [],
+                            createdAt: Date(),
+                            updatedAt: nil
+                        )
+                        approvalsToSave.append(venueApproval)
+                        remarksToSave.append(RemarkMessage(
+                            id: UUID(),
+                            approvalId: venueApproval.id,
+                            authorId: currentUser.id,
+                            content: "Venue booking approval requested for \(venue)",
                             createdAt: Date()
                         ))
                     }
                     
-                    let eventApproval = Approval(
-                        id: UUID(),
-                        type: .event,
-                        senderId: currentUser.id,
-                        receiverId: facultyId,
-                        eventId: newEvent.id,
-                        approvalRelatedId: newEvent.id,
-                        status: .pending,
-                        remarks: [],
-                        createdAt: Date(),
-                        updatedAt: nil
-                    )
-                    approvalsToSave.append(eventApproval)
-                    remarksToSave.append(RemarkMessage(
-                        id: UUID(),
-                        approvalId: eventApproval.id,
-                        authorId: currentUser.id,
-                        content: "Event creation approval requested",
-                        createdAt: Date()
-                    ))
-                    
-                    let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
-                    let venueApproval = Approval(
-                        id: UUID(),
-                        type: .venue,
-                        senderId: currentUser.id,
-                        receiverId: facultyId,
-                        eventId: newEvent.id,
-                        approvalRelatedId: selectedVenue?.id ?? newEvent.id,
-                        status: .pending,
-                        remarks: [],
-                        createdAt: Date(),
-                        updatedAt: nil
-                    )
-                    approvalsToSave.append(venueApproval)
-                    remarksToSave.append(RemarkMessage(
-                        id: UUID(),
-                        approvalId: venueApproval.id,
-                        authorId: currentUser.id,
-                        content: "Venue booking approval requested for \(venue)",
-                        createdAt: Date()
-                    ))
-                }
-                
-                // 5. Batch Save Everything
-                if !budgetsToSave.isEmpty {
-                    try await appSession.approvalStore.addBudgets(budgetsToSave)
-                }
-                if !resourcesToSave.isEmpty {
-                    try await appSession.approvalStore.addResources(resourcesToSave)
-                }
-                if !approvalsToSave.isEmpty {
-                    try await appSession.approvalStore.submitApprovalRequests(approvalsToSave)
-                }
-                if !remarksToSave.isEmpty {
-                    try await appSession.approvalStore.addRemarks(remarksToSave)
+                    // 5. Batch Save Everything
+                    if !budgetsToSave.isEmpty {
+                        try await appSession.approvalStore.addBudgets(budgetsToSave)
+                    }
+                    if !resourcesToSave.isEmpty {
+                        try await appSession.approvalStore.addResources(resourcesToSave)
+                    }
+                    if !approvalsToSave.isEmpty {
+                        try await appSession.approvalStore.submitApprovalRequests(approvalsToSave)
+                    }
+                    if !remarksToSave.isEmpty {
+                        try await appSession.approvalStore.addRemarks(remarksToSave)
+                    }
                 }
                 
                 await MainActor.run {
@@ -856,4 +915,34 @@ struct ResourceSummarySheet: View {
 #Preview {
     CreateNewEventView { _ in }
         .environment(MockData.session(for: .clubLead))
+}
+
+struct MultiClubSelectionView: View {
+    @Environment(AppSession.self) var appSession
+    @Binding var selectedClubIds: Set<UUID>
+    
+    var body: some View {
+        List {
+            ForEach(appSession.clubStore.allClubs) { club in
+                Button {
+                    if selectedClubIds.contains(club.id) {
+                        selectedClubIds.remove(club.id)
+                    } else {
+                        selectedClubIds.insert(club.id)
+                    }
+                } label: {
+                    HStack {
+                        Text(club.name)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if selectedClubIds.contains(club.id) {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.orange)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Select Clubs")
+    }
 }

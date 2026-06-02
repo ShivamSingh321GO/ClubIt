@@ -95,11 +95,13 @@ struct Event: Identifiable, Hashable, Codable {
     var registrationType: RegistrationType?
     var location: String
     
-    var clubId: UUID
+    var clubId: UUID?
+    var clubIds: [UUID]?
     var createdBy: UUID
     
     var category: EventCategory
     var status: EventStatus
+    var isRegistrationOpen: Bool? = true
     
     var registrationDeadline: Date?
     var bannerImage: String?
@@ -125,9 +127,11 @@ struct Event: Identifiable, Hashable, Codable {
         case registrationType = "registration_type"
         case location
         case clubId = "club_id"
+        case clubIds = "club_ids"
         case createdBy = "created_by"
         case category
         case status
+        case isRegistrationOpen = "is_registration_open"
         case registrationDeadline = "registration_deadline"
         case bannerImage = "banner_image"
         case imageData = "image_data"
@@ -136,7 +140,7 @@ struct Event: Identifiable, Hashable, Codable {
         case createdAt = "created_at"
     }
 
-    init(id: UUID, name: String, title: String, description: String, startDate: Date, endDate: Date, startTime: Date? = nil, endTime: Date? = nil, numberOfVolunteers: Int, numberOfRegistrations: Int? = nil, maxParticipants: Int, registrationType: RegistrationType? = nil, location: String, clubId: UUID, createdBy: UUID, category: EventCategory, status: EventStatus, registrationDeadline: Date? = nil, bannerImage: String? = nil, imageData: Data? = nil, agenda: String? = nil, registrationForm: [RegistrationFormField]? = nil, createdAt: Date) {
+    init(id: UUID, name: String, title: String, description: String, startDate: Date, endDate: Date, startTime: Date? = nil, endTime: Date? = nil, numberOfVolunteers: Int, numberOfRegistrations: Int? = nil, maxParticipants: Int, registrationType: RegistrationType? = nil, location: String, clubId: UUID?, clubIds: [UUID]? = nil, createdBy: UUID, category: EventCategory, status: EventStatus, isRegistrationOpen: Bool? = true, registrationDeadline: Date? = nil, bannerImage: String? = nil, imageData: Data? = nil, agenda: String? = nil, registrationForm: [RegistrationFormField]? = nil, createdAt: Date) {
         self.id = id
         self.name = name
         self.title = title
@@ -151,9 +155,11 @@ struct Event: Identifiable, Hashable, Codable {
         self.registrationType = registrationType
         self.location = location
         self.clubId = clubId
+        self.clubIds = clubIds
         self.createdBy = createdBy
         self.category = category
         self.status = status
+        self.isRegistrationOpen = isRegistrationOpen
         self.registrationDeadline = registrationDeadline
         self.bannerImage = bannerImage
         self.imageData = imageData
@@ -185,12 +191,14 @@ struct Event: Identifiable, Hashable, Codable {
         maxParticipants = (try? container.decode(Int.self, forKey: .maxParticipants)) ?? 0
         registrationType = try? container.decode(RegistrationType.self, forKey: .registrationType)
         location = (try? container.decode(String.self, forKey: .location)) ?? ""
-        clubId = (try? container.decode(UUID.self, forKey: .clubId)) ?? UUID()
+        clubId = try? container.decodeIfPresent(UUID.self, forKey: .clubId)
+        clubIds = try? container.decodeIfPresent([UUID].self, forKey: .clubIds)
         createdBy = (try? container.decode(UUID.self, forKey: .createdBy)) ?? UUID()
         
         // Robust Enum Decoding
         category = (try? container.decode(EventCategory.self, forKey: .category)) ?? .technical
         status = (try? container.decode(EventStatus.self, forKey: .status)) ?? .pending
+        isRegistrationOpen = (try? container.decodeIfPresent(Bool.self, forKey: .isRegistrationOpen)) ?? true
         
         registrationDeadline = dateStringDecoder(.registrationDeadline)
         bannerImage = try? container.decode(String.self, forKey: .bannerImage)

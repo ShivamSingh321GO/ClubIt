@@ -55,23 +55,26 @@ struct ExploreEventCard: View {
                     
                     // Registration & Status Row
                     HStack(alignment: .center, spacing: 10) {
-                        HStack(spacing: 10) {
-                            ZStack {
-                                Circle()
-                                    .fill(.blue.opacity(0.1))
-                                    .frame(width: 32, height: 32)
-                                Image(systemName: "person.2.fill")
-                                    .font(.caption2)
-                                    .foregroundStyle(.blue)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text("REGISTRATIONS")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.secondary)
-                                Text("\( (event.status == .pending || event.status == .approved) ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count) / \(event.maxParticipants)")
-                                    .font(.footnote.bold())
-                                    .foregroundStyle(.primary)
+                        if event.isRegistrationOpen ?? true {
+                            HStack(spacing: 10) {
+                                ZStack {
+                                    Circle()
+                                        .fill(.blue.opacity(0.1))
+                                        .frame(width: 32, height: 32)
+                                    Image(systemName: "person.2.fill")
+                                        .font(.caption2)
+                                        .foregroundStyle(.blue)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text("REGISTRATIONS")
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(.secondary)
+                                    let registeredCount = (event.status == .pending || event.status == .approved) ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count
+                                    Text(event.maxParticipants >= 999999 ? "\(registeredCount)" : "\(registeredCount) / \(event.maxParticipants)")
+                                        .font(.footnote.bold())
+                                        .foregroundStyle(.primary)
+                                }
                             }
                         }
                         
@@ -188,7 +191,14 @@ struct ExploreEventCard: View {
     }
     
     private var hostName: String {
-        appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })?.name ?? "Organizer"
+        if let clubIds = event.clubIds, !clubIds.isEmpty {
+            let names = clubIds.compactMap { id in appSession.clubStore.allClubs.first(where: { $0.id == id })?.name }
+            return names.joined(separator: ", ")
+        }
+        if let clubId = event.clubId {
+            return appSession.clubStore.allClubs.first(where: { $0.id == clubId })?.name ?? "Organizer"
+        }
+        return "Council Event"
     }
     
     private var formattedDate: String {

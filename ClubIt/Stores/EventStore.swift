@@ -19,18 +19,38 @@ final class EventStore {
     
     @MainActor
     func fetchAllEvents() async throws {
-        self.events = try await client
+        let regularEvents: [Event] = try await client
             .from("events")
             .select()
             .order("created_at", ascending: false)
             .execute()
             .value
+            
+        var councilEvents: [Event] = []
+        do {
+            councilEvents = try await client
+                .from("council_events")
+                .select()
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+        } catch {
+            print("WARNING: Could not fetch from 'council_events' table. Error: \(error.localizedDescription)")
+        }
+        
+        var mappedCouncilEvents = councilEvents
+        for i in 0..<mappedCouncilEvents.count {
+            mappedCouncilEvents[i].status = .published
+        }
+        
+        self.events = (regularEvents + mappedCouncilEvents).sorted(by: { $0.createdAt > $1.createdAt })
     }
     
     @MainActor
-    func createEvent(_ event: Event) async throws {
+    func createEvent(_ event: Event, isCouncil: Bool = false) async throws {
+        let table = isCouncil ? "council_events" : "events"
         try await client
-            .from("events")
+            .from(table)
             .insert(event)
             .execute()
         
@@ -44,7 +64,7 @@ final class EventStore {
         
         do {
             // 1. Update the events table and return the result to verify success
-            let updatedEvents: [Event] = try await client
+            var updatedEvents: [Event] = try await client
                 .from("events")
                 .update(["status": status.rawValue])
                 .eq("id", value: id)
@@ -53,19 +73,32 @@ final class EventStore {
                 .value
             
             if updatedEvents.isEmpty {
-                print("ERROR: No rows were updated in 'events' table. This usually means RLS is blocking you or the ID is wrong.")
-                throw NSError(domain: "SupabaseError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Update blocked by database security (RLS)."])
+                // Try updating council_events instead
+                updatedEvents = try await client
+                    .from("council_events")
+                    .update(["status": status.rawValue])
+                    .eq("id", value: id)
+                    .select()
+                    .execute()
+                    .value
+                
+                if updatedEvents.isEmpty {
+                    print("ERROR: No rows were updated in 'events' or 'council_events' table. This usually means RLS is blocking you or the ID is wrong.")
+                    throw NSError(domain: "SupabaseError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Update blocked by database security (RLS)."])
+                }
+                print("DEBUG: Successfully updated 'council_events' table. New status: \(updatedEvents.first?.status.rawValue ?? "unknown")")
+            } else {
+                print("DEBUG: Successfully updated 'events' table. New status: \(updatedEvents.first?.status.rawValue ?? "unknown")")
+                
+                // 2. Sync with the approvals table
+                let approvalStatus = (status == .published) ? "approved" : status.rawValue
+                try await client
+                    .from("approvals")
+                    .update(["status": approvalStatus])
+                    .eq("approval_related_id", value: id)
+                    .execute()
+                print("DEBUG: Successfully updated 'approvals' table with status: \(approvalStatus)")
             }
-            print("DEBUG: Successfully updated 'events' table. New status: \(updatedEvents.first?.status.rawValue ?? "unknown")")
-            
-            // 2. Sync with the approvals table
-            let approvalStatus = (status == .published) ? "approved" : status.rawValue
-            try await client
-                .from("approvals")
-                .update(["status": approvalStatus])
-                .eq("approval_related_id", value: id)
-                .execute()
-            print("DEBUG: Successfully updated 'approvals' table with status: \(approvalStatus)")
             
             // 3. Update local state
             if let index = events.firstIndex(where: { $0.id == id }) {
@@ -79,11 +112,19 @@ final class EventStore {
     
     @MainActor
     func updateEvent(_ event: Event) async throws {
-        try await client
-            .from("events")
-            .update(event)
-            .eq("id", value: event.id)
-            .execute()
+        do {
+            try await client
+                .from("events")
+                .update(event)
+                .eq("id", value: event.id)
+                .execute()
+        } catch {
+            try await client
+                .from("council_events")
+                .update(event)
+                .eq("id", value: event.id)
+                .execute()
+        }
             
         if let index = events.firstIndex(where: { $0.id == event.id }) {
             events[index] = event
