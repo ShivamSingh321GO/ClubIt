@@ -8,6 +8,8 @@ struct ChatBox: View {
     @State private var showAttachmentMenu = false
     @State private var dragOffset: CGFloat = 0
     @State private var showChatInfo = false
+    @State private var showAddSubChat = false
+    @State private var subChatName = ""
     
     var messages: [Message] {
         appSession.chatStore.messages[chat.id] ?? []
@@ -101,14 +103,50 @@ struct ChatBox: View {
                 // Handle attachment mock logic
                 print("Selected attachment: \(type)")
             }
-        }
-        .sheet(isPresented: $showChatInfo) {
-            NavigationStack {
-                ChatInfoView(chat: chat)
-            }
-            .presentationDetents([.large])
+            .presentationDetents([.height(300), .medium])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showChatInfo) {
+            ChatInfoView(chat: chat)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+                .presentationBackground(.ultraThinMaterial)
+        }
+        .sheet(isPresented: $showAddSubChat) {
+            NavigationStack {
+                Form {
+                    Section {
+                        TextField("Chat Name", text: $subChatName)
+                    }
+                }
+                .navigationTitle("New Sub-Chat")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showAddSubChat = false
+                            subChatName = ""
+                        } label: {
+                            Image(systemName: "xmark")
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            appSession.chatStore.addSubChat(name: subChatName, for: chat.id)
+                            showAddSubChat = false
+                            subChatName = ""
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.primary)
+                        }
+                        .disabled(subChatName.isEmpty)
+                    }
+                }
+            }
+            .presentationDetents([.height(200)])
         }
     }
     
@@ -141,6 +179,7 @@ struct ChatBox: View {
                         .clipShape(Circle())
                 }
                 .padding(.leading, 16)
+                
                 Spacer()
             }
         }

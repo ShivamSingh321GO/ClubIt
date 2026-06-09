@@ -9,6 +9,7 @@ struct ChatsView: View {
     
     @State private var showAddSubChat = false
     @State private var subChatName = ""
+    @State private var subChatDescription = ""
     @State private var activeParentId: UUID? = nil
     @State private var searchText = ""
     
@@ -98,6 +99,7 @@ struct ChatsView: View {
                     Form {
                         Section {
                             TextField("Chat Name", text: $subChatName)
+                            TextField("Description (Optional)", text: $subChatDescription)
                         }
                     }
                     .navigationTitle("New Chat")
@@ -107,6 +109,7 @@ struct ChatsView: View {
                             Button {
                                 showAddSubChat = false
                                 subChatName = ""
+                                subChatDescription = ""
                             } label: {
                                 Image(systemName: "xmark")
                             }
@@ -114,10 +117,11 @@ struct ChatsView: View {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button {
                                 if let parentId = activeParentId {
-                                    appSession.chatStore.addSubChat(name: subChatName, for: parentId)
+                                    appSession.chatStore.addSubChat(name: subChatName, description: subChatDescription.isEmpty ? nil : subChatDescription, for: parentId)
                                 }
                                 showAddSubChat = false
                                 subChatName = ""
+                                subChatDescription = ""
                             } label: {
                                 Image(systemName: "checkmark")
                             }
@@ -125,7 +129,10 @@ struct ChatsView: View {
                         }
                     }
                 }
-                .presentationDetents([.height(200)])
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+                .presentationBackground(Color.chatBackground)
             }
         }
     }
@@ -232,9 +239,15 @@ struct ChatsView: View {
                             }
                             
                             Button {
-                                // Toggle read status
+                                appSession.chatStore.toggleReadStatus(for: chat.id)
                             } label: {
                                 Label(chat.unreadCount > 0 ? "Mark as Read" : "Mark as Unread", systemImage: chat.unreadCount > 0 ? "envelope.open" : "message.badge")
+                            }
+                            
+                            Button {
+                                appSession.chatStore.toggleArchive(for: chat.id)
+                            } label: {
+                                Label(chat.isArchived ? "Unarchive" : "Archive", systemImage: chat.isArchived ? "tray.and.arrow.up" : "tray.and.arrow.down")
                             }
                             
                             Button {
@@ -272,9 +285,15 @@ struct ChatsView: View {
                             }
                             
                             Button {
-                                // Toggle read status
+                                appSession.chatStore.toggleReadStatus(for: chat.id)
                             } label: {
                                 Label(chat.unreadCount > 0 ? "Mark as Read" : "Mark as Unread", systemImage: chat.unreadCount > 0 ? "envelope.open" : "message.badge")
+                            }
+                            
+                            Button {
+                                appSession.chatStore.toggleArchive(for: chat.id)
+                            } label: {
+                                Label(chat.isArchived ? "Unarchive" : "Archive", systemImage: chat.isArchived ? "tray.and.arrow.up" : "tray.and.arrow.down")
                             }
                             
                             Button {
@@ -316,6 +335,33 @@ struct ChatsView: View {
                                 .padding(.leading, 82)
                                 .padding(.vertical, 8)
                         }
+                        
+                        Button {
+                            activeParentId = chat.id
+                            showAddSubChat = true
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "plus")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(.blue)
+                                Text("Add new chat")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(.blue)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                            .padding(.horizontal, 16)
+                            .padding(.leading, 66) // Match indent of subchats
+                            .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.plain)
+                        
+                        Divider()
+                            .padding(.leading, 82)
+                            .padding(.bottom, 8)
                     }
                 }
             }

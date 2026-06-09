@@ -109,7 +109,7 @@ final class ChatStore {
     var messages: [UUID: [Message]] = [:]
     
     var pinnedChats: [Chat] {
-        chats.filter { $0.isPinned }.prefix(5).map { $0 }
+        chats.filter { $0.isPinned && !$0.isArchived }.prefix(5).map { $0 }
     }
     
     var filteredChats: [Chat] {
@@ -117,16 +117,19 @@ final class ChatStore {
         
         switch selectedCategory {
         case .all:
-            return topLevelChats.filter { !$0.isPinned }
+            return topLevelChats.filter { !$0.isPinned && !$0.isArchived }
         case .unread:
             return topLevelChats.filter { chat in
+                if chat.isArchived { return false }
                 if chat.unreadCount > 0 { return true }
                 return chats.filter { $0.parentChatId == chat.id }.contains { $0.unreadCount > 0 }
             }
         case .groups:
-            return topLevelChats.filter { $0.type == .group }
+            return topLevelChats.filter { $0.type == .group && !$0.isArchived }
         case .event:
-            return topLevelChats.filter { $0.type == .event }
+            return topLevelChats.filter { $0.type == .event && !$0.isArchived }
+        case .archived:
+            return topLevelChats.filter { $0.isArchived }
         }
     }
     
@@ -141,6 +144,15 @@ final class ChatStore {
                 }
             }
             chats[index] = updatedChat
+        }
+    }
+    
+    func toggleArchive(for chatId: UUID) {
+        if let index = chats.firstIndex(where: { $0.id == chatId }) {
+            chats[index].isArchived.toggle()
+            if chats[index].isArchived {
+                chats[index].isPinned = false
+            }
         }
     }
     
@@ -185,7 +197,17 @@ final class ChatStore {
         }
     }
     
-    func addSubChat(name: String, for parentId: UUID) {
+    func toggleReadStatus(for chatId: UUID) {
+        if let index = chats.firstIndex(where: { $0.id == chatId }) {
+            if chats[index].unreadCount > 0 {
+                chats[index].unreadCount = 0
+            } else {
+                chats[index].unreadCount = 1
+            }
+        }
+    }
+    
+    func addSubChat(name: String, description: String? = nil, for parentId: UUID) {
         guard let parentIndex = chats.firstIndex(where: { $0.id == parentId }) else { return }
         let parent = chats[parentIndex]
         
@@ -194,7 +216,8 @@ final class ChatStore {
             clubId: parent.clubId,
             createdAt: Date(),
             name: name,
-            lastMessage: "New chat created",
+            description: description,
+            lastMessage: "Sub-chat created",
             unreadCount: 0,
             icon: nil,
             parentChatId: parentId

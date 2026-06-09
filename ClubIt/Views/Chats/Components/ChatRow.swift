@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ChatRow: View {
+    @Environment(AppSession.self) private var appSession
+    
     let chat: Chat
     var onToggleExpansion: () -> Void
     var onTogglePin: () -> Void
@@ -44,11 +46,24 @@ struct ChatRow: View {
                     
                     Spacer()
                     
-                    // Timestamp (Mocked here since we don't have lastMessageTime on Chat model, using createdAt)
-                    Text(timeString(from: chat.createdAt))
-                        .font(.caption)
-                        .foregroundStyle(chat.unreadCount > 0 ? Color.chatAccent : .secondary)
-                        .fontWeight(chat.unreadCount > 0 ? .semibold : .regular)
+                    if chat.type == .event {
+                        let totalUnread = chat.unreadCount + appSession.chatStore.getSubChats(for: chat.id).reduce(0) { $0 + $1.unreadCount }
+                        if totalUnread > 0 {
+                            Text("\(totalUnread)")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(minWidth: 20, minHeight: 20)
+                                .padding(.horizontal, 6)
+                                .background(Color.chatAccent)
+                                .clipShape(Capsule())
+                        }
+                    } else {
+                        // Timestamp (Mocked here since we don't have lastMessageTime on Chat model, using createdAt)
+                        Text(timeString(from: chat.createdAt))
+                            .font(.caption)
+                            .foregroundStyle(chat.unreadCount > 0 ? Color.chatAccent : .secondary)
+                            .fontWeight(chat.unreadCount > 0 ? .semibold : .regular)
+                    }
                 }
                 
                 HStack {
@@ -68,7 +83,13 @@ struct ChatRow: View {
                     
                     Spacer()
                     
-                    if chat.unreadCount > 0 {
+                    if chat.type == .event {
+                        HStack(spacing: 16) {
+                            Image(systemName: chat.isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.caption2.bold())
+                                .foregroundStyle(.secondary)
+                        }
+                    } else if chat.unreadCount > 0 {
                         Text("\(chat.unreadCount)")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(.white)
@@ -76,21 +97,6 @@ struct ChatRow: View {
                             .padding(.horizontal, 6)
                             .background(Color.chatAccent)
                             .clipShape(Capsule())
-                    } else if chat.type == .event {
-                        HStack(spacing: 16) {
-                            if let onAdd = onAddChat {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title3)
-                                    .foregroundStyle(.blue)
-                                    .onTapGesture {
-                                        onAdd()
-                                    }
-                            }
-                            
-                            Image(systemName: chat.isExpanded ? "chevron.down" : "chevron.right")
-                                .font(.caption2.bold())
-                                .foregroundStyle(.secondary)
-                        }
                     }
                 }
             }

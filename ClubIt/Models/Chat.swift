@@ -23,12 +23,14 @@ struct Chat: Identifiable, Codable {
     var createdAt: Date
     
     var name: String
+    var description: String?
     var lastMessage: String
     var unreadCount: Int = 0
     var icon: String?
     var parentChatId: UUID?
     var isExpanded: Bool = false
     var isPinned: Bool = false
+    var isArchived: Bool = false
     var participants: [UUID] = []
 }
 
@@ -53,6 +55,7 @@ enum ChatCategory: String, CaseIterable, Identifiable {
     case unread = "Unread"
     case groups = "Groups"
     case event = "Event"
+    case archived = "Archived"
     
     var id: String { rawValue }
 }

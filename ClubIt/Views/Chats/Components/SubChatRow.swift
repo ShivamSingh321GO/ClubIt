@@ -23,13 +23,19 @@ struct SubChatRow: View {
             
             Spacer()
             
-            if chat.unreadCount > 0 {
-                Text("\(chat.unreadCount)")
-                    .font(.caption2.bold())
-                    .foregroundStyle(.white)
-                    .frame(width: 18, height: 18)
-                    .background(Color.goldenBrown)
-                    .clipShape(Circle())
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(timeString(from: chat.createdAt))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                
+                if chat.unreadCount > 0 {
+                    Text("\(chat.unreadCount)")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.white)
+                        .frame(width: 18, height: 18)
+                        .background(Color.goldenBrown)
+                        .clipShape(Circle())
+                }
             }
         }
         .padding(.vertical, 8)
@@ -42,5 +48,11 @@ struct SubChatRow: View {
                 Label("Delete", systemImage: "trash")
             }
         }
+    }
+    
+    private func timeString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }

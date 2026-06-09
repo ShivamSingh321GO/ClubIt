@@ -8,7 +8,6 @@ struct ChatInfoView: View {
     var body: some View {
         ScrollView {
             ZStack {
-                Color.chatBackground.ignoresSafeArea()
                 VStack(spacing: 24) {
                 // Header Profile
                 VStack(spacing: 16) {
@@ -210,7 +209,7 @@ struct ChatInfoView: View {
             }
             }
         }
-        .background(Color.chatBackground.ignoresSafeArea())
+        .background(Color.clear)
     } 
 
     private func profileRow(icon: String, title: String) -> some View {
