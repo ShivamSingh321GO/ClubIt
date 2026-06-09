@@ -21,10 +21,6 @@ struct ChatBox: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 12) {
-                        Text("iMessage")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 8)
                         
                         Text("Today 12:08 AM") // Mock time
                             .font(.caption2.bold())
@@ -97,7 +93,6 @@ struct ChatBox: View {
         .navigationBarHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .background(Color.chatBackground.ignoresSafeArea())
-        .preferredColorScheme(.dark)
         .onAppear {
             appSession.chatStore.markAsRead(for: chat.id)
         }
@@ -138,7 +133,7 @@ struct ChatBox: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.title3)
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                         .frame(width: 32, height: 32)
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
@@ -163,10 +158,10 @@ struct ChatBox: View {
                     Circle().fill(Color.gray.opacity(0.3))
                 }
             } else {
-                Circle().fill(Color(white: 0.15))
-                Image(systemName: "person.fill")
+                Circle().fill(Color(.secondarySystemFill))
+                Image(systemName: chat.icon ?? "person.fill")
                     .font(.system(size: 24))
-                    .foregroundColor(.white)
+                    .foregroundColor(.secondary)
             }
         }
         .frame(width: 45, height: 45)
@@ -181,20 +176,20 @@ struct ChatBox: View {
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 22, weight: .light))
-                    .foregroundColor(Color(white: 0.85))
+                    .foregroundColor(.secondary)
                     .frame(width: 34, height: 34)
                     .background(.ultraThinMaterial)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 0.5))
+                    .overlay(Circle().stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
             }
-            .padding(.bottom, 6)
             
             HStack(spacing: 8) {
-                TextField("iMessage", text: $messageText, axis: .vertical)
+                TextField("Message", text: $messageText, axis: .vertical)
+                    .textFieldStyle(.plain)
                     .lineLimit(1...5)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 
                 Button {
                     if !messageText.isEmpty {
@@ -209,20 +204,18 @@ struct ChatBox: View {
                             .font(.system(size: 20, weight: .regular))
                             .foregroundColor(Color.gray)
                             .padding(.trailing, 12)
-                            .padding(.bottom, 8)
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 28))
                             .foregroundColor(.blue) // Native blue for send arrow
                             .padding(.trailing, 4)
-                            .padding(.bottom, 4)
                     }
                 }
             }
             .background(
                 Capsule()
                     .fill(.ultraThinMaterial)
-                    .overlay(Capsule().stroke(Color.white.opacity(0.15), lineWidth: 0.5))
+                    .overlay(Capsule().stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
             )
         }
         .padding(.horizontal, 16)

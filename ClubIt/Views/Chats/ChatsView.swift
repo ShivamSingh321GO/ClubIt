@@ -123,7 +123,6 @@ struct ChatsView: View {
                 }
                 .presentationDetents([.height(200)])
             }
-            .preferredColorScheme(.dark)
         }
     }
 }

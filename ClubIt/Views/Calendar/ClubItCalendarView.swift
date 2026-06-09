@@ -104,16 +104,14 @@ struct ClubItCalendarView: View {
                 }
             }
         }
-        .navigationTitle("Calendar")
-        .navigationBarTitleDisplayMode(standalone ? .inline : .automatic)
-        .padding(.horizontal, standalone ? 16 : 0)
-        
         if standalone {
             ScrollView(showsIndicators: false) {
                 content
                     .padding(.vertical, 10)
             }
             .background(Color(.systemBackground))
+            .navigationTitle("Calendar")
+            .navigationBarTitleDisplayMode(.inline)
         } else {
             content
         }

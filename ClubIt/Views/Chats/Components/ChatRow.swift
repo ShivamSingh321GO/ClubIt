@@ -137,12 +137,10 @@ struct ChatRow: View {
                     .clipShape(Circle())
             } else {
                 ZStack {
-                    Color(white: 0.15)
+                    Circle().fill(Color(.secondarySystemFill))
                     Image(systemName: icon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
-                        .foregroundStyle(.white)
+                        .font(.system(size: 24))
+                        .foregroundColor(.secondary)
                 }
                 .frame(width: 54, height: 54)
                 .clipShape(Circle())

@@ -71,7 +71,7 @@ final class ChatStore {
             name: "Club Leads (2025-26)",
             lastMessage: "i was going to do it, no need to  worry about...",
             unreadCount: 2,
-            icon: "person.2.circle.fill",   // Use system image
+            icon: "person.2.fill",   // Use system image
             isPinned: true
         )
         
@@ -229,7 +229,7 @@ final class ChatStore {
             name: name,
             lastMessage: "Group created",
             unreadCount: 0,
-            icon: icon ?? "person.2.circle.fill",
+            icon: icon ?? "person.2.fill",
             isPinned: false,
             participants: memberIds
         )

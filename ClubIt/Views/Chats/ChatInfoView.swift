@@ -31,7 +31,7 @@ struct ChatInfoView: View {
                                     .font(.system(size: 40))
                                     .foregroundColor(.white)
                             } else {
-                                Image(systemName: "person.fill")
+                                Image(systemName: chat.icon ?? "person.fill")
                                     .font(.system(size: 50))
                                     .foregroundColor(.white)
                             }
@@ -76,7 +76,7 @@ struct ChatInfoView: View {
                             }
                             .background(.ultraThinMaterial)
                             .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 0.5))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
                             .padding(.horizontal)
                         }
                         
@@ -96,7 +96,7 @@ struct ChatInfoView: View {
                             .padding()
                             .background(.ultraThinMaterial)
                             .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 0.5))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
                             .padding(.horizontal)
                         }
                     }
@@ -121,7 +121,7 @@ struct ChatInfoView: View {
                                     .fill(.ultraThinMaterial)
                                     .frame(width: 80, height: 80)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                                        RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5)
                                     )
                                     .overlay(
                                         Image(systemName: "photo")
@@ -136,33 +136,40 @@ struct ChatInfoView: View {
                 
                 // Participants (if Group/Event)
                 if chat.type == .group || chat.type == .event {
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("Participants")
                             .font(.headline)
                             .padding(.horizontal)
-                            .padding(.bottom, 12)
                         
-                        ForEach(0..<3) { index in
-                            HStack(spacing: 16) {
-                                Circle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 40, height: 40)
-                                
-                                Text("User \(index + 1)")
-                                    .font(.body)
-                                
-                                Spacer()
+                        VStack(spacing: 0) {
+                            ForEach(0..<3) { index in
+                                HStack(spacing: 16) {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 40, height: 40)
+                                    
+                                    Text("User \(index + 1)")
+                                        .font(.body)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
                             }
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
+                            
+                            Divider().padding(.leading, 56)
+                            
+                            Button(action: {}) {
+                                Text("See All")
+                                    .font(.body.bold())
+                                    .foregroundColor(.blue)
+                            }
+                            .padding()
                         }
-                        
-                        Button(action: {}) {
-                            Text("See All")
-                                .font(.body.bold())
-                                .foregroundColor(.blue)
-                        }
-                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                        .padding(.horizontal)
                     }
                 }
                 
@@ -190,22 +197,14 @@ struct ChatInfoView: View {
                 }
                 .background(.ultraThinMaterial)
                 .cornerRadius(12)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 0.5))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
                 .padding(.horizontal)
                 .padding(.bottom, 32)
             }
             }
         }
         .background(Color.chatBackground.ignoresSafeArea())
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Chat Info")
-                    .font(.headline)
-            }
-        }
-    }
-    
+    } 
 
     private func profileRow(icon: String, title: String) -> some View {
         HStack(spacing: 16) {
