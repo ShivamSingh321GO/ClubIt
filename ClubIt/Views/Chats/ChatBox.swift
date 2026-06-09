@@ -5,6 +5,9 @@ struct ChatBox: View {
     @Environment(AppSession.self) private var appSession
     @State private var messageText: String = ""
     @Environment(\.dismiss) private var dismiss
+    @State private var showAttachmentMenu = false
+    @State private var dragOffset: CGFloat = 0
+    @State private var showChatInfo = false
     
     var messages: [Message] {
         appSession.chatStore.messages[chat.id] ?? []
@@ -12,7 +15,6 @@ struct ChatBox: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Custom Header
             headerView
             
             // Message List
@@ -30,8 +32,25 @@ struct ChatBox: View {
                             .padding(.bottom, 8)
                         
                         ForEach(messages) { message in
-                            MessageBubble(message: message, isCurrentUser: message.senderId == appSession.chatStore.userId)
-                                .id(message.id)
+                            let isCurrentUser = message.senderId == appSession.chatStore.userId
+                            
+                            ZStack(alignment: .trailing) {
+                                MessageBubble(message: message, isCurrentUser: isCurrentUser)
+                                    .offset(x: dragOffset)
+                                
+                                Text(timeString(for: message.createdAt))
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                                    .frame(width: 60, alignment: .leading)
+                                    .offset(x: 60 + dragOffset)
+                            }
+                            .id(message.id)
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 0.1, anchor: isCurrentUser ? .bottomTrailing : .bottomLeading)
+                                    .combined(with: .opacity)
+                                    .combined(with: .move(edge: .bottom)),
+                                removal: .opacity
+                            ))
                         }
                         
                         if let lastMessage = messages.last, lastMessage.senderId == appSession.chatStore.userId {
@@ -47,6 +66,21 @@ struct ChatBox: View {
                         
                     }
                     .padding(.vertical, 16)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                if value.translation.width < 0 {
+                                    // limit drag offset
+                                    dragOffset = max(value.translation.width, -60)
+                                }
+                            }
+                            .onEnded { _ in
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    dragOffset = 0
+                                }
+                            }
+                    )
                 }
                 .onChange(of: messages.count) {
                     if let lastId = messages.last?.id {
@@ -60,59 +94,65 @@ struct ChatBox: View {
             // Input Bar
             inputBar
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarHidden(true)
         .toolbar(.hidden, for: .tabBar)
-        .background(Color(.systemBackground))
+        .background(Color.chatBackground.ignoresSafeArea())
+        .preferredColorScheme(.dark)
         .onAppear {
             appSession.chatStore.markAsRead(for: chat.id)
+        }
+        .sheet(isPresented: $showAttachmentMenu) {
+            AttachmentMenu { type in
+                // Handle attachment mock logic
+                print("Selected attachment: \(type)")
+            }
+        }
+        .sheet(isPresented: $showChatInfo) {
+            NavigationStack {
+                ChatInfoView(chat: chat)
+            }
+            .presentationDetents([.large])
         }
     }
     
     // MARK: - Header
     private var headerView: some View {
-        VStack(spacing: 4) {
+        ZStack(alignment: .center) {
+            // Center content
+            Button {
+                showChatInfo = true
+            } label: {
+                VStack(spacing: 4) {
+                    avatarView
+                    Text(chat.name)
+                        .font(.subheadline.bold())
+                        .foregroundColor(.primary)
+                }
+            }
+            .buttonStyle(.plain)
+            
+            // Back button
             HStack {
                 Button {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .bold()
-//                        .font(.title3)
-//                        .foregroundStyle(.goldenBrown)
-                        .padding()
-                        .glassEffect(in : .circle)
+                        .font(.title3)
+                        .foregroundColor(.white)
+                        .frame(width: 32, height: 32)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Circle())
                 }
                 .padding(.leading, 16)
-                
                 Spacer()
-                
-                // Avatar
-                avatarView
-                
-                Spacer()
-                
-                // Placeholder for symmetry
-                Color.clear.frame(width: 44, height: 44)
-                    .padding(.trailing, 16)
             }
-            
-            HStack(spacing: 4) {
-                Text(chat.name)
-                    .font(.caption.bold())
-                    .lineLimit(1)
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 4)
-            .background(Color(.secondarySystemBackground).opacity(0.5))
-            .clipShape(Capsule())
         }
+        .padding(.top, 12)
         .padding(.bottom, 8)
-        .background(Color(.systemBackground))
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 5)
+        .background(Color.chatBackground)
     }
+    
+
     
     private var avatarView: some View {
         ZStack {
@@ -123,10 +163,10 @@ struct ChatBox: View {
                     Circle().fill(Color.gray.opacity(0.3))
                 }
             } else {
-                Circle().fill(LinearGradient(colors: [Color.blue.opacity(0.3), Color.blue.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                Text(String(chat.name.prefix(2)).uppercased())
-                    .font(.headline)
-                    .foregroundStyle(.white)
+                Circle().fill(Color(white: 0.15))
+                Image(systemName: "person.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(.white)
             }
         }
         .frame(width: 45, height: 45)
@@ -135,47 +175,65 @@ struct ChatBox: View {
     
     // MARK: - Input Bar
     private var inputBar: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .bottom, spacing: 12) {
             Button {
-                // Attachments
+                showAttachmentMenu = true
             } label: {
                 Image(systemName: "plus")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 32, height: 32)
-                    .background(Color(.secondarySystemBackground))
+                    .font(.system(size: 22, weight: .light))
+                    .foregroundColor(Color(white: 0.85))
+                    .frame(width: 34, height: 34)
+                    .background(.ultraThinMaterial)
                     .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 0.5))
             }
+            .padding(.bottom, 6)
             
-            HStack {
-                TextField("iMessage", text: $messageText)
+            HStack(spacing: 8) {
+                TextField("iMessage", text: $messageText, axis: .vertical)
+                    .lineLimit(1...5)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
+                    .foregroundColor(.white)
                 
-                Spacer()
-                
-                Image(systemName: "waveform")
-                    .foregroundStyle(.secondary)
-                    .padding(.trailing, 8)
-            }
-            .background(Color(.secondarySystemBackground))
-            .clipShape(Capsule())
-            .overlay(Capsule().stroke(Color(.separator), lineWidth: 0.5))
-            
-            if !messageText.isEmpty {
                 Button {
-                    appSession.chatStore.sendMessage(messageText, to: chat.id)
-                    messageText = ""
+                    if !messageText.isEmpty {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            appSession.chatStore.sendMessage(messageText, to: chat.id)
+                            messageText = ""
+                        }
+                    }
                 } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.green)
+                    if messageText.isEmpty {
+                        Image(systemName: "mic")
+                            .font(.system(size: 20, weight: .regular))
+                            .foregroundColor(Color.gray)
+                            .padding(.trailing, 12)
+                            .padding(.bottom, 8)
+                    } else {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.blue) // Native blue for send arrow
+                            .padding(.trailing, 4)
+                            .padding(.bottom, 4)
+                    }
                 }
             }
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+                    .overlay(Capsule().stroke(Color.white.opacity(0.15), lineWidth: 0.5))
+            )
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(.ultraThinMaterial)
+        .background(Color.chatBackground)
+    }
+    
+    private func timeString(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 

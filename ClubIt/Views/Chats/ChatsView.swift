@@ -10,16 +10,37 @@ struct ChatsView: View {
     @State private var showAddSubChat = false
     @State private var subChatName = ""
     @State private var activeParentId: UUID? = nil
+    @State private var searchText = ""
     
     var body: some View {
         @Bindable var chatStore = appSession.chatStore
         
         NavigationStack {
-            VStack(spacing: 0) {
+            ZStack {
+                Color.chatBackground.ignoresSafeArea()
                 
-                ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    
+                    ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 32) {
                         
+                        // Custom Search Bar
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray)
+                            TextField("Search", text: $searchText)
+                                .foregroundColor(.white)
+                            
+                            Spacer()
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .background(Color.chatPillBackground.opacity(0.8))
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule().stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 16)
                         // Filter Categories
                         filterBar(selectedCategory: $chatStore.selectedCategory)
                             .padding(.horizontal, 16)
@@ -33,7 +54,6 @@ struct ChatsView: View {
                     .padding(.top, 8)
                 }
             }
-            .background(Color(.systemBackground))
             
  
             .navigationTitle("Chats")
@@ -103,8 +123,10 @@ struct ChatsView: View {
                 }
                 .presentationDetents([.height(200)])
             }
+            .preferredColorScheme(.dark)
         }
     }
+}
     
     // MARK: - Filter Bar
     private func filterBar(selectedCategory: Binding<ChatCategory>) -> some View {
@@ -121,13 +143,13 @@ struct ChatsView: View {
                             .padding(.vertical, 8)
                             .background(
                                 selectedCategory.wrappedValue == category
-                                ? Color.goldenBrown.opacity(0.1)
-                                : Color(.secondarySystemBackground)
+                                ? Color.chatAccent
+                                : Color.chatPillBackground
                             )
                             .foregroundStyle(
                                 selectedCategory.wrappedValue == category
-                                ? .goldenBrown
-                                : .secondary
+                                ? .white
+                                : .gray
                             )
                             .clipShape(Capsule())
                     }
@@ -170,8 +192,12 @@ struct ChatsView: View {
     
     // MARK: - Chat List
     private var chatListSection: some View {
-        VStack(spacing: 0) {
-            ForEach(appSession.chatStore.filteredChats) { chat in
+        let chats = appSession.chatStore.filteredChats.filter {
+            searchText.isEmpty ? true : $0.name.localizedCaseInsensitiveContains(searchText)
+        }
+        
+        return VStack(spacing: 0) {
+            ForEach(chats) { chat in
                 VStack(spacing: 0) {
                     
                     if chat.type == .event {
@@ -194,6 +220,32 @@ struct ChatsView: View {
                         .onTapGesture {
                             appSession.chatStore.toggleExpansion(for: chat.id)
                         }
+                        .contextMenu {
+                            Button {
+                                appSession.chatStore.togglePin(for: chat.id)
+                            } label: {
+                                let isPinned = appSession.chatStore.pinnedChats.contains(where: { $0.id == chat.id })
+                                Label(isPinned ? "Unpin" : "Pin", systemImage: isPinned ? "pin.slash" : "pin")
+                            }
+                            
+                            Button {
+                                // Toggle read status
+                            } label: {
+                                Label(chat.unreadCount > 0 ? "Mark as Read" : "Mark as Unread", systemImage: chat.unreadCount > 0 ? "envelope.open" : "message.badge")
+                            }
+                            
+                            Button {
+                                // Hide alerts
+                            } label: {
+                                Label("Hide Alerts", systemImage: "bell.slash")
+                            }
+                            
+                            Button(role: .destructive) {
+                                appSession.chatStore.deleteChat(for: chat.id)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     } else {
                         NavigationLink(destination: ChatBox(chat: chat)) {
                             ChatRow(
@@ -208,10 +260,37 @@ struct ChatsView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            Button {
+                                appSession.chatStore.togglePin(for: chat.id)
+                            } label: {
+                                let isPinned = appSession.chatStore.pinnedChats.contains(where: { $0.id == chat.id })
+                                Label(isPinned ? "Unpin" : "Pin", systemImage: isPinned ? "pin.slash" : "pin")
+                            }
+                            
+                            Button {
+                                // Toggle read status
+                            } label: {
+                                Label(chat.unreadCount > 0 ? "Mark as Read" : "Mark as Unread", systemImage: chat.unreadCount > 0 ? "envelope.open" : "message.badge")
+                            }
+                            
+                            Button {
+                                // Hide alerts
+                            } label: {
+                                Label("Hide Alerts", systemImage: "bell.slash")
+                            }
+                            
+                            Button(role: .destructive) {
+                                appSession.chatStore.deleteChat(for: chat.id)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                     
-                    if chat.id != appSession.chatStore.filteredChats.last?.id {
+                    if chat.id != chats.last?.id {
                         Divider()
+                            .background(Color.gray.opacity(0.3))
                             .padding(.leading, 82)
                     }
                     
@@ -236,6 +315,18 @@ struct ChatsView: View {
                         }
                     }
                 }
+            }
+            
+            if chats.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tertiary)
+                    Text("No chats found")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 40)
             }
         }
     }

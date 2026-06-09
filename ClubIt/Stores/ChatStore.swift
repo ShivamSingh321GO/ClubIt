@@ -27,7 +27,7 @@ final class ChatStore {
             unreadCount: 0,
             icon: "person.3.fill",
             parentChatId: nil,
-            isExpanded: true
+            isExpanded: false
         )
         
         let generalChat = Chat(id: UUID(), type: .event,
@@ -75,37 +75,30 @@ final class ChatStore {
             isPinned: true
         )
         
-        // Aryan
-        let aryan = Chat(id: UUID(), type: .individual,
-            createdBy: userId,
-            clubId: nil,
-            createdAt: Date(),
-            name: "Aryan",
-            lastMessage: "Hi! Sirr",
-            unreadCount: 2,
-            icon: "user2",
-            isPinned: true
-        )
+        chats = [techSummit, generalChat, venueChat, budgetChat, clubLeads]
         
-        // Kamakshi
-        let kamakshi = Chat(id: UUID(), type: .individual,
-            createdBy: userId,
-            clubId: nil,
-            createdAt: Date(),
-            name: "Kamakshi",
-            lastMessage: "i'll not be able to volunteer in Annual tech...",
-            unreadCount: 0,
-            icon: "user2",
-            isPinned: true
-        )
-        
-        chats = [techSummit, generalChat, venueChat, budgetChat, clubLeads, aryan, kamakshi]
-        
-        // Mock Messages
-        messages[aryan.id] = [
-            Message(id: UUID(), chatId: aryan.id, senderId: UUID(), content: "Fasdfdsaf", createdAt: Date().addingTimeInterval(-3600)),
-            Message(id: UUID(), chatId: aryan.id, senderId: userId, content: "Fasdfdsafdsd", createdAt: Date().addingTimeInterval(-1800))
-        ]
+        // Dynamically add individual chats from MockData.allMockUsers
+        for user in MockData.allMockUsers.prefix(4) {
+            // Avoid creating a chat with ourselves (assuming we don't have the current user ID, we just add all for demo, or exclude placeholders)
+            if user.email == "placeholder" { continue }
+            
+            let userChat = Chat(id: UUID(), type: .individual,
+                createdBy: userId,
+                clubId: nil,
+                createdAt: user.createdAt,
+                name: user.name,
+                lastMessage: "Hey! How are you?",
+                unreadCount: Int.random(in: 0...1),
+                icon: user.profileImg,
+                isPinned: false
+            )
+            chats.append(userChat)
+            
+            // Mock some messages
+            messages[userChat.id] = [
+                Message(id: UUID(), chatId: userChat.id, senderId: UUID(), content: "Hey! How are you?", createdAt: Date().addingTimeInterval(-Double.random(in: 1000...36000)))
+            ]
+        }
         
         messages[clubLeads.id] = [
             Message(id: UUID(), chatId: clubLeads.id, senderId: UUID(), content: "i was going to do it, no need to worry about...", createdAt: Date().addingTimeInterval(-7200)),
@@ -139,13 +132,15 @@ final class ChatStore {
     
     func togglePin(for chatId: UUID) {
         if let index = chats.firstIndex(where: { $0.id == chatId }) {
-            if chats[index].isPinned {
-                chats[index].isPinned = false
+            var updatedChat = chats[index]
+            if updatedChat.isPinned {
+                updatedChat.isPinned = false
             } else {
                 if chats.filter({ $0.isPinned }).count < 5 {
-                    chats[index].isPinned = true
+                    updatedChat.isPinned = true
                 }
             }
+            chats[index] = updatedChat
         }
     }
     
@@ -160,7 +155,9 @@ final class ChatStore {
     
     func toggleExpansion(for chatId: UUID) {
         if let index = chats.firstIndex(where: { $0.id == chatId }) {
-            chats[index].isExpanded.toggle()
+            var updatedChat = chats[index]
+            updatedChat.isExpanded.toggle()
+            chats[index] = updatedChat
         }
     }
     

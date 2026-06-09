@@ -37,6 +37,17 @@ struct PinnedChatItem: View {
                         .clipShape(Circle())
                 }
                 
+                // Pin sign indicator
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 20, height: 20)
+                    .background(Color.gray)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.chatBackground, lineWidth: 2))
+                    .offset(x: -2, y: -2)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                
                 // Unread Badge
                 if unreadCount > 0 {
                     Text("\(unreadCount)")
@@ -47,8 +58,10 @@ struct PinnedChatItem: View {
                         .clipShape(Circle())
                         .overlay(Circle().stroke(.white, lineWidth: 2))
                         .offset(x: -2, y: 2)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 }
             }
+            .frame(width: 60, height: 60)
             
             // Name label below
             Text(name.split(separator: " ").first ?? "")
