@@ -77,9 +77,20 @@ struct ChatRow: View {
                             .background(Color.chatAccent)
                             .clipShape(Capsule())
                     } else if chat.type == .event {
-                        Image(systemName: chat.isExpanded ? "chevron.down" : "chevron.right")
-                            .font(.caption2.bold())
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 16) {
+                            if let onAdd = onAddChat {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title3)
+                                    .foregroundStyle(.blue)
+                                    .onTapGesture {
+                                        onAdd()
+                                    }
+                            }
+                            
+                            Image(systemName: chat.isExpanded ? "chevron.down" : "chevron.right")
+                                .font(.caption2.bold())
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
