@@ -86,17 +86,24 @@ struct ChatInfoView: View {
                                 .font(.headline)
                                 .padding(.horizontal)
                             
-                            HStack {
-                                Text("Technojam")
-                                Spacer()
-                                Text("Clublead")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                            Button(action: {}) {
+                                HStack {
+                                    Text("Technojam")
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Text("Clublead")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(12)
+                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
                             }
-                            .padding()
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                            .buttonStyle(.plain)
                             .padding(.horizontal)
                         }
                     }

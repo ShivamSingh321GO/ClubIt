@@ -107,6 +107,8 @@ struct ChatBox: View {
                 ChatInfoView(chat: chat)
             }
             .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(32)
         }
     }
     
