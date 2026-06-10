@@ -376,6 +376,23 @@ struct EditEventView: View {
         
         Task {
             do {
+                // Upload banner image to Supabase Storage if image data exists
+                if let imgData = imageData {
+                    // Only upload if the image changed (different from existing)
+                    if imgData != event.imageData {
+                        do {
+                            let bannerURL = try await ImageUploadService.shared.uploadEventBanner(
+                                imageData: imgData,
+                                eventId: event.id
+                            )
+                            updatedEvent.bannerImage = bannerURL
+                            print("DEBUG: Banner image uploaded successfully: \(bannerURL)")
+                        } catch {
+                            print("WARNING: Banner image upload failed: \(error.localizedDescription)")
+                        }
+                    }
+                }
+                
                 try await appSession.eventStore.updateEvent(updatedEvent)
                 
                 let currentUser = appSession.currentUser!

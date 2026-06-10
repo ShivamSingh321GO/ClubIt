@@ -54,8 +54,16 @@ final class EventStore {
             .insert(event)
             .execute()
         
+        // Preserve imageData locally since it's not stored in Supabase
+        let localImageData = event.imageData
+        
         // Add locally to avoid full refresh if preferred, but refresh is safer
         try? await fetchAllEvents()
+        
+        // Re-attach imageData to the local event after fetch (Supabase won't return it)
+        if let localImageData, let index = events.firstIndex(where: { $0.id == event.id }) {
+            events[index].imageData = localImageData
+        }
     }
     
     @MainActor

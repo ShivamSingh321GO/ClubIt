@@ -208,6 +208,35 @@ struct Event: Identifiable, Hashable, Codable {
         createdAt = dateStringDecoder(.createdAt) ?? Date()
     }
 
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(title, forKey: .title)
+        try container.encode(description, forKey: .description)
+        try container.encode(startDate, forKey: .startDate)
+        try container.encode(endDate, forKey: .endDate)
+        try container.encodeIfPresent(startTime, forKey: .startTime)
+        try container.encodeIfPresent(endTime, forKey: .endTime)
+        try container.encode(numberOfVolunteers, forKey: .numberOfVolunteers)
+        try container.encodeIfPresent(numberOfRegistrations, forKey: .numberOfRegistrations)
+        try container.encode(maxParticipants, forKey: .maxParticipants)
+        try container.encodeIfPresent(registrationType, forKey: .registrationType)
+        try container.encode(location, forKey: .location)
+        try container.encodeIfPresent(clubId, forKey: .clubId)
+        // NOTE: clubIds is intentionally excluded — column does not exist in Supabase
+        try container.encode(createdBy, forKey: .createdBy)
+        try container.encode(category, forKey: .category)
+        try container.encode(status, forKey: .status)
+        try container.encodeIfPresent(isRegistrationOpen, forKey: .isRegistrationOpen)
+        try container.encodeIfPresent(registrationDeadline, forKey: .registrationDeadline)
+        try container.encodeIfPresent(bannerImage, forKey: .bannerImage)
+        // NOTE: imageData is intentionally excluded — column does not exist in Supabase
+        try container.encodeIfPresent(agenda, forKey: .agenda)
+        try container.encodeIfPresent(registrationForm, forKey: .registrationForm)
+        try container.encode(createdAt, forKey: .createdAt)
+    }
+
     static func parseDate(_ string: String) -> Date? {
         let formats = [
             "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ",

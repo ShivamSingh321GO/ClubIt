@@ -125,7 +125,31 @@ struct EventDetailView: View {
                 if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
                     Image(uiImage: uiImage).resizable()
                 } else if let banner = event.bannerImage, !banner.isEmpty {
-                    Image(banner).resizable()
+                    if banner.hasPrefix("http") {
+                        AsyncImage(url: URL(string: banner)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable()
+                            case .failure:
+                                ZStack {
+                                    Color.orange.opacity(0.1)
+                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.orange.opacity(0.5))
+                                }
+                            case .empty:
+                                ZStack {
+                                    Color.orange.opacity(0.05)
+                                    ProgressView()
+                                }
+                            @unknown default:
+                                ZStack {
+                                    Color.orange.opacity(0.1)
+                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.orange.opacity(0.5))
+                                }
+                            }
+                        }
+                    } else {
+                        Image(banner).resizable()
+                    }
                 } else {
                     ZStack {
                         Color.orange.opacity(0.1)

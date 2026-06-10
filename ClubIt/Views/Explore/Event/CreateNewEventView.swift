@@ -553,8 +553,24 @@ struct CreateNewEventView: View {
 
         Task {
             do {
+                // 0. Upload banner image to Supabase Storage (if selected)
+                var eventToSave = newEvent
+                if let imgData = imageData {
+                    do {
+                        let bannerURL = try await ImageUploadService.shared.uploadEventBanner(
+                            imageData: imgData,
+                            eventId: currentEventId
+                        )
+                        eventToSave.bannerImage = bannerURL
+                        print("DEBUG: Banner image uploaded successfully: \(bannerURL)")
+                    } catch {
+                        print("WARNING: Banner image upload failed: \(error.localizedDescription). Proceeding without banner.")
+                        // Continue without banner rather than failing the entire event creation
+                    }
+                }
+                
                 // 1. Save the main event (pass isCouncil if isPresident)
-                try await appSession.eventStore.createEvent(newEvent, isCouncil: isPresident)
+                try await appSession.eventStore.createEvent(eventToSave, isCouncil: isPresident)
                 
                 if !isPresident {
                     let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })

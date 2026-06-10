@@ -106,9 +106,28 @@ struct ExploreEventCard: View {
                         .resizable()
                         .scaledToFill()
                 } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Image(bannerImage)
-                        .resizable()
-                        .scaledToFill()
+                    if bannerImage.hasPrefix("http") {
+                        AsyncImage(url: URL(string: bannerImage)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            case .failure:
+                                placeholderBanner
+                            case .empty:
+                                ProgressView()
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .background(Color.orange.opacity(0.05))
+                            @unknown default:
+                                placeholderBanner
+                            }
+                        }
+                    } else {
+                        Image(bannerImage)
+                            .resizable()
+                            .scaledToFill()
+                    }
                 } else {
                     placeholderBanner
                 }
