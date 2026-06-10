@@ -57,10 +57,17 @@ final class EventStore {
         // Preserve imageData locally since it's not stored in Supabase
         let localImageData = event.imageData
         
-        // Add locally to avoid full refresh if preferred, but refresh is safer
-        try? await fetchAllEvents()
+        // Update locally to avoid full network fetch
+        var updatedEvent = event
+        if isCouncil {
+            updatedEvent.status = .published
+        }
+        if !events.contains(where: { $0.id == event.id }) {
+            events.append(updatedEvent)
+            events.sort(by: { $0.createdAt > $1.createdAt })
+        }
         
-        // Re-attach imageData to the local event after fetch (Supabase won't return it)
+        // Re-attach imageData to the local event (Supabase won't return it)
         if let localImageData, let index = events.firstIndex(where: { $0.id == event.id }) {
             events[index].imageData = localImageData
         }

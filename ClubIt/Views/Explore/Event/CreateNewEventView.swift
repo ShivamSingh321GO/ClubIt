@@ -457,21 +457,25 @@ struct CreateNewEventView: View {
         
         guard !trimmedName.isEmpty else {
             errorMessage = "Please enter an event name."
+            isSaving = false
             return
         }
         
         guard !trimmedDescription.isEmpty else {
             errorMessage = "Please enter an event description."
+            isSaving = false
             return
         }
         
         guard endDate >= startDate else {
             errorMessage = "End date must be after start date."
+            isSaving = false
             return
         }
         
         guard let currentUser = appSession.currentUser else {
             errorMessage = "No logged in user found."
+            isSaving = false
             return
         }
         
@@ -483,6 +487,7 @@ struct CreateNewEventView: View {
         } else {
             guard let userClubId = currentUser.clubId else {
                 errorMessage = "Error: Your user account is not linked to any club."
+                isSaving = false
                 return
             }
             resolvedClubId = userClubId
@@ -496,6 +501,7 @@ struct CreateNewEventView: View {
         } else {
             guard let parsed = Int(participants.trimmingCharacters(in: .whitespacesAndNewlines)), parsed > 0 else {
                 errorMessage = "Expected participants must be a number greater than 0."
+                isSaving = false
                 return
             }
             maxParticipantsVal = parsed
@@ -539,6 +545,7 @@ struct CreateNewEventView: View {
         if currentUser.role != .president && currentUser.clubId == nil {
             print("WARNING: currentUser.clubId is NIL! RLS will likely fail.")
             errorMessage = "Error: Your user account is not linked to any club. Please contact your administrator."
+            isSaving = false
             return
         }
 
@@ -628,6 +635,14 @@ struct CreateNewEventView: View {
                         resourcesToSave.append(resource)
                     }
 
+                    // 5. Batch Save Budgets & Resources first so that routing functions can query them
+                    if !budgetsToSave.isEmpty {
+                        try await appSession.approvalStore.addBudgets(budgetsToSave)
+                    }
+                    if !resourcesToSave.isEmpty {
+                        try await appSession.approvalStore.addResources(resourcesToSave)
+                    }
+
                     // Check if Vice President exists for the club
                     if let vicePresidentUserId = club?.vicePresidentId {
                         // Send to Vice President first as a draft
@@ -661,13 +676,6 @@ struct CreateNewEventView: View {
                         )
                     }
                     
-                    // 5. Batch Save Everything
-                    if !budgetsToSave.isEmpty {
-                        try await appSession.approvalStore.addBudgets(budgetsToSave)
-                    }
-                    if !resourcesToSave.isEmpty {
-                        try await appSession.approvalStore.addResources(resourcesToSave)
-                    }
                     if !approvalsToSave.isEmpty {
                         try await appSession.approvalStore.submitApprovalRequests(approvalsToSave)
                     }

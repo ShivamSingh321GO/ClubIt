@@ -86,7 +86,12 @@ final class ApprovalStore {
         if let eventId = eventId {
             query = query.eq("event_id", value: eventId)
         }
-        self.budgets = try await query.execute().value
+        let fetchedBudgets: [Budget] = try await query.execute().value
+        if let eventId = eventId {
+            self.budgets = self.budgets.filter { $0.eventId != eventId } + fetchedBudgets
+        } else {
+            self.budgets = fetchedBudgets
+        }
     }
     
     @MainActor
@@ -95,7 +100,12 @@ final class ApprovalStore {
         if let eventId = eventId {
             query = query.eq("event_id", value: eventId)
         }
-        self.resources = try await query.execute().value
+        let fetchedResources: [Resource] = try await query.execute().value
+        if let eventId = eventId {
+            self.resources = self.resources.filter { $0.eventId != eventId } + fetchedResources
+        } else {
+            self.resources = fetchedResources
+        }
     }
     
     @MainActor
@@ -105,13 +115,19 @@ final class ApprovalStore {
             .insert(approval)
             .execute()
         
-        try? await fetchApprovals()
+        if !self.approvals.contains(where: { $0.id == approval.id }) {
+            self.approvals.insert(approval, at: 0)
+        }
     }
 
     @MainActor
     func submitApprovalRequests(_ approvals: [Approval]) async throws {
         try await client.from("approvals").insert(approvals).execute()
-        try? await fetchApprovals()
+        for approval in approvals {
+            if !self.approvals.contains(where: { $0.id == approval.id }) {
+                self.approvals.insert(approval, at: 0)
+            }
+        }
     }
     
     @MainActor
@@ -121,14 +137,18 @@ final class ApprovalStore {
             .insert(budget)
             .execute()
         
-        try? await fetchBudgets(eventId: budget.eventId)
+        if !self.budgets.contains(where: { $0.id == budget.id }) {
+            self.budgets.append(budget)
+        }
     }
 
     @MainActor
     func addBudgets(_ budgets: [Budget]) async throws {
         try await client.from("budgets").insert(budgets).execute()
-        if let first = budgets.first {
-            try? await fetchBudgets(eventId: first.eventId)
+        for budget in budgets {
+            if !self.budgets.contains(where: { $0.id == budget.id }) {
+                self.budgets.append(budget)
+            }
         }
     }
     
@@ -139,14 +159,18 @@ final class ApprovalStore {
             .insert(resource)
             .execute()
         
-        try? await fetchResources(eventId: resource.eventId)
+        if !self.resources.contains(where: { $0.id == resource.id }) {
+            self.resources.append(resource)
+        }
     }
 
     @MainActor
     func addResources(_ resources: [Resource]) async throws {
         try await client.from("resources").insert(resources).execute()
-        if let first = resources.first {
-            try? await fetchResources(eventId: first.eventId)
+        for resource in resources {
+            if !self.resources.contains(where: { $0.id == resource.id }) {
+                self.resources.append(resource)
+            }
         }
     }
     
