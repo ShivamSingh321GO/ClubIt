@@ -82,33 +82,37 @@ struct AddTaskView: View {
                 }
                 
                 Section("Event Context") {
-                    // Using .menu style for better response in sheets
-                    Picker("Related Event", selection: $selectedEventId) {
-                        Text("None / General Task").tag(UUID?.none)
-                        ForEach(filteredEvents) { event in
-                            Text(event.name).tag(UUID?.some(event.id))
-                        }
-                    }
-                    
+                    optionalNavigationRow(
+                        title: "Related Event",
+                        selection: $selectedEventId,
+                        options: {
+                            var opts = filteredEvents.map { $0.id }
+                            if let curr = selectedEventId, !opts.contains(curr) {
+                                opts.insert(curr, at: 0)
+                            }
+                            return opts
+                        }(),
+                        noneLabel: "None / General Task",
+                        displayValue: { id in appSession.eventStore.events.first(where: { $0.id == id })?.name ?? "Unknown" }
+                    )
                 }
                 
                 Section("Assignment") {
-                    Picker("Assign To", selection: $assignmentType) {
-                        ForEach(availableAssignmentTypes) { type in
-                            Text(type.rawValue).tag(type)
-                        }
-                    }
+                    navigationRow(
+                        title: "Assign To",
+                        selection: $assignmentType,
+                        options: availableAssignmentTypes,
+                        displayValue: { $0.rawValue }
+                    )
                     
                     if assignmentType == .club {
-                        Picker("Select Club", selection: $selectedOtherClubId) {
-                            Text("Select a club").tag(UUID?.none)
-                            ForEach(appSession.clubStore.allClubs) { club in
-                                if club.id != appSession.currentUser?.clubId {
-                                    Text(club.name).tag(UUID?.some(club.id))
-                                }
-                            }
-                        }
-                       
+                        optionalNavigationRow(
+                            title: "Select Club",
+                            selection: $selectedOtherClubId,
+                            options: appSession.clubStore.allClubs.filter { $0.id != appSession.currentUser?.clubId }.map { $0.id },
+                            noneLabel: "Select a club",
+                            displayValue: { id in appSession.clubStore.allClubs.first(where: { $0.id == id })?.name ?? "Unknown" }
+                        )
                         .onChange(of: selectedOtherClubId) { _, newValue in
                             if let clubId = newValue {
                                 selectedClubLeadId = appSession.clubStore.allClubs.first(where: { $0.id == clubId })?.clubLeadId
@@ -116,43 +120,44 @@ struct AddTaskView: View {
                         }
                         
                         if selectedOtherClubId != nil {
-                            Picker("Select Club Lead", selection: $selectedClubLeadId) {
-                                Text("Select a lead").tag(UUID?.none)
-                                ForEach(availableClubLeads) { lead in
-                                    Text(lead.name).tag(UUID?.some(lead.id))
-                                }
-                            }
-                           
+                            optionalNavigationRow(
+                                title: "Select Club Lead",
+                                selection: $selectedClubLeadId,
+                                options: availableClubLeads.map { $0.id },
+                                noneLabel: "Select a lead",
+                                displayValue: { id in availableClubLeads.first(where: { $0.id == id })?.name ?? "Unknown" }
+                            )
                         }
                     }
                     
                     if assignmentType == .clubMember {
-                        Picker("Select Member", selection: $selectedMemberId) {
-                            Text("Select a member").tag(UUID?.none)
-                            ForEach(clubMembers) { member in
-                                Text(member.name).tag(UUID?.some(member.id))
-                            }
-                        }
-                     
+                        optionalNavigationRow(
+                            title: "Select Member",
+                            selection: $selectedMemberId,
+                            options: clubMembers.map { $0.id },
+                            noneLabel: "Select a member",
+                            displayValue: { id in clubMembers.first(where: { $0.id == id })?.name ?? "Unknown" }
+                        )
                     }
                     
                     if assignmentType == .vicePresident {
-                        Picker("Select Vice President", selection: $selectedVicePresidentId) {
-                            Text("Select a VP").tag(UUID?.none)
-                            ForEach(vicePresidents) { vp in
-                                Text(vp.name).tag(UUID?.some(vp.id))
-                            }
-                        }
+                        optionalNavigationRow(
+                            title: "Select Vice President",
+                            selection: $selectedVicePresidentId,
+                            options: vicePresidents.map { $0.id },
+                            noneLabel: "Select a VP",
+                            displayValue: { id in vicePresidents.first(where: { $0.id == id })?.name ?? "Unknown" }
+                        )
                     }
                 }
                 
                 Section("Priority & Schedule") {
-                    Picker("Priority", selection: $priority) {
-                        ForEach(TaskPriority.allCases, id: \.self) { p in
-                            Text(p.rawValue.capitalized).tag(p)
-                        }
-                    }
-                   
+                    navigationRow(
+                        title: "Priority",
+                        selection: $priority,
+                        options: TaskPriority.allCases,
+                        displayValue: { $0.rawValue.capitalized }
+                    )
                     
                     DatePicker("Deadline", selection: $deadline)
                 }
@@ -174,6 +179,30 @@ struct AddTaskView: View {
                     Button { saveTask() } label: { Image(systemName: "checkmark") }
                     .disabled(title.isEmpty)
                 }
+            }
+        }
+    }
+    
+    private func navigationRow<T: Hashable>(title: String, selection: Binding<T>, options: [T], displayValue: @escaping (T) -> String) -> some View {
+        NavigationLink {
+            SelectionListView(title: title, selection: selection, options: options, displayValue: displayValue)
+        } label: {
+            HStack {
+                Text(title).foregroundStyle(.primary)
+                Spacer()
+                Text(displayValue(selection.wrappedValue)).foregroundStyle(.secondary)
+            }
+        }
+    }
+    
+    private func optionalNavigationRow<T: Hashable>(title: String, selection: Binding<T?>, options: [T], noneLabel: String, displayValue: @escaping (T) -> String) -> some View {
+        NavigationLink {
+            OptionalSelectionListView(title: title, selection: selection, options: options, noneLabel: noneLabel, displayValue: displayValue)
+        } label: {
+            HStack {
+                Text(title).foregroundStyle(.primary)
+                Spacer()
+                Text(selection.wrappedValue.map(displayValue) ?? noneLabel).foregroundStyle(.secondary)
             }
         }
     }
@@ -263,5 +292,76 @@ struct AddTaskView: View {
                 print("DEBUG ERROR: Save task failed: \(error)")
             }
         }
+    }
+}
+
+struct SelectionListView<T: Hashable>: View {
+    let title: String
+    @Binding var selection: T
+    let options: [T]
+    let displayValue: (T) -> String
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        List {
+            ForEach(options, id: \.self) { option in
+                Button {
+                    selection = option
+                    dismiss()
+                } label: {
+                    HStack {
+                        Text(displayValue(option)).foregroundStyle(.primary)
+                        Spacer()
+                        if selection == option {
+                            Image(systemName: "checkmark").foregroundStyle(.blue)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct OptionalSelectionListView<T: Hashable>: View {
+    let title: String
+    @Binding var selection: T?
+    let options: [T]
+    let noneLabel: String
+    let displayValue: (T) -> String
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        List {
+            Button {
+                selection = nil
+                dismiss()
+            } label: {
+                HStack {
+                    Text(noneLabel).foregroundStyle(.primary)
+                    Spacer()
+                    if selection == nil {
+                        Image(systemName: "checkmark").foregroundStyle(.blue)
+                    }
+                }
+            }
+            ForEach(options, id: \.self) { option in
+                Button {
+                    selection = option
+                    dismiss()
+                } label: {
+                    HStack {
+                        Text(displayValue(option)).foregroundStyle(.primary)
+                        Spacer()
+                        if selection == option {
+                            Image(systemName: "checkmark").foregroundStyle(.blue)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

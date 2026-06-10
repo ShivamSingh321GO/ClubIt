@@ -7,95 +7,86 @@ struct ActivityDetailView: View {
     
     @State private var showingDeleteAlert = false
     
+    private var postedByName: String {
+        if activity.postedBy == appSession.currentUser?.id { return "You" }
+        return appSession.clubStore.allUsers.first(where: { $0.id == activity.postedBy })?.name ?? "Unknown"
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Header Card
+                VStack(alignment: .leading, spacing: 24) {
+                    
+                    // Header Section
                     VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Text(activity.type.rawValue.uppercased())
-                                .font(.caption2)
-                                .bold()
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(activity.type.color.opacity(0.2))
-                                .foregroundColor(activity.type.color)
-                                .clipShape(Capsule())
-                            
+                        HStack(spacing: 8) {
+                            typeBadge
                             Spacer()
                         }
                         
                         Text(activity.title)
                             .font(.title2)
                             .bold()
-                            .foregroundColor(.primary)
+                            .foregroundStyle(.primary)
+                            
+                        Divider().padding(.top, 12)
                     }
-                    .padding(24)
-                    .glassEffect(in: .rect(cornerRadius: 20))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
                     
                     // Description Section
                     VStack(alignment: .leading, spacing: 12) {
-                        Label("Description", systemImage: "doc.text.fill")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+                        sectionHeader(title: "Description", icon: "doc.text.fill")
                         
                         Text(activity.description)
                             .font(.body)
-                            .lineSpacing(6)
-                            .padding(24)
+                            .lineSpacing(4)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .glassEffect(in: .rect(cornerRadius: 20))
+                            
+                        Divider().padding(.top, 12)
                     }
+                    .padding(.horizontal, 20)
                     
                     // Location Section
                     if let location = activity.location {
                         VStack(alignment: .leading, spacing: 12) {
-                            Label("Location", systemImage: "mappin.and.ellipse")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
+                            sectionHeader(title: "Location", icon: "mappin.and.ellipse")
                             
                             HStack(spacing: 16) {
                                 Image(systemName: "building.2.fill")
                                     .font(.title2)
-                                    .foregroundColor(activity.type.color)
-                                    .frame(width: 50, height: 50)
+                                    .foregroundStyle(activity.type.color)
+                                    .frame(width: 44, height: 44)
                                     .background(activity.type.color.opacity(0.1))
                                     .clipShape(Circle())
                                 
                                 Text(location)
                                     .font(.headline)
-                                    .foregroundColor(.primary)
+                                    .foregroundStyle(.primary)
                                 
                                 Spacer()
                             }
-                            .padding(16)
-                            .glassEffect(in: .rect(cornerRadius: 20))
+                            
+                            Divider().padding(.top, 12)
                         }
+                        .padding(.horizontal, 20)
                     }
                     
                     // Timeline & Meta Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("Activity Details", systemImage: "info.circle.fill")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 16) {
+                        sectionHeader(title: "Activity Details", icon: "info.circle.fill")
                         
                         VStack(spacing: 16) {
-                            metaRow(icon: "person.circle.fill", label: "Posted By", value: MockData.allMockUsers.first { $0.id == activity.postedBy }?.name ?? "Unknown", color: .blue)
-                            
-                            Divider()
-                            
-                            metaRow(icon: "clock.fill", label: "Created At", value: formattedDate(activity.createdAt), color: .orange)
+                            detailRow(icon: "person.circle.fill", label: "Posted By", value: postedByName, color: .blue)
+                            detailRow(icon: "clock.fill", label: "Created At", value: formattedDate(activity.createdAt), color: .orange)
                         }
-                        .padding(20)
-                        .glassEffect(in: .rect(cornerRadius: 20))
                     }
+                    .padding(.horizontal, 20)
                     
                     Spacer(minLength: 40)
                 }
-                .padding(.horizontal)
-                .padding(.top, 10)
             }
+            .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -104,7 +95,7 @@ struct ActivityDetailView: View {
                             showingDeleteAlert = true
                         } label: {
                             Text("Delete")
-                                .foregroundColor(.red)
+                                .foregroundStyle(.red)
                         }
                     }
                 }
@@ -134,23 +125,43 @@ struct ActivityDetailView: View {
         }
     }
     
-    private func metaRow(icon: String, label: String, value: String, color: Color) -> some View {
+    // MARK: - Components
+    
+    private var typeBadge: some View {
+        Text(activity.type.rawValue.uppercased())
+            .font(.caption2)
+            .bold()
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(activity.type.color.opacity(0.2))
+            .foregroundStyle(activity.type.color)
+            .clipShape(Capsule())
+    }
+    
+    private func sectionHeader(title: String, icon: String) -> some View {
+        Label(title.uppercased(), systemImage: icon)
+            .font(.footnote)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+    }
+    
+    private func detailRow(icon: String, label: String, value: String, color: Color) -> some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
-                .font(.headline)
-                .foregroundColor(color)
-                .frame(width: 32, height: 32)
+                .font(.title2)
+                .foregroundStyle(color)
+                .frame(width: 44, height: 44)
                 .background(color.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(Circle())
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Text(value)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
             }
             Spacer()
         }

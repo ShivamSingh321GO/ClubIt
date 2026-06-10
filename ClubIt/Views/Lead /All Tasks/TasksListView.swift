@@ -19,6 +19,7 @@ struct TasksListView: View {
     enum TaskFilter: String, CaseIterable {
         case showAll = "All"
         case showPending = "Pending"
+        case showOverdue = "Overdue"
         case showCompleted = "Completed"
     }
     
@@ -28,6 +29,8 @@ struct TasksListView: View {
             return appSession.taskStore.filteredTasks(for: user.id)
         case .showPending:
             return appSession.taskStore.filteredPendingTasks(for: user.id)
+        case .showOverdue:
+            return appSession.taskStore.filteredOverdueTasks(for: user.id)
         case .showCompleted:
             return appSession.taskStore.filteredCompletedTasks(for: user.id)
         }
@@ -37,6 +40,7 @@ struct TasksListView: View {
         switch filter {
         case .showAll: return appSession.taskStore.filteredTasks(for: user.id).count
         case .showPending: return appSession.taskStore.filteredPendingTasks(for: user.id).count
+        case .showOverdue: return appSession.taskStore.filteredOverdueTasks(for: user.id).count
         case .showCompleted: return appSession.taskStore.filteredCompletedTasks(for: user.id).count
         }
     }
@@ -50,7 +54,7 @@ struct TasksListView: View {
                         HStack(spacing: 16) {
                             ForEach(TaskFilter.allCases, id: \.self) { filter in
                                 FilterPill(
-                                    title: "\(filter.rawValue) (\(count(for: filter)))",
+                                    title: "\(filter.rawValue) \(count(for: filter))",
                                     isSelected: selectedFilter == filter,
                                     action: {
                                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
