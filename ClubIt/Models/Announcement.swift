@@ -17,6 +17,7 @@ struct Announcement: Identifiable, Codable {
     var url: String
     var postedBy: UUID
     var createdAt: Date
+    var isEdited: Bool? = false
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -27,5 +28,6 @@ struct Announcement: Identifiable, Codable {
         case url
         case postedBy = "posted_by"
         case createdAt = "created_at"
+        case isEdited = "is_edited"
     }
 }

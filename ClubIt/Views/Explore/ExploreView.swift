@@ -5,24 +5,25 @@ struct ExploreView: View {
     @Environment(AppSession.self) private var appSession
     
     enum ExploreTab: Int, CaseIterable, Identifiable {
-        case announcement = 0
-        case events = 1
+        case events = 0
+        case announcement = 1
         
         var id: Int { rawValue }
         
         var title: String {
             switch self {
-            case .announcement: return "Announcement"
             case .events: return "Events"
+            case .announcement: return "Announcement"
             }
         }
     }
     
     @State private var showCreateAnnouncementSheet = false
+    @State private var editingAnnouncement: Announcement? = nil
     @State private var scope: EventScope = .allEvents
     @State private var selectedTab: ExploreTab
     
-    init(selectedTab: ExploreTab = .announcement) {
+    init(selectedTab: ExploreTab = .events) {
         _selectedTab = State(initialValue: selectedTab)
     }
     
@@ -42,7 +43,23 @@ struct ExploreView: View {
                         Group {
                             switch selectedTab {
                             case .announcement:
-                                AnnouncementView(announcements: appSession.announcementStore.announcements)
+                                AnnouncementView(
+                                    announcements: appSession.announcementStore.announcements,
+                                    onEdit: { announcement in
+                                        print("DEBUG: [ExploreView] Requested edit for announcement: \(announcement.id)")
+                                        editingAnnouncement = announcement
+                                    },
+                                    onDelete: { announcement in
+                                        print("DEBUG: [ExploreView] Requested delete for announcement: \(announcement.id)")
+                                        Task {
+                                            do {
+                                                try await appSession.announcementStore.deleteAnnouncement(announcement)
+                                            } catch {
+                                                print("❌ ERROR DELETING ANNOUNCEMENT: \(error)")
+                                            }
+                                        }
+                                    }
+                                )
                             case .events:
                                 EventView(scope: $scope, eventStore: appSession.eventStore)
                             }
@@ -53,6 +70,7 @@ struct ExploreView: View {
                         Group {
                             if selectedTab == .announcement {
                                 Button {
+                                    print("DEBUG: [ExploreView] Presenting create announcement sheet")
                                     showCreateAnnouncementSheet = true
                                 } label: {
                                     Image(systemName: "plus")
@@ -89,14 +107,36 @@ struct ExploreView: View {
             }
             .sheet(isPresented: $showCreateAnnouncementSheet) {
                 CreateAnnouncementView { title, content, url, postedBy, clubId in
+                    print("DEBUG: [ExploreView] Create announcement closure triggered with title='\(title)'")
                     Task {
-                        try? await appSession.announcementStore.addAnnouncement(
-                            title: title,
-                            content: content,
-                            url: url,
-                            postedBy: postedBy,
-                            clubId: clubId
-                        )
+                        do {
+                            try await appSession.announcementStore.addAnnouncement(
+                                title: title,
+                                content: content,
+                                url: url,
+                                postedBy: postedBy,
+                                clubId: clubId
+                            )
+                        } catch {
+                            print("❌ ERROR ADDING ANNOUNCEMENT: \(error)")
+                        }
+                    }
+                }
+            }
+            .sheet(item: $editingAnnouncement) { announcement in
+                CreateAnnouncementView(announcement: announcement) { title, content, url, _, _ in
+                    print("DEBUG: [ExploreView] Edit announcement closure triggered for id=\(announcement.id) with title='\(title)'")
+                    Task {
+                        do {
+                            try await appSession.announcementStore.updateAnnouncement(
+                                id: announcement.id,
+                                title: title,
+                                content: content,
+                                url: url
+                            )
+                        } catch {
+                            print("❌ ERROR UPDATING ANNOUNCEMENT: \(error)")
+                        }
                     }
                 }
             }
