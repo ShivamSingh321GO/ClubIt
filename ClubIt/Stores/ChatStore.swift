@@ -104,12 +104,43 @@ final class ChatStore {
             Message(id: UUID(), chatId: clubLeads.id, senderId: UUID(), content: "i was going to do it, no need to worry about...", createdAt: Date().addingTimeInterval(-7200)),
             Message(id: UUID(), chatId: clubLeads.id, senderId: userId, content: "Sure, let me know if you need help.", createdAt: Date().addingTimeInterval(-3600))
         ]
+        
+        // Mock Request Chats (only visible under Requests tab)
+        let requestChat1 = Chat(id: UUID(), type: .individual,
+            createdBy: UUID(),
+            clubId: clubId,
+            createdAt: Date().addingTimeInterval(-86400),
+            name: "Rahul Sharma",
+            lastMessage: "Hi, I wanted to join the Tech Summit core team.",
+            unreadCount: 1,
+            icon: nil,
+            isRequest: true
+        )
+        let requestChat2 = Chat(id: UUID(), type: .individual,
+            createdBy: UUID(),
+            clubId: clubId,
+            createdAt: Date().addingTimeInterval(-172800),
+            name: "Sneha Patel",
+            lastMessage: "Hello, is there any opening for designer?",
+            unreadCount: 1,
+            icon: nil,
+            isRequest: true
+        )
+        chats.append(requestChat1)
+        chats.append(requestChat2)
+        
+        messages[requestChat1.id] = [
+            Message(id: UUID(), chatId: requestChat1.id, senderId: requestChat1.createdBy, content: "Hi, I wanted to join the Tech Summit core team.", createdAt: requestChat1.createdAt)
+        ]
+        messages[requestChat2.id] = [
+            Message(id: UUID(), chatId: requestChat2.id, senderId: requestChat2.createdBy, content: "Hello, is there any opening for designer?", createdAt: requestChat2.createdAt)
+        ]
     }
     
     var messages: [UUID: [Message]] = [:]
     
     var pinnedChats: [Chat] {
-        chats.filter { $0.isPinned && !$0.isArchived }.prefix(5).map { $0 }
+        chats.filter { $0.isPinned && !$0.isArchived && !$0.isRequest }.prefix(5).map { $0 }
     }
     
     var filteredChats: [Chat] {
@@ -117,19 +148,21 @@ final class ChatStore {
         
         switch selectedCategory {
         case .all:
-            return topLevelChats.filter { !$0.isPinned && !$0.isArchived }
+            return topLevelChats.filter { !$0.isPinned && !$0.isArchived && !$0.isRequest }
         case .unread:
             return topLevelChats.filter { chat in
-                if chat.isArchived { return false }
+                if chat.isArchived || chat.isRequest { return false }
                 if chat.unreadCount > 0 { return true }
                 return chats.filter { $0.parentChatId == chat.id }.contains { $0.unreadCount > 0 }
             }
         case .groups:
-            return topLevelChats.filter { $0.type == .group && !$0.isArchived }
+            return topLevelChats.filter { $0.type == .group && !$0.isArchived && !$0.isRequest }
         case .event:
-            return topLevelChats.filter { $0.type == .event && !$0.isArchived }
+            return topLevelChats.filter { $0.type == .event && !$0.isArchived && !$0.isRequest }
         case .archived:
-            return topLevelChats.filter { $0.isArchived }
+            return topLevelChats.filter { $0.isArchived && !$0.isRequest }
+        case .requests:
+            return topLevelChats.filter { $0.isRequest && !$0.isArchived }
         }
     }
     

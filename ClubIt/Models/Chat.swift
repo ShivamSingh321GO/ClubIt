@@ -31,6 +31,7 @@ struct Chat: Identifiable, Codable {
     var isExpanded: Bool = false
     var isPinned: Bool = false
     var isArchived: Bool = false
+    var isRequest: Bool = false
     var participants: [UUID] = []
 }
 
@@ -56,6 +57,7 @@ enum ChatCategory: String, CaseIterable, Identifiable {
     case groups = "Groups"
     case event = "Event"
     case archived = "Archived"
+    case requests = "Requests"
     
     var id: String { rawValue }
 }

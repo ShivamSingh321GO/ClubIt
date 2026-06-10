@@ -138,15 +138,41 @@ struct ChatsView: View {
     }
 }
     
+    private var filteredCategories: [ChatCategory] {
+        if appSession.currentRole == .clubLead {
+            return ChatCategory.allCases
+        } else {
+            return ChatCategory.allCases.filter { $0 != .requests }
+        }
+    }
+    
+    private func countForCategory(_ category: ChatCategory) -> Int {
+        switch category {
+        case .all:
+            return 0
+        case .unread:
+            return appSession.chatStore.chats.filter { !$0.isRequest && !$0.isArchived }.reduce(0) { $0 + $1.unreadCount }
+        case .groups:
+            return appSession.chatStore.chats.filter { $0.type == .group && !$0.isRequest && !$0.isArchived }.count
+        case .event:
+            return appSession.chatStore.chats.filter { $0.type == .event && !$0.isRequest && !$0.isArchived }.count
+        case .archived:
+            return appSession.chatStore.chats.filter { $0.isArchived && !$0.isRequest }.count
+        case .requests:
+            return appSession.chatStore.chats.filter { $0.isRequest && !$0.isArchived }.count
+        }
+    }
+    
     // MARK: - Filter Bar
     private func filterBar(selectedCategory: Binding<ChatCategory>) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(ChatCategory.allCases) { category in
+                ForEach(filteredCategories) { category in
+                    let count = countForCategory(category)
                     Button {
                         selectedCategory.wrappedValue = category
                     } label: {
-                        Text(category.rawValue)
+                        Text(count > 0 ? "\(category.rawValue) \(count)" : category.rawValue)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .padding(.horizontal, 16)
