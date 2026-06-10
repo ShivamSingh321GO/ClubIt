@@ -1,13 +1,45 @@
 import SwiftUI
 
 struct ApprovalStatusTrack: View {
+    @Environment(AppSession.self) private var appSession
     let approval: Approval
     
     var body: some View {
+        let eventId = approval.eventId ?? UUID()
+        let event = appSession.eventStore.events.first(where: { $0.id == eventId })
+        let club = appSession.clubStore.allClubs.first(where: { $0.id == event?.clubId })
+        
+        let allApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId }
+        let allBudgets = appSession.approvalStore.budgets.filter { $0.eventId == eventId }
+        let allResources = appSession.approvalStore.resources.filter { $0.eventId == eventId }
+        
+        // 1. VP Step Status
+        let hasVP = club?.vicePresidentId != nil
+        let vpStatusText = hasVP ? "VP" : "VP (N/A)"
+        let vpApproved = !hasVP || 
+            allApprovals.contains { $0.type == .event && $0.status == .approved && $0.receiverId == club?.vicePresidentId } ||
+            !allBudgets.isEmpty ||
+            allApprovals.contains { $0.type == .budget || $0.type == .resource || $0.type == .venue }
+        
+        // 2. President Step Status
+        let hasBudget = !allBudgets.isEmpty
+        let presidentStatusText = hasBudget ? "President" : "President (N/A)"
+        let presidentApproved = vpApproved && (!hasBudget || 
+            allBudgets.allSatisfy { $0.status == .approved } ||
+            allApprovals.contains { $0.type == .resource || $0.type == .venue })
+        
+        // 3. EMT Step Status
+        let emtApproved = presidentApproved && (
+            allApprovals.filter { $0.type == .event && $0.receiverId == (club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!) }.allSatisfy { $0.status == .approved } &&
+            allResources.allSatisfy { $0.status == .approved } &&
+            allApprovals.filter { $0.type == .venue }.allSatisfy { $0.status == .approved }
+        )
+        
         let steps = [
-            ("Lead", true), // Always initiated by Lead
-            ("VP", approval.status == .approved || approval.type == .budget), // Simplified logic for demo
-            ("President", approval.status == .approved && approval.type == .budget)
+            ("Lead", true, "Initiated"),
+            (vpStatusText, vpApproved, hasVP ? (vpApproved ? "Approved" : "Pending") : "Skipped"),
+            (presidentStatusText, presidentApproved, hasBudget ? (presidentApproved ? "Approved" : "Pending") : "Skipped"),
+            ("EMT", emtApproved, emtApproved ? "Approved" : "Pending")
         ]
         
         VStack(spacing: 8) {
@@ -43,7 +75,7 @@ struct ApprovalStatusTrack: View {
             HStack {
                 ForEach(steps.indices, id: \.self) { index in
                     StatusLabel(
-                        text: steps[index].1 ? "Approved" : "Pending",
+                        text: steps[index].2,
                         color: steps[index].1 ? .green : .secondary
                     )
                     if index < steps.count - 1 { Spacer() }
@@ -53,11 +85,12 @@ struct ApprovalStatusTrack: View {
         .padding(.top, 4)
     }
     
-    private func progressWidth(for steps: [(String, Bool)]) -> CGFloat {
+    private func progressWidth(for steps: [(String, Bool, String)]) -> CGFloat {
         let approvedCount = steps.filter { $0.1 }.count
         if approvedCount <= 1 { return 10 }
-        if approvedCount == 2 { return 150 } // Approx mid point
-        return 300 // Approx end point
+        if approvedCount == 2 { return 100 }
+        if approvedCount == 3 { return 200 }
+        return 300 // All 4 approved
     }
 }
 

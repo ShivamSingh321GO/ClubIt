@@ -33,7 +33,7 @@ struct EventManagementApprovalDetailView: View {
     
     var body: some View {
         Group {
-            if appSession.currentUser?.role == .vicePresident {
+            if appSession.currentRole == .vicePresident {
                 vpDraftReviewView()
             } else {
                 standardApprovalView()
@@ -101,7 +101,7 @@ struct EventManagementApprovalDetailView: View {
                 if let budget = budgetToApprove {
                     Task {
                         do {
-                            try await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
+                            try await appSession.approveBudgetAndCheckForwarding(budget: budget, status: .approved)
                             await appSession.checkAndAutoApproveEvent(eventId: event.id)
                         } catch {
                             print("DEBUG ERROR: Budget approval failed: \(error)")
@@ -120,11 +120,11 @@ struct EventManagementApprovalDetailView: View {
             Button("Approve") {
                 if let approval = eventToApprove {
                     Task {
-                        if appSession.currentUser?.role == .vicePresident {
+                        if appSession.currentRole == .vicePresident {
                             try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
                             if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
                                let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
-                                try? await appSession.forwardVPApproval(
+                                try? await appSession.forwardToPresidentBudgetApproval(
                                     eventId: event.id,
                                     club: club,
                                     senderId: appSession.currentUser?.id ?? UUID()
@@ -141,7 +141,7 @@ struct EventManagementApprovalDetailView: View {
         } message: {
             if let approval = eventToApprove,
                let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
-                Text(appSession.currentUser?.role == .vicePresident ? "Are you sure you want to approve and forward event '\(event.name)'?" : "Are you sure you want to approve the creation of event '\(event.name)'?")
+                Text(appSession.currentRole == .vicePresident ? "Are you sure you want to approve and forward event '\(event.name)'?" : "Are you sure you want to approve the creation of event '\(event.name)'?")
             }
         }
         .overlay(alignment: .bottom) {
@@ -168,7 +168,7 @@ struct EventManagementApprovalDetailView: View {
             }
         }
         .onAppear {
-            if appSession.currentUser?.role == .president {
+            if appSession.currentRole == .president {
                 selectedTab = "Budget"
             }
         }
@@ -342,7 +342,7 @@ struct EventManagementApprovalDetailView: View {
             .frame(maxWidth: .infinity)
             .padding(.top, 60)
         } else {
-            if appSession.currentUser?.role == .faculty {
+            if appSession.currentRole == .faculty {
                 VStack(spacing: 20) {
                     let totalRequested = budgets.reduce(0) { $0 + $1.totalAmount }
                     let anyRejected = budgets.contains { $0.status == .rejected }
@@ -519,11 +519,11 @@ struct EventManagementApprovalDetailView: View {
                 ClubHeaderView(club: club, event: event)
                 
                 // MARK: - Segmented Filter (3 Segments)
-                if appSession.currentUser?.role != .president {
+                if appSession.currentRole != .president {
                     Picker("Select Category", selection: $selectedTab) {
                         Text("Venue (\(venueApprovalsToDisplay.count))").tag("Venue")
-                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
                         Text("Resource (\(allClubResources.count))").tag("Resource")
+                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
@@ -551,10 +551,10 @@ struct EventManagementApprovalDetailView: View {
                 switch selectedTab {
                 case "Venue":
                     venueSection(venueApprovalsToDisplay)
-                case "Budget":
-                    budgetSection(allClubBudgets)
                 case "Resource":
                     resourceSection(allClubResources)
+                case "Budget":
+                    budgetSection(allClubBudgets)
                 default:
                     EmptyView()
                 }
@@ -699,63 +699,53 @@ struct EventManagementApprovalDetailView: View {
                                 .glassEffect(in: .rect(cornerRadius: 20))
                         }
                         .padding(.horizontal)
+                        
+                        // Approve / Reject buttons flow naturally here
+                        VStack(spacing: 0) {
+                            if approval.status == .pending {
+                                HStack(spacing: 12) {
+                                    Button(action: {
+                                        selectedEventApprovalForRemark = approval
+                                    }) {
+                                        Label("Reject", systemImage: "xmark.circle")
+                                            .font(.subheadline.bold())
+                                            .foregroundColor(.red)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12)
+                                            .background(Color.red.opacity(0.1))
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    }
+                                    .buttonStyle(.plain)
+                                    
+                                    Button(action: {
+                                        eventToApprove = approval
+                                        showingEventApprovalAlert = true
+                                    }) {
+                                        Label("Approve Draft", systemImage: "checkmark.circle.fill")
+                                            .font(.subheadline.bold())
+                                            .foregroundColor(.white)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12)
+                                            .background(Color.green)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .padding(.top, 16)
+                            } else {
+                                HStack {
+                                    Text("Draft Review Completed:")
+                                        .font(.headline)
+                                    Spacer()
+                                    ApprovalStatusBadge(status: approval.status)
+                                }
+                                .padding(.vertical, 16)
+                            }
+                        }
+                        .padding(.horizontal)
                     }
-                    
-                    // Spacer for bottom sticky bar
-                    Color.clear.frame(height: 110)
                 }
                 .padding(.vertical)
-            }
-            
-            // Sticky Bottom Toolbar
-            if let approval = vpApproval {
-                VStack(spacing: 0) {
-                    Divider()
-                    
-                    if approval.status == .pending {
-                        HStack(spacing: 12) {
-                            Button(action: {
-                                selectedEventApprovalForRemark = approval
-                            }) {
-                                Label("Reject", systemImage: "xmark.circle")
-                                    .font(.subheadline.bold())
-                                    .foregroundColor(.red)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(Color.red.opacity(0.1))
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .buttonStyle(.plain)
-                            
-                            Button(action: {
-                                eventToApprove = approval
-                                showingEventApprovalAlert = true
-                            }) {
-                                Label("Approve Draft", systemImage: "checkmark.circle.fill")
-                                    .font(.subheadline.bold())
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(Color.green)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                        .padding(.bottom, 24)
-                    } else {
-                        HStack {
-                            Text("Draft Review Completed:")
-                                .font(.headline)
-                            Spacer()
-                            ApprovalStatusBadge(status: approval.status)
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 20)
-                    }
-                }
-                .background(.ultraThinMaterial)
             }
         }
         .navigationTitle("Event Draft Review")

@@ -47,7 +47,7 @@ struct EditEventView: View {
         _startDate = State(initialValue: event.startDate)
         _endDate = State(initialValue: event.endDate)
         _venue = State(initialValue: event.location)
-        _participants = State(initialValue: "\(event.maxParticipants)")
+        _participants = State(initialValue: event.maxParticipants >= 999999 ? "" : "\(event.maxParticipants)")
         _imageData = State(initialValue: event.imageData)
         _customFormFields = State(initialValue: event.registrationForm ?? [])
     }
@@ -191,39 +191,6 @@ struct EditEventView: View {
             
             Section {
                 Button {
-                    isShowingAddBudgetItems = true
-                } label: {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(.blue)
-                        Text("Manage Budget Items")
-                    }
-                }
-                .foregroundStyle(.primary)
-                
-                if !budgetItems.isEmpty {
-                    let total = budgetItems.reduce(0) { $0 + (Double($1.price) ?? 0) * Double($1.quantity) }
-                    Button {
-                        isShowingBudgetSummary = true
-                    } label: {
-                        HStack {
-                            Text("\(budgetItems.count) items • Total: ₹\(Int(total))")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-            } header: {
-                Text("Budget")
-            }
-            
-            Section {
-                Button {
                     isShowingAddResourcesItems = true
                 } label: {
                     HStack {
@@ -255,7 +222,40 @@ struct EditEventView: View {
             }
 
             Section {
-                TextField("Expected Participants", text: $participants)
+                Button {
+                    isShowingAddBudgetItems = true
+                } label: {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.blue)
+                        Text("Manage Budget Items")
+                    }
+                }
+                .foregroundStyle(.primary)
+                
+                if !budgetItems.isEmpty {
+                    let total = budgetItems.reduce(0) { $0 + (Double($1.price) ?? 0) * Double($1.quantity) }
+                    Button {
+                        isShowingBudgetSummary = true
+                    } label: {
+                        HStack {
+                            Text("\(budgetItems.count) items • Total: ₹\(Int(total))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            } header: {
+                Text("Budget")
+            }
+
+            Section {
+                TextField("Expected Participants (Optional)", text: $participants)
                     .keyboardType(.numberPad)
             } header: {
                 Text("Participation & Support")
@@ -370,7 +370,17 @@ struct EditEventView: View {
         updatedEvent.endDate = endDate
         updatedEvent.location = venue
         updatedEvent.numberOfVolunteers = 0
-        updatedEvent.maxParticipants = Int(participants) ?? 0
+        let maxParticipantsVal: Int
+        if participants.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            maxParticipantsVal = 999999
+        } else {
+            guard let parsed = Int(participants.trimmingCharacters(in: .whitespacesAndNewlines)), parsed > 0 else {
+                errorMessage = "Expected participants must be a number greater than 0."
+                return
+            }
+            maxParticipantsVal = parsed
+        }
+        updatedEvent.maxParticipants = maxParticipantsVal
         updatedEvent.imageData = imageData
         updatedEvent.registrationForm = customFormFields
         

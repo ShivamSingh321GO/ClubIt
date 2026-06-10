@@ -233,18 +233,19 @@ final class AppSession {
     }
     
     @MainActor
-    func forwardVPApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
-        let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
-        let facultyId = club.facultyId ?? eventManagementTeamID
+    func forwardToPresidentBudgetApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
         let presidentUserId = clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
-        
         let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
-        let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
+        
+        if eventBudgets.isEmpty {
+            // No budgets to approve, skip to EMT directly!
+            try await forwardToEMTApproval(eventId: eventId, club: club, senderId: senderId)
+            return
+        }
         
         var approvalsToSave: [Approval] = []
         var remarksToSave: [RemarkMessage] = []
         
-        // 1. Budget Approvals
         for budget in eventBudgets {
             let budgetApproval = Approval(
                 id: UUID(),
@@ -259,7 +260,7 @@ final class AppSession {
                 updatedAt: nil
             )
             approvalsToSave.append(budgetApproval)
-            remarksToSave.append(RemarkMessage(
+            remarksToSave.append(Remark(
                 id: UUID(),
                 approvalId: budgetApproval.id,
                 authorId: senderId,
@@ -268,7 +269,24 @@ final class AppSession {
             ))
         }
         
-        // 2. Resource Approvals
+        if !approvalsToSave.isEmpty {
+            try await approvalStore.submitApprovalRequests(approvalsToSave)
+        }
+        if !remarksToSave.isEmpty {
+            try await approvalStore.addRemarks(remarksToSave)
+        }
+    }
+    
+    @MainActor
+    func forwardToEMTApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
+        let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+        let facultyId = club.facultyId ?? eventManagementTeamID
+        let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
+        
+        var approvalsToSave: [Approval] = []
+        var remarksToSave: [RemarkMessage] = []
+        
+        // 1. Resource Approvals
         for resource in eventResources {
             let resApproval = Approval(
                 id: UUID(),
@@ -283,7 +301,7 @@ final class AppSession {
                 updatedAt: nil
             )
             approvalsToSave.append(resApproval)
-            remarksToSave.append(RemarkMessage(
+            remarksToSave.append(Remark(
                 id: UUID(),
                 approvalId: resApproval.id,
                 authorId: senderId,
@@ -292,7 +310,7 @@ final class AppSession {
             ))
         }
         
-        // 3. Faculty Event Approval
+        // 2. Faculty Event Approval
         let facultyEventApproval = Approval(
             id: UUID(),
             type: .event,
@@ -306,7 +324,7 @@ final class AppSession {
             updatedAt: nil
         )
         approvalsToSave.append(facultyEventApproval)
-        remarksToSave.append(RemarkMessage(
+        remarksToSave.append(Remark(
             id: UUID(),
             approvalId: facultyEventApproval.id,
             authorId: senderId,
@@ -314,7 +332,7 @@ final class AppSession {
             createdAt: Date()
         ))
         
-        // 4. Venue Booking Approval
+        // 3. Venue Booking Approval
         if let event = eventStore.events.first(where: { $0.id == eventId }) {
             let selectedVenue = venueStore.allVenues.first(where: { $0.name == event.location })
             let venueApproval = Approval(
@@ -330,7 +348,7 @@ final class AppSession {
                 updatedAt: nil
             )
             approvalsToSave.append(venueApproval)
-            remarksToSave.append(RemarkMessage(
+            remarksToSave.append(Remark(
                 id: UUID(),
                 approvalId: venueApproval.id,
                 authorId: senderId,
@@ -344,6 +362,33 @@ final class AppSession {
         }
         if !remarksToSave.isEmpty {
             try await approvalStore.addRemarks(remarksToSave)
+        }
+    }
+    
+    @MainActor
+    func approveBudgetAndCheckForwarding(budget: Budget, status: ApprovalStatus) async throws {
+        // 1. Update in database via store
+        try await approvalStore.updateBudgetStatus(id: budget.id, status: status)
+        
+        // 2. If approved, check if all budgets for this event are approved
+        if status == .approved {
+            guard let eventId = budget.eventId else { return }
+            
+            // Filter budgets locally to see if all are approved
+            let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
+            let allApproved = eventBudgets.allSatisfy { $0.status == .approved }
+            
+            if allApproved {
+                // If all budgets are approved, forward venue/resource approvals to EMT
+                if let event = eventStore.events.first(where: { $0.id == eventId }),
+                   let club = clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                    try await forwardToEMTApproval(
+                        eventId: eventId,
+                        club: club,
+                        senderId: currentUser?.id ?? UUID()
+                    )
+                }
+            }
         }
     }
 }

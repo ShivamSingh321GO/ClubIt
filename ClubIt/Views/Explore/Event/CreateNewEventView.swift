@@ -286,6 +286,38 @@ struct CreateNewEventView: View {
                 if appSession.currentUser?.role != .president {
                     Section {
                         Button {
+                            isShowingAddResourcesItems = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundStyle(.blue)
+                                Text(universityResources.isEmpty && rentalResources.isEmpty ? "Add Resources Items" : "\(universityResources.count + rentalResources.count) Items Added")
+                            }
+                        }
+                        .foregroundStyle(.primary)
+                        
+                        if !universityResources.isEmpty || !rentalResources.isEmpty {
+                            Button {
+                                isShowingResourceSummary = true
+                            } label: {
+                                HStack {
+                                    Text("\(universityResources.count + rentalResources.count) \( (universityResources.count + rentalResources.count) == 1 ? "item" : "items") added")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } header: {
+                        Text("Resources")
+                    }
+
+                    Section {
+                        Button {
                             isShowingAddBudgetItems = true
                         } label: {
                             HStack {
@@ -316,43 +348,10 @@ struct CreateNewEventView: View {
                     } header: {
                         Text("Budget")
                     }
-
-                    
-                    Section {
-                        Button {
-                            isShowingAddResourcesItems = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(.blue)
-                                Text(universityResources.isEmpty && rentalResources.isEmpty ? "Add Resources Items" : "\(universityResources.count + rentalResources.count) Items Added")
-                            }
-                        }
-                        .foregroundStyle(.primary)
-                        
-                        if !universityResources.isEmpty || !rentalResources.isEmpty {
-                            Button {
-                                isShowingResourceSummary = true
-                            } label: {
-                                HStack {
-                                    Text("\(universityResources.count + rentalResources.count) \( (universityResources.count + rentalResources.count) == 1 ? "item" : "items") added")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    } header: {
-                        Text("Resources")
-                    }
                 }
 
                 Section {
-                    TextField(appSession.currentUser?.role == .president ? "Expected Participants (Optional)" : "Expected Participants", text: $participants)
+                    TextField("Expected Participants (Optional)", text: $participants)
                         .keyboardType(.numberPad)
                 } header: {
                     Text("Participation & Support")
@@ -492,18 +491,10 @@ struct CreateNewEventView: View {
         
         let isPresident = currentUser.role == .president
         let maxParticipantsVal: Int
-        if isPresident {
-            if participants.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                maxParticipantsVal = 999999
-            } else {
-                maxParticipantsVal = Int(participants) ?? 999999
-            }
+        if participants.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            maxParticipantsVal = 999999
         } else {
-            guard !participants.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                errorMessage = "Please enter expected participants."
-                return
-            }
-            guard let parsed = Int(participants), parsed > 0 else {
+            guard let parsed = Int(participants.trimmingCharacters(in: .whitespacesAndNewlines)), parsed > 0 else {
                 errorMessage = "Expected participants must be a number greater than 0."
                 return
             }
@@ -660,96 +651,14 @@ struct CreateNewEventView: View {
                             content: "Draft event submitted to Vice President for approval",
                             createdAt: Date()
                         ))
-                    } else {
-                        // Route directly to EMT and President
-                        for budget in budgetsToSave {
-                            let budgetApproval = Approval(
-                                id: UUID(),
-                                type: .budget,
-                                senderId: currentUser.id,
-                                receiverId: presidentUserId,
-                                eventId: newEvent.id,
-                                approvalRelatedId: budget.id,
-                                status: .pending,
-                                remarks: [],
-                                createdAt: Date(),
-                                updatedAt: nil
-                            )
-                            approvalsToSave.append(budgetApproval)
-                            remarksToSave.append(RemarkMessage(
-                                id: UUID(),
-                                approvalId: budgetApproval.id,
-                                authorId: currentUser.id,
-                                content: "Budget approval requested for \(budget.itemName)",
-                                createdAt: Date()
-                            ))
-                        }
-                        
-                        for resource in resourcesToSave {
-                            let resApproval = Approval(
-                                id: UUID(),
-                                type: .resource,
-                                senderId: currentUser.id,
-                                receiverId: facultyId,
-                                eventId: newEvent.id,
-                                approvalRelatedId: resource.id,
-                                status: .pending,
-                                remarks: [],
-                                createdAt: Date(),
-                                updatedAt: nil
-                            )
-                            approvalsToSave.append(resApproval)
-                            remarksToSave.append(RemarkMessage(
-                                id: UUID(),
-                                approvalId: resApproval.id,
-                                authorId: currentUser.id,
-                                content: "Resource approval requested for \(resource.name)",
-                                createdAt: Date()
-                            ))
-                        }
-                        
-                        let eventApproval = Approval(
-                            id: UUID(),
-                            type: .event,
-                            senderId: currentUser.id,
-                            receiverId: facultyId,
+                    } else if let club = club {
+                        // Let AppSession handle the sequential forwarding:
+                        // First to President if budget exists, else straight to EMT.
+                        try await appSession.forwardToPresidentBudgetApproval(
                             eventId: newEvent.id,
-                            approvalRelatedId: newEvent.id,
-                            status: .pending,
-                            remarks: [],
-                            createdAt: Date(),
-                            updatedAt: nil
+                            club: club,
+                            senderId: currentUser.id
                         )
-                        approvalsToSave.append(eventApproval)
-                        remarksToSave.append(RemarkMessage(
-                            id: UUID(),
-                            approvalId: eventApproval.id,
-                            authorId: currentUser.id,
-                            content: "Event creation approval requested",
-                            createdAt: Date()
-                        ))
-                        
-                        let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
-                        let venueApproval = Approval(
-                            id: UUID(),
-                            type: .venue,
-                            senderId: currentUser.id,
-                            receiverId: facultyId,
-                            eventId: newEvent.id,
-                            approvalRelatedId: selectedVenue?.id ?? newEvent.id,
-                            status: .pending,
-                            remarks: [],
-                            createdAt: Date(),
-                            updatedAt: nil
-                        )
-                        approvalsToSave.append(venueApproval)
-                        remarksToSave.append(RemarkMessage(
-                            id: UUID(),
-                            approvalId: venueApproval.id,
-                            authorId: currentUser.id,
-                            content: "Venue booking approval requested for \(venue)",
-                            createdAt: Date()
-                        ))
                     }
                     
                     // 5. Batch Save Everything

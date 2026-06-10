@@ -92,37 +92,153 @@ struct LeadEventApprovalDetailView: View {
         return appSession.approvalStore.remarkMessages[approval.id]?.last?.content
     }
     
-    private var step1Color: Color {
-        guard let approval = vpApproval else { return .orange }
+    enum StepStatus {
+        case locked
+        case pending
+        case approved
+        case rejected
+        case skipped
+    }
+    
+    private var hasBudget: Bool {
+        !allClubBudgets.isEmpty
+    }
+    
+    private var presidentUser: User? {
+        appSession.clubStore.allUsers.first(where: { $0.role == .president })
+    }
+    
+    private var facultyUser: User? {
+        guard let club = club else { return nil }
+        let facultyId = club.facultyId
+        return appSession.clubStore.allUsers.first(where: { $0.id == facultyId })
+    }
+    
+    private var vpStepStatus: StepStatus {
+        guard hasVP else { return .skipped }
+        guard let approval = vpApproval else { return .pending }
         switch approval.status {
+        case .pending: return .pending
+        case .approved: return .approved
+        case .rejected: return .rejected
+        }
+    }
+    
+    private var presidentStepStatus: StepStatus {
+        if hasVP && vpStepStatus != .approved {
+            return .locked
+        }
+        guard hasBudget else { return .skipped }
+        
+        let isAnyBudgetRejected = allClubBudgets.contains { $0.status == .rejected }
+        let isAllBudgetApproved = allClubBudgets.allSatisfy { $0.status == .approved }
+        
+        if isAnyBudgetRejected {
+            return .rejected
+        } else if isAllBudgetApproved {
+            return .approved
+        } else {
+            return .pending
+        }
+    }
+    
+    private var emtStepStatus: StepStatus {
+        if hasVP && vpStepStatus != .approved { return .locked }
+        if hasBudget && presidentStepStatus != .approved { return .locked }
+        
+        let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+        let facultyId = club?.facultyId ?? eventManagementTeamID
+        
+        let emtApprovals = appSession.approvalStore.approvals.filter { 
+            $0.eventId == eventId && 
+            ($0.type == .event || $0.type == .venue) && 
+            ($0.receiverId == facultyId || $0.receiverId == appSession.currentUser?.id)
+        }
+        
+        let isAnyEmtRejected = emtApprovals.contains { $0.status == .rejected } || 
+                               allClubResources.contains { $0.status == .rejected }
+                               
+        let isAllEmtApproved = !emtApprovals.isEmpty && 
+                               emtApprovals.allSatisfy { $0.status == .approved } &&
+                               allClubResources.allSatisfy { $0.status == .approved }
+                               
+        if isAnyEmtRejected {
+            return .rejected
+        } else if isAllEmtApproved {
+            return .approved
+        } else {
+            return .pending
+        }
+    }
+    
+    private var presidentRejectionRemark: String? {
+        if let rejectedBudget = allClubBudgets.first(where: { $0.status == .rejected }) {
+            if let approval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == rejectedBudget.id }),
+               let lastRemark = approval.remarks?.last?.content ?? appSession.approvalStore.remarkMessages[approval.id]?.last?.content {
+                return "\(rejectedBudget.itemName): \(lastRemark)"
+            }
+        }
+        return nil
+    }
+    
+    private var emtRejectionRemark: String? {
+        let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+        let facultyId = club?.facultyId ?? eventManagementTeamID
+        
+        if let eventApproval = appSession.approvalStore.approvals.first(where: { 
+            $0.eventId == eventId && 
+            $0.type == .event && 
+            ($0.receiverId == facultyId || $0.receiverId == appSession.currentUser?.id) &&
+            $0.status == .rejected
+        }) {
+            return eventApproval.remarks?.last?.content ?? appSession.approvalStore.remarkMessages[eventApproval.id]?.last?.content
+        }
+        
+        if let venueApproval = appSession.approvalStore.approvals.first(where: { 
+            $0.eventId == eventId && 
+            $0.type == .venue && 
+            ($0.receiverId == facultyId || $0.receiverId == appSession.currentUser?.id) &&
+            $0.status == .rejected
+        }) {
+            return venueApproval.remarks?.last?.content ?? appSession.approvalStore.remarkMessages[venueApproval.id]?.last?.content
+        }
+        
+        if let rejectedResource = allClubResources.first(where: { $0.status == .rejected }) {
+            if let approval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == rejectedResource.id }),
+               let lastRemark = approval.remarks?.last?.content ?? appSession.approvalStore.remarkMessages[approval.id]?.last?.content {
+                return "\(rejectedResource.name): \(lastRemark)"
+            }
+        }
+        return nil
+    }
+    
+    private func statusColor(for step: StepStatus) -> Color {
+        switch step {
+        case .locked: return .secondary
         case .pending: return .orange
         case .approved: return .green
         case .rejected: return .red
+        case .skipped: return .secondary
         }
     }
     
-    private var step1Icon: String {
-        guard let approval = vpApproval else { return "clock.fill" }
-        switch approval.status {
+    private func statusIcon(for step: StepStatus) -> String {
+        switch step {
+        case .locked: return "lock.fill"
         case .pending: return "clock.fill"
         case .approved: return "checkmark"
         case .rejected: return "xmark"
+        case .skipped: return "checkmark"
         }
     }
     
-    private var step2Color: Color {
-        if !hasVP || vpApproval?.status == .approved {
-            return isAllApproved ? .green : .orange
-        } else {
-            return .secondary
-        }
-    }
-    
-    private var step2Icon: String {
-        if !hasVP || vpApproval?.status == .approved {
-            return isAllApproved ? "checkmark" : "clock.fill"
-        } else {
-            return "lock.fill"
+    private func statusText(for step: StepStatus) -> String {
+        switch step {
+        case .locked: return "LOCKED"
+        case .pending: return "PENDING"
+        case .approved: return "APPROVED"
+        case .rejected: return "REJECTED"
+        case .skipped: return "SKIPPED"
         }
     }
     
@@ -136,7 +252,7 @@ struct LeadEventApprovalDetailView: View {
                     LeadDetailClubHeaderView(club: club, event: event)
                         .padding(.horizontal)
                     
-                    // Two-Stage Approval Status Tracker
+                    // Sequential Approval Status Tracker
                     VStack(alignment: .leading, spacing: 16) {
                         Text("APPROVAL FLOW STATUS")
                             .font(.system(size: 10, weight: .bold))
@@ -144,85 +260,134 @@ struct LeadEventApprovalDetailView: View {
                             .padding(.horizontal)
                         
                         VStack(alignment: .leading, spacing: 20) {
-                            if hasVP {
-                                // Step 1: Vice President Draft Review
-                                HStack(alignment: .top, spacing: 12) {
-                                    VStack {
-                                        Circle()
-                                            .fill(step1Color)
-                                            .frame(width: 24, height: 24)
-                                            .overlay(
-                                                Image(systemName: step1Icon)
-                                                    .font(.system(size: 10, weight: .bold))
-                                                    .foregroundColor(.white)
-                                            )
-                                        
-                                        Rectangle()
-                                            .fill(step2Color.opacity(0.3))
-                                            .frame(width: 2, height: 30)
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Step 1: Vice President Draft Approval")
-                                            .font(.subheadline.bold())
-                                            .foregroundColor(step1Color)
-                                        
-                                        if let vp = vpUser {
-                                            Text("Reviewer: \(vp.name)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        
-                                        if let approval = vpApproval {
-                                            Text("Status: \(approval.status.rawValue.uppercased())")
-                                                .font(.caption.bold())
-                                                .foregroundColor(step1Color)
-                                            
-                                            // If rejected, show the remark
-                                            if approval.status == .rejected {
-                                                if let remark = vpRejectionRemark {
-                                                    Text("Remark: \"\(remark)\"")
-                                                        .font(.caption.italic())
-                                                        .foregroundColor(.red)
-                                                        .padding(.top, 4)
-                                                }
-                                            }
-                                        } else {
-                                            Text("Status: PENDING")
-                                                .font(.caption.bold())
-                                                .foregroundColor(.orange)
-                                        }
-                                    }
-                                    Spacer()
-                                }
-                            }
-                            
-                            // Step 2: Faculty & President Final Approvals
+                            // Step 1: Vice President Draft Approval
                             HStack(alignment: .top, spacing: 12) {
-                                Circle()
-                                    .fill(step2Color)
-                                    .frame(width: 24, height: 24)
-                                    .overlay(
-                                        Image(systemName: step2Icon)
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(.white)
-                                    )
+                                VStack {
+                                    Circle()
+                                        .fill(statusColor(for: vpStepStatus))
+                                        .frame(width: 24, height: 24)
+                                        .overlay(
+                                            Image(systemName: statusIcon(for: vpStepStatus))
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.white)
+                                        )
+                                    
+                                    Rectangle()
+                                        .fill(statusColor(for: presidentStepStatus).opacity(0.3))
+                                        .frame(width: 2, height: 30)
+                                }
                                 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(hasVP ? "Step 2: Faculty & President Final Review" : "Final Review (Faculty & President)")
+                                    Text("Step 1: Vice President Draft Approval")
                                         .font(.subheadline.bold())
-                                        .foregroundColor(step2Color)
+                                        .foregroundColor(statusColor(for: vpStepStatus))
                                     
-                                    if !hasVP || vpApproval?.status == .approved {
-                                        Text(isAllApproved ? "Event is fully approved and ready to publish!" : "Awaiting final budget, venue, and resource approvals.")
+                                    if hasVP, let vp = vpUser {
+                                        Text("Reviewer: \(vp.name)")
                                             .font(.caption)
                                             .foregroundColor(.secondary)
                                     } else {
-                                        Text("Locked until Vice President approves the draft.")
+                                        Text("Reviewer: N/A")
                                             .font(.caption)
                                             .foregroundColor(.secondary)
                                     }
+                                    
+                                    Text("Status: \(statusText(for: vpStepStatus))")
+                                        .font(.caption.bold())
+                                        .foregroundColor(statusColor(for: vpStepStatus))
+                                    
+                                    if vpStepStatus == .rejected, let remark = vpRejectionRemark {
+                                        Text("Remark: \"\(remark)\"")
+                                            .font(.caption.italic())
+                                            .foregroundColor(.red)
+                                            .padding(.top, 4)
+                                    }
                                 }
+                                Spacer()
+                            }
+                            
+                            // Step 2: President Budget Approval
+                            HStack(alignment: .top, spacing: 12) {
+                                VStack {
+                                    Circle()
+                                        .fill(statusColor(for: presidentStepStatus))
+                                        .frame(width: 24, height: 24)
+                                        .overlay(
+                                            Image(systemName: statusIcon(for: presidentStepStatus))
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.white)
+                                        )
+                                    
+                                    Rectangle()
+                                        .fill(statusColor(for: emtStepStatus).opacity(0.3))
+                                        .frame(width: 2, height: 30)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Step 2: President Budget Approval")
+                                        .font(.subheadline.bold())
+                                        .foregroundColor(statusColor(for: presidentStepStatus))
+                                    
+                                    if let president = presidentUser {
+                                        Text("Reviewer: \(president.name)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    
+                                    Text("Status: \(statusText(for: presidentStepStatus))")
+                                        .font(.caption.bold())
+                                        .foregroundColor(statusColor(for: presidentStepStatus))
+                                    
+                                    if presidentStepStatus == .rejected, let remark = presidentRejectionRemark {
+                                        Text("Remark: \"\(remark)\"")
+                                            .font(.caption.italic())
+                                            .foregroundColor(.red)
+                                            .padding(.top, 4)
+                                    }
+                                }
+                                Spacer()
+                            }
+                            
+                            // Step 3: Faculty (EMT) Final Review
+                            HStack(alignment: .top, spacing: 12) {
+                                VStack {
+                                    Circle()
+                                        .fill(statusColor(for: emtStepStatus))
+                                        .frame(width: 24, height: 24)
+                                        .overlay(
+                                            Image(systemName: statusIcon(for: emtStepStatus))
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.white)
+                                        )
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Step 3: Faculty (EMT) Final Review")
+                                        .font(.subheadline.bold())
+                                        .foregroundColor(statusColor(for: emtStepStatus))
+                                    
+                                    if let faculty = facultyUser {
+                                        Text("Reviewer: \(faculty.name)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Text("Reviewers: Event Management Team & Faculty")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    
+                                    Text("Status: \(statusText(for: emtStepStatus))")
+                                        .font(.caption.bold())
+                                        .foregroundColor(statusColor(for: emtStepStatus))
+                                    
+                                    if emtStepStatus == .rejected, let remark = emtRejectionRemark {
+                                        Text("Remark: \"\(remark)\"")
+                                            .font(.caption.italic())
+                                            .foregroundColor(.red)
+                                            .padding(.top, 4)
+                                    }
+                                }
+                                Spacer()
                             }
                         }
                         .padding()
@@ -240,8 +405,8 @@ struct LeadEventApprovalDetailView: View {
                     // Segmented Filter
                     Picker("Select Category", selection: $selectedTab) {
                         Text("Venue (\(allClubVenueApprovals.count))").tag("Venue")
-                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
                         Text("Resource (\(allClubResources.count))").tag("Resource")
+                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
@@ -262,10 +427,10 @@ struct LeadEventApprovalDetailView: View {
                     switch selectedTab {
                     case "Venue":
                         venueSection(allClubVenueApprovals)
-                    case "Budget":
-                        budgetSection(allClubBudgets)
                     case "Resource":
                         resourceSection(allClubResources)
+                    case "Budget":
+                        budgetSection(allClubBudgets)
                     default:
                         EmptyView()
                     }

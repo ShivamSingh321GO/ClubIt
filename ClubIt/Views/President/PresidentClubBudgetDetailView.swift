@@ -219,7 +219,7 @@ struct PresidentClubBudgetDetailView: View {
             Button("Approve") {
                 if let budget = budgetToApprove {
                     Task {
-                        try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
+                        try? await appSession.approveBudgetAndCheckForwarding(budget: budget, status: .approved)
                     }
                 }
             }
@@ -450,7 +450,7 @@ struct PresidentBudgetRemarkSheet: View {
                     if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id {
                         let finalRemark = remark
                         Task {
-                            try? await appSession.approvalStore.updateBudgetStatus(id: budget.id, status: .rejected)
+                            try? await appSession.approveBudgetAndCheckForwarding(budget: budget, status: .rejected)
                             try? await appSession.approvalStore.addRemark(
                                 approvalId: approvalId,
                                 authorId: appSession.currentUser?.id ?? UUID(),

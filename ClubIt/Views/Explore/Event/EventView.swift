@@ -224,7 +224,6 @@ struct EventView: View {
             
             let matchesStatus: Bool = {
                 if isMyEvent(event) { return true }
-                if appSession.currentRole == .faculty { return true }
                 return event.status == .published
             }()
             

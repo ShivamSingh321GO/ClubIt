@@ -36,7 +36,7 @@ struct EventManagementTeamView: View {
                             }
                             .buttonStyle(.plain)
                             
-                            if appSession.currentUser?.role == .faculty {
+                            if appSession.currentRole == .faculty {
                                 Divider().padding(.leading, 56)
                                 NavigationLink {
                                     FacultyVenueListView()
@@ -44,7 +44,7 @@ struct EventManagementTeamView: View {
                                     QuickActionRow(icon: "building.2", title: "View Venues", color: .blue)
                                 }
                                 .buttonStyle(.plain)
-                            } else if appSession.currentUser?.role == .president {
+                            } else if appSession.currentRole == .president {
                                 Divider().padding(.leading, 56)
                                 NavigationLink(destination: PresidentAssignClubView()) {
                                     QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Club", color: .orange)
@@ -62,9 +62,8 @@ struct EventManagementTeamView: View {
                     }
                     .padding(.horizontal)
                     
-                    // MARK: - Conditional Sections
                     if let user = appSession.currentUser {
-                        if user.role == .faculty || user.role == .president {
+                        if appSession.currentRole == .faculty || appSession.currentRole == .president {
                             // Assigned clubs
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Assigned Clubs")
@@ -74,7 +73,7 @@ struct EventManagementTeamView: View {
                                 VStack(spacing: 16) {
                                     // For President, we show all clubs since they oversee everything
                                     // For Faculty, we show clubs filtered by their ID (which is now unified)
-                                    let clubsToShow = user.role == .president ? appSession.clubStore.allClubs : appSession.clubStore.allClubs.filter { $0.facultyId == user.id }
+                                    let clubsToShow = appSession.currentRole == .president ? appSession.clubStore.allClubs : appSession.clubStore.allClubs.filter { $0.facultyId == user.id }
                                     
                                     if clubsToShow.isEmpty {
                                         Text("No clubs currently assigned")
@@ -91,7 +90,7 @@ struct EventManagementTeamView: View {
                             .padding(.horizontal)
                         }
                         
-                        if user.role == .president {
+                        if appSession.currentRole == .president {
                             // President core members
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Core Members")
