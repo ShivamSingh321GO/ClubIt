@@ -98,4 +98,10 @@ final class TaskStore {
         tasks.filter { ($0.assignedBy == userId || $0.assignedTo == userId || $0.delegatedToId == userId) && $0.status == .completed }
             .sorted { $0.deadline < $1.deadline }
     }
+    
+    func filteredOverdueTasks(for userId: UUID) -> [Tasks] {
+        let now = Date()
+        return tasks.filter { ($0.assignedBy == userId || $0.assignedTo == userId || $0.delegatedToId == userId) && $0.status == .pending && $0.deadline < now }
+            .sorted { $0.deadline < $1.deadline }
+    }
 }

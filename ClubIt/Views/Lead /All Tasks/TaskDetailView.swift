@@ -10,82 +10,93 @@ struct TaskDetailView: View {
     @State private var selectedEvent: Event? = nil
     @State private var showDeleteAlert = false
     
+    private var currentTask: Tasks {
+        appSession.taskStore.tasks.first(where: { $0.id == task.id }) ?? task
+    }
+    
     private var assignerName: String {
-        appSession.clubStore.allUsers.first(where: { $0.id == task.assignedBy })?.name ?? "Unknown"
+        if currentTask.assignedBy == appSession.currentUser?.id { return "You" }
+        return appSession.clubStore.allUsers.first(where: { $0.id == currentTask.assignedBy })?.name ?? "Unknown"
     }
     
     private var assigneeName: String {
-        if task.assignedTo == appSession.currentUser?.id { return "You" }
-        return appSession.clubStore.allUsers.first(where: { $0.id == task.assignedTo })?.name ?? "Unknown"
+        if currentTask.assignedTo == appSession.currentUser?.id { return "You" }
+        return appSession.clubStore.allUsers.first(where: { $0.id == currentTask.assignedTo })?.name ?? "Unknown"
     }
     
     private var delegatedName: String? {
-        guard let id = task.delegatedToId else { return nil }
+        guard let id = currentTask.delegatedToId else { return nil }
         return appSession.clubStore.allUsers.first(where: { $0.id == id })?.name
     }
     
     private var associatedEvent: Event? {
-        appSession.eventStore.events.first(where: { $0.id == task.eventId })
+        appSession.eventStore.events.first(where: { $0.id == currentTask.eventId })
     }
     
     private var canDelegate: Bool {
-        let isAssignee = appSession.currentUser?.id == task.assignedTo
+        let isAssignee = appSession.currentUser?.id == currentTask.assignedTo
         let isEligibleRole = appSession.currentUser?.role == .clubLead || appSession.currentUser?.role == .president || appSession.currentUser?.role == .vicePresident
-        return isAssignee && isEligibleRole && task.delegatedToId == nil
+        return isAssignee && isEligibleRole && currentTask.delegatedToId == nil
     }
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Header Card (Title and Badges)
+                VStack(alignment: .leading, spacing: 24) {
+                    
+                    // Header Section
                     VStack(alignment: .leading, spacing: 12) {
-                        HStack {
+                        HStack(spacing: 8) {
                             priorityBadge
-                            Spacer()
                             statusBadge
+                            Spacer()
                         }
                         
-                        Text(task.title)
+                        Text(currentTask.title)
                             .font(.title2)
                             .bold()
                             .foregroundStyle(.primary)
+                            
+                        Divider().padding(.top, 12)
                     }
-                    .padding(20)
-                    .glassEffect(in: .rect(cornerRadius: 24))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
                     
                     // Description Section
                     VStack(alignment: .leading, spacing: 12) {
-                        Label("Description", systemImage: "doc.text.fill")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
+                        sectionHeader(title: "Description", icon: "doc.text.fill")
                         
-                        Text(task.description)
+                        Text(currentTask.description)
                             .font(.body)
                             .lineSpacing(4)
-                            .padding(20)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .glassEffect(in: .rect(cornerRadius: 24))
-                        
-                        // Dates immediately under description
-                        HStack(spacing: 16) {
-                            attributeCard(title: "Deadline", value: formattedDate(task.deadline), icon: "calendar")
-                            attributeCard(title: "Created", value: formattedDate(task.createdAt), icon: "plus.circle")
-                        }
+                            
+                        Divider().padding(.top, 12)
                     }
+                    .padding(.horizontal, 20)
+                    
+                    // Timeline Section
+                    VStack(alignment: .leading, spacing: 16) {
+                        sectionHeader(title: "Timeline", icon: "clock.fill")
+                        
+                        VStack(spacing: 16) {
+                            dateRow(title: "Deadline", date: currentTask.deadline, icon: "calendar.badge.exclamationmark", color: .orange)
+                            dateRow(title: "Created", date: currentTask.createdAt, icon: "plus.circle.fill", color: .green)
+                        }
+                        
+                        Divider().padding(.top, 8)
+                    }
+                    .padding(.horizontal, 20)
                     
                     // Assignment Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("Assignment History", systemImage: "clock.arrow.2.circlepath")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 16) {
+                        sectionHeader(title: "Assignment History", icon: "clock.arrow.2.circlepath")
                         
                         VStack(alignment: .leading, spacing: 0) {
-                            if task.assignedBy == task.assignedTo {
+                            if currentTask.assignedBy == currentTask.assignedTo {
                                 // Self Assigned Flow
                                 HStack {
-                                    let displayName = task.assignedBy == appSession.currentUser?.id ? "\(assignerName) (You)" : assignerName
-                                    historyRow(name: displayName, role: task.assignedToRole.rawValue, icon: "person.circle.fill", isSource: true, isCurrent: delegatedName == nil)
+                                    historyRow(name: assignerName, role: currentTask.assignedToRole.rawValue, icon: "person.circle.fill", isSource: true, isCurrent: delegatedName == nil)
                                     
                                     if canDelegate {
                                         Spacer()
@@ -107,12 +118,12 @@ struct TaskDetailView: View {
                                 }
                             } else {
                                 // Standard Assignment Flow
-                                historyRow(name: assignerName, role: task.assignedByRole.rawValue, icon: "person.circle.fill", isSource: true)
+                                historyRow(name: assignerName, role: currentTask.assignedByRole.rawValue, icon: "person.circle.fill", isSource: true)
                                 
                                 lineConnector()
                                 
                                 HStack {
-                                    historyRow(name: assigneeName, role: task.assignedToRole.rawValue, icon: "person.circle.fill", isCurrent: delegatedName == nil)
+                                    historyRow(name: assigneeName, role: currentTask.assignedToRole.rawValue, icon: "person.circle.fill", isCurrent: delegatedName == nil)
                                     
                                     if canDelegate {
                                         Spacer()
@@ -134,16 +145,17 @@ struct TaskDetailView: View {
                                 }
                             }
                         }
-                        .padding(20)
-                        .glassEffect(in: .rect(cornerRadius: 24))
+                        
+                        if associatedEvent != nil {
+                            Divider().padding(.top, 8)
+                        }
                     }
+                    .padding(.horizontal, 20)
                     
                     // Event Context
                     if let event = associatedEvent {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Related Event", systemImage: "calendar")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 12) {
+                            sectionHeader(title: "Related Event", icon: "calendar")
                             
                             Button {
                                 selectedEvent = event
@@ -159,6 +171,7 @@ struct TaskDetailView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(event.name)
                                             .font(.headline)
+                                            .foregroundStyle(.primary)
                                         Text(event.category.rawValue)
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
@@ -171,24 +184,27 @@ struct TaskDetailView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 .padding(16)
-                                .glassEffect(in: .rect(cornerRadius: 20))
+                                .contentShape(Rectangle())
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                             }
                             .buttonStyle(.plain)
                         }
+                        .padding(.horizontal, 20)
                     }
                     
                     // Mark as Complete Button
-                    if (task.assignedTo == appSession.currentUser?.id || task.delegatedToId == appSession.currentUser?.id) && task.status != .completed {
+                    if (currentTask.assignedTo == appSession.currentUser?.id || currentTask.delegatedToId == appSession.currentUser?.id) && currentTask.status != .completed {
                         Button {
                             Task {
-                            do {
-                                try await appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
-                                appSession.selectedTask = nil
-                                dismiss()
-                            } catch {
-                                print("DEBUG ERROR: Status update failed: \(error)")
+                                do {
+                                    try await appSession.taskStore.updateTaskStatus(id: currentTask.id, status: .completed)
+                                    appSession.selectedTask = nil
+                                    dismiss()
+                                } catch {
+                                    print("DEBUG ERROR: Status update failed: \(error)")
+                                }
                             }
-                        }
                         } label: {
                             Text("Mark as Complete")
                                 .font(.headline)
@@ -199,13 +215,15 @@ struct TaskDetailView: View {
                                 .foregroundColor(.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
+                        .padding(.horizontal, 20)
                         .padding(.top, 10)
                         .padding(.bottom, 20)
                     }
+                    
+                    Spacer(minLength: 40)
                 }
-                .padding(.horizontal)
-                
             }
+            .background(Color(.systemBackground))
             .alert("Delete Task", isPresented: $showDeleteAlert, actions: {
                 Button("Cancel", role: .cancel) {
                     // Do nothing, just close the alert
@@ -213,7 +231,7 @@ struct TaskDetailView: View {
                 Button("Delete", role: .destructive) {
                     Task {
                         do {
-                            try await appSession.taskStore.deleteTask(id: task.id)
+                            try await appSession.taskStore.deleteTask(id: currentTask.id)
                             appSession.selectedTask = nil
                             dismiss()
                         } catch {
@@ -227,21 +245,18 @@ struct TaskDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    if task.assignedBy == appSession.currentUser?.id {
+                    if currentTask.assignedBy == appSession.currentUser?.id {
                         Button {
                             showDeleteAlert = true
-//                            appSession.taskStore.deleteTask(id: task.id)
-//                            dismiss()
                         } label: {
                             Text("Delete")
                                 .foregroundStyle(.red)
                         }
-                        
                     }
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    if task.assignedBy == appSession.currentUser?.id {
+                    if currentTask.assignedBy == appSession.currentUser?.id {
                         Button("Edit") {
                             showingEditTask = true
                         }
@@ -254,12 +269,11 @@ struct TaskDetailView: View {
                     }
                 }
             }
-//            .padding(.top, 20)
             .sheet(isPresented: $showingEditTask) {
-                AddTaskView(initialTask: task)
+                AddTaskView(initialTask: currentTask)
             }
             .sheet(isPresented: $showingDelegateSheet) {
-                DelegateTaskView(task: task)
+                DelegateTaskView(task: currentTask)
             }
             .navigationDestination(item: $selectedEvent) { event in
                 EventDetailView(event: event, isMyEvent: event.clubId == appSession.currentUser?.clubId)
@@ -268,6 +282,13 @@ struct TaskDetailView: View {
     }
     
     // MARK: - Components
+    
+    private func sectionHeader(title: String, icon: String) -> some View {
+        Label(title.uppercased(), systemImage: icon)
+            .font(.footnote)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+    }
     
     private func historyRow(name: String, role: String, icon: String, isSource: Bool = false, isCurrent: Bool = false, isDelegated: Bool = false) -> some View {
         HStack(spacing: 16) {
@@ -285,7 +306,6 @@ struct TaskDetailView: View {
             }
             
             Spacer()
-            
         }
     }
     
@@ -296,39 +316,55 @@ struct TaskDetailView: View {
             .padding(.leading, 10)
     }
     
-    private func attributeCard(title: String, value: String, icon: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(title, systemImage: icon)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.semibold)
+    private func dateRow(title: String, date: Date, icon: String, color: Color) -> some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(color)
+                .frame(width: 44, height: 44)
+                .background(color.opacity(0.1))
+                .clipShape(Circle())
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(formattedDate(date))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+            }
+            Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .glassEffect(in: .rect(cornerRadius: 20))
     }
     
     private var priorityBadge: some View {
-        Text(task.priority.rawValue.uppercased())
+        Text(currentTask.priority.rawValue.uppercased())
             .font(.caption2)
             .bold()
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(task.priority == .high ? .red.opacity(0.2) : .orange.opacity(0.2))
-            .foregroundStyle(task.priority == .high ? .red : .orange)
+            .background(currentTask.priority == .high ? .red.opacity(0.2) : .orange.opacity(0.2))
+            .foregroundStyle(currentTask.priority == .high ? .red : .orange)
             .clipShape(Capsule())
     }
     
+    private var statusColor: Color {
+        switch currentTask.status {
+        case .pending: return .orange
+        case .inProgress: return .blue
+        case .completed: return .green
+        }
+    }
+    
     private var statusBadge: some View {
-        Text(task.status.rawValue.uppercased())
+        Text(currentTask.status.rawValue.uppercased())
             .font(.caption2)
             .bold()
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(.secondary.opacity(0.2))
-            .foregroundStyle(.secondary)
+            .background(statusColor.opacity(0.2))
+            .foregroundStyle(statusColor)
             .clipShape(Capsule())
     }
     
