@@ -28,6 +28,7 @@ final class AnnouncementStore {
     
     @MainActor
     func addAnnouncement(title: String, content: String, url: String, postedBy: UUID, clubId: UUID?) async throws {
+        print("DEBUG: [AnnouncementStore] Adding announcement: title='\(title)', postedBy=\(postedBy)")
         let newAnnouncement = Announcement(
             id: UUID(),
             clubId: clubId,
@@ -40,10 +41,50 @@ final class AnnouncementStore {
         )
         
         // 1. Save to Supabase
-        try await client
-            .from("announcements")
-            .insert(newAnnouncement)
-            .execute()
+        do {
+            try await client
+                .from("announcements")
+                .insert(newAnnouncement)
+                .execute()
+            print("DEBUG: [AnnouncementStore] Insert succeeded.")
+        } catch {
+            print("DEBUG ERROR: [AnnouncementStore] Insert failed: \(error)")
+            throw error
+        }
+            
+        // 2. Refresh local list
+        try await fetchAnnouncements()
+    }
+
+    struct UpdateAnnouncementPayload: Encodable {
+        let title: String
+        let content: String
+        let url: String
+        let is_edited: Bool
+    }
+
+    @MainActor
+    func updateAnnouncement(id: UUID, title: String, content: String, url: String) async throws {
+        print("DEBUG: [AnnouncementStore] Updating announcement: id=\(id), title='\(title)'")
+        let payload = UpdateAnnouncementPayload(
+            title: title,
+            content: content,
+            url: url,
+            is_edited: true
+        )
+        
+        // 1. Update in Supabase
+        do {
+            try await client
+                .from("announcements")
+                .update(payload)
+                .eq("id", value: id)
+                .execute()
+            print("DEBUG: [AnnouncementStore] Update succeeded.")
+        } catch {
+            print("DEBUG ERROR: [AnnouncementStore] Update failed: \(error)")
+            throw error
+        }
             
         // 2. Refresh local list
         try await fetchAnnouncements()

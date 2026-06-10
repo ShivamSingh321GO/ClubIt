@@ -173,74 +173,164 @@ struct VPApprovalEventCard: View {
 struct VPApprovalsListView: View {
     @Environment(AppSession.self) var appSession
     let user: User
+    @State private var selectedFilter: ApprovalFilter = .all
+
+    enum ApprovalFilter: String, CaseIterable {
+        case all = "All"
+        case pending = "Pending"
+        case approved = "Approved"
+        case rejected = "Rejected"
+    }
+
+    private func count(for filter: ApprovalFilter, approvals: [Approval]) -> Int {
+        if filter == .all {
+            return approvals.count
+        }
+        return approvals.filter { approval in
+            switch filter {
+            case .pending: return approval.status == .pending
+            case .approved: return approval.status == .approved
+            case .rejected: return approval.status == .rejected
+            default: return false
+            }
+        }.count
+    }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 16) {
-                let approvals = appSession.approvalStore.approvals.filter { approval in
-                    approval.receiverId == user.id &&
-                    approval.type == .event &&
-                    appSession.eventStore.events.contains(where: { $0.id == approval.eventId })
-                }.sorted(by: { $0.createdAt > $1.createdAt })
+        let approvals = appSession.approvalStore.approvals.filter { approval in
+            approval.receiverId == user.id &&
+            approval.type == .event &&
+            appSession.eventStore.events.contains(where: { $0.id == approval.eventId })
+        }.sorted(by: { $0.createdAt > $1.createdAt })
 
-                if approvals.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "doc.text.magnifyingglass")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.secondary)
-                        Text("No approvals history found")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 100)
-                } else {
-                    LazyVStack(spacing: 16) {
-                        ForEach(approvals) { approval in
-                            if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
-                               let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
-                                NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
-                                    HStack(spacing: 16) {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.orange.opacity(0.1))
-                                                .frame(width: 48, height: 48)
-                                            Text(String(club.name.prefix(1)))
-                                                .font(.headline)
-                                                .foregroundColor(.orange)
-                                        }
-                                        
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(event.name)
-                                                .font(.headline)
-                                            Text("Submitted on \(event.createdAt.formatted(date: .abbreviated, time: .omitted))")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        
-                                        Spacer()
-                                        
-                                        Text(approval.status.rawValue.capitalized)
-                                            .font(.caption.bold())
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 5)
-                                            .background(approval.status == .approved ? Color.green.opacity(0.1) : (approval.status == .rejected ? Color.red.opacity(0.1) : Color.orange.opacity(0.1)))
-                                            .foregroundColor(approval.status == .approved ? .green : (approval.status == .rejected ? .red : .orange))
-                                            .clipShape(Capsule())
+        let filteredApprovals = approvals.filter { approval in
+            if selectedFilter == .all {
+                return true
+            }
+            switch selectedFilter {
+            case .pending: return approval.status == .pending
+            case .approved: return approval.status == .approved
+            case .rejected: return approval.status == .rejected
+            default: return false
+            }
+        }
+
+        VStack(spacing: 0) {
+            if !approvals.isEmpty {
+                // Filter Bar
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(ApprovalFilter.allCases, id: \.self) { filter in
+                            VPFilterPill(
+                                title: "\(filter.rawValue) \(count(for: filter, approvals: approvals))",
+                                isSelected: selectedFilter == filter,
+                                action: {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        selectedFilter = filter
                                     }
-                                    .padding()
-                                    .glassEffect(in: .rect(cornerRadius: 24))
                                 }
-                                .buttonStyle(.plain)
-                            }
+                            )
                         }
                     }
                     .padding(.horizontal)
                 }
+                .padding(.vertical, 8)
             }
-            .padding(.top)
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
+                    if approvals.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: "doc.text.magnifyingglass")
+                                .font(.system(size: 60))
+                                .foregroundStyle(.secondary)
+                            Text("No approvals history found")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 100)
+                    } else if filteredApprovals.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: selectedFilter == .pending ? "hourglass" : (selectedFilter == .approved ? "checkmark.circle" : "xmark.circle"))
+                                .font(.system(size: 60))
+                                .foregroundStyle(.secondary)
+                            Text("No \(selectedFilter.rawValue) approvals found")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 100)
+                    } else {
+                        LazyVStack(spacing: 16) {
+                            ForEach(filteredApprovals) { approval in
+                                if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
+                                   let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                                    NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
+                                        HStack(spacing: 16) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.orange.opacity(0.1))
+                                                    .frame(width: 48, height: 48)
+                                                Text(String(club.name.prefix(1)))
+                                                    .font(.headline)
+                                                    .foregroundColor(.orange)
+                                            }
+                                            
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(event.name)
+                                                    .font(.headline)
+                                                    .lineLimit(2)
+                                                    .multilineTextAlignment(.leading)
+                                                Text("Submitted on \(event.createdAt.formatted(date: .abbreviated, time: .omitted))")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            Text(approval.status.rawValue.capitalized)
+                                                .font(.caption.bold())
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 5)
+                                                .background(approval.status == .approved ? Color.green.opacity(0.1) : (approval.status == .rejected ? Color.red.opacity(0.1) : Color.orange.opacity(0.1)))
+                                                .foregroundColor(approval.status == .approved ? .green : (approval.status == .rejected ? .red : .orange))
+                                                .clipShape(Capsule())
+                                        }
+                                        .padding()
+                                        .glassEffect(in: .rect(cornerRadius: 24))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+                .padding(.top)
+            }
         }
         .navigationTitle("Draft Approvals")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - VPFilterPill Subcomponent
+fileprivate struct VPFilterPill: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)
+                .bold()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color.accent : Color.secondary.opacity(0.1))
+                .foregroundColor(isSelected ? .white : .secondary)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+        }
     }
 }

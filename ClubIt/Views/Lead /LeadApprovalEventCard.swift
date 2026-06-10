@@ -43,14 +43,13 @@ struct LeadApprovalEventCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.name)
                     .font(.headline)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
                 
                 Text(club?.name ?? "Club")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.5)
                 
                 HStack(spacing: 8) {
                     if pendingResources.count > 0 {
@@ -100,6 +99,7 @@ struct LeadApprovalEventCard: View {
                         .textCase(.uppercase)
                 }
             }
+            .fixedSize(horizontal: true, vertical: false)
 
             
 //            Image(systemName: "chevron.right")

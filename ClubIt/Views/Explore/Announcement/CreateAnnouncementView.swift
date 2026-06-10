@@ -13,12 +13,21 @@ struct CreateAnnouncementView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSession.self) private var appSession
     
+    let announcement: Announcement?
     let onSave: (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ clubId: UUID?) -> Void
     
     @State private var title = ""
     @State private var content = ""
     @State private var url = ""
     @State private var errorMessage: String?
+    
+    init(announcement: Announcement? = nil, onSave: @escaping (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ clubId: UUID?) -> Void) {
+        self.announcement = announcement
+        self.onSave = onSave
+        self._title = State(initialValue: announcement?.title ?? "")
+        self._content = State(initialValue: announcement?.content ?? "")
+        self._url = State(initialValue: announcement?.url ?? "")
+    }
     
     var body: some View {
         NavigationStack {
@@ -44,7 +53,7 @@ struct CreateAnnouncementView: View {
                     }
                 }
             }
-            .navigationTitle("Create an announcement")
+            .navigationTitle(announcement == nil ? "Create an announcement" : "Edit announcement")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -90,8 +99,8 @@ struct CreateAnnouncementView: View {
             trimmedTitle,
             trimmedContent,
             trimmedURL,
-            currentUser.id,
-            currentUser.clubId
+            announcement?.postedBy ?? currentUser.id,
+            announcement?.clubId ?? currentUser.clubId
         )
         
         dismiss()

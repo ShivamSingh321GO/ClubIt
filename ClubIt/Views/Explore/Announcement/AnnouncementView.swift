@@ -10,6 +10,8 @@ import SwiftUI
 struct AnnouncementView: View {
     
     let announcements: [Announcement]
+    var onEdit: ((Announcement) -> Void)? = nil
+    var onDelete: ((Announcement) -> Void)? = nil
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -23,7 +25,11 @@ struct AnnouncementView: View {
                     .padding(.top, 40)
                 } else {
                     ForEach(announcements) { announcement in
-                        AnnouncementCard(announcement: announcement)
+                        AnnouncementCard(
+                            announcement: announcement,
+                            onEdit: { onEdit?(announcement) },
+                            onDelete: { onDelete?(announcement) }
+                        )
                     }
                 }
             }
@@ -35,6 +41,16 @@ struct AnnouncementView: View {
 private struct AnnouncementCard: View {
     @Environment(AppSession.self) private var appSession
     let announcement: Announcement
+    var onEdit: (() -> Void)? = nil
+    var onDelete: (() -> Void)? = nil
+    
+    private var canManage: Bool {
+        guard let currentUser = appSession.currentUser else { return false }
+        let isCreator = announcement.postedBy == currentUser.id
+        let role = currentUser.role
+        let hasManageRole = role == .clubLead || role == .vicePresident || role == .president || role == .faculty
+        return isCreator && hasManageRole
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -56,17 +72,25 @@ private struct AnnouncementCard: View {
                     
                     if let clubId = announcement.clubId,
                        let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
-                        Text(club.name)
-                            .font(.caption)
-                            .fontWeight(.semibold)
+                        (Text("Posted by ")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        + Text(club.name)
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary))
                     } else {
-                        Text("Event Management Team")
-                            .font(.caption)
-                            .fontWeight(.semibold)
+                        (Text("Posted by ")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        + Text("Event Management Team")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary))
                     }
                     
-                    Text(relativeTimeText(from: announcement.createdAt))
-                        .font(.subheadline)
+                    Text(relativeTimeText(from: announcement.createdAt) + (announcement.isEdited == true ? " • Edited" : ""))
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 
@@ -96,6 +120,22 @@ private struct AnnouncementCard: View {
         }
         .padding()
         .glassEffect(in: .rect(cornerRadius: 20))
+        .contentShape(.rect)
+        .contextMenu {
+            if canManage {
+                Button {
+                    onEdit?()
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                
+                Button(role: .destructive) {
+                    onDelete?()
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        }
     }
     
     private var verifiedURL: URL? {
