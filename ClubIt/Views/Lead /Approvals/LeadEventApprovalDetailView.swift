@@ -280,7 +280,6 @@ struct LeadEventApprovalDetailView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Step 1: Vice President Draft Approval")
                                         .font(.subheadline.bold())
-                                        .foregroundColor(statusColor(for: vpStepStatus))
                                     
                                     if hasVP, let vp = vpUser {
                                         Text("Reviewer: \(vp.name)")
@@ -292,9 +291,13 @@ struct LeadEventApprovalDetailView: View {
                                             .foregroundColor(.secondary)
                                     }
                                     
-                                    Text("Status: \(statusText(for: vpStepStatus))")
-                                        .font(.caption.bold())
-                                        .foregroundColor(statusColor(for: vpStepStatus))
+                                    HStack(spacing: 4) {
+                                        Text("Status:")
+                                            .foregroundColor(.secondary)
+                                        Text(statusText(for: vpStepStatus))
+                                            .foregroundColor(statusColor(for: vpStepStatus))
+                                    }
+                                    .font(.caption.bold())
                                     
                                     if vpStepStatus == .rejected, let remark = vpRejectionRemark {
                                         Text("Remark: \"\(remark)\"")
@@ -326,7 +329,6 @@ struct LeadEventApprovalDetailView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Step 2: President Budget Approval")
                                         .font(.subheadline.bold())
-                                        .foregroundColor(statusColor(for: presidentStepStatus))
                                     
                                     if let president = presidentUser {
                                         Text("Reviewer: \(president.name)")
@@ -334,9 +336,13 @@ struct LeadEventApprovalDetailView: View {
                                             .foregroundColor(.secondary)
                                     }
                                     
-                                    Text("Status: \(statusText(for: presidentStepStatus))")
-                                        .font(.caption.bold())
-                                        .foregroundColor(statusColor(for: presidentStepStatus))
+                                    HStack(spacing: 4) {
+                                        Text("Status:")
+                                            .foregroundColor(.secondary)
+                                        Text(statusText(for: presidentStepStatus))
+                                            .foregroundColor(statusColor(for: presidentStepStatus))
+                                    }
+                                    .font(.caption.bold())
                                     
                                     if presidentStepStatus == .rejected, let remark = presidentRejectionRemark {
                                         Text("Remark: \"\(remark)\"")
@@ -364,7 +370,6 @@ struct LeadEventApprovalDetailView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Step 3: Faculty (EMT) Final Review")
                                         .font(.subheadline.bold())
-                                        .foregroundColor(statusColor(for: emtStepStatus))
                                     
                                     if let faculty = facultyUser {
                                         Text("Reviewer: \(faculty.name)")
@@ -376,9 +381,13 @@ struct LeadEventApprovalDetailView: View {
                                             .foregroundColor(.secondary)
                                     }
                                     
-                                    Text("Status: \(statusText(for: emtStepStatus))")
-                                        .font(.caption.bold())
-                                        .foregroundColor(statusColor(for: emtStepStatus))
+                                    HStack(spacing: 4) {
+                                        Text("Status:")
+                                            .foregroundColor(.secondary)
+                                        Text(statusText(for: emtStepStatus))
+                                            .foregroundColor(statusColor(for: emtStepStatus))
+                                    }
+                                    .font(.caption.bold())
                                     
                                     if emtStepStatus == .rejected, let remark = emtRejectionRemark {
                                         Text("Remark: \"\(remark)\"")
