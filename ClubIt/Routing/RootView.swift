@@ -10,13 +10,18 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppSession.self) private var appSession
+    @State private var showLaunchScreen: Bool = true
 
     var body: some View {
         Group {
-            if appSession.isLoggedIn {
-                DashboardRouter()
+            if showLaunchScreen {
+                LaunchScreenView(showLaunchScreen: $showLaunchScreen)
             } else {
-                SignInView()
+                if appSession.isLoggedIn {
+                    DashboardRouter()
+                } else {
+                    SignInView()
+                }
             }
         }
         .task {
