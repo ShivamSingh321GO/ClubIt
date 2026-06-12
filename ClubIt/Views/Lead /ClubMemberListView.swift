@@ -45,11 +45,27 @@ struct ClubMemberListView: View {
                                     .frame(width: 50, height: 50)
                                     .clipShape(Circle())
                             } else if !(member.profileImg?.isEmpty ?? true) {
-                                Image(member.profileImg ?? "")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 50, height: 50)
-                                    .clipShape(Circle())
+                                AsyncImage(url: URL(string: member.profileImg ?? "")) { phase in
+                                    if let image = phase.image {
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 50, height: 50)
+                                            .clipShape(Circle())
+                                    } else if phase.error != nil {
+                                        Circle()
+                                            .fill(Color.secondary.opacity(0.1))
+                                            .frame(width: 50, height: 50)
+                                            .overlay(
+                                                Text(String(member.name.prefix(1)))
+                                                    .font(.headline)
+                                                    .foregroundColor(.primary)
+                                            )
+                                    } else {
+                                        ProgressView()
+                                            .frame(width: 50, height: 50)
+                                    }
+                                }
                             } else {
                                 Circle()
                                     .fill(Color.secondary.opacity(0.1))

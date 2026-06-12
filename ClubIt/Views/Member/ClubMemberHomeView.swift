@@ -35,13 +35,22 @@ struct ClubMemberHomeView: View {
                                 .font(.title2)
                                 .bold()
                             
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                LazyHStack(spacing: 16) {
-                                    ForEach(appSession.studentDashboardStore.registeredEvents) { event in
-                                        NavigationLink(value: event) {
-                                            EventCardView(event: event)
+                            if appSession.studentDashboardStore.registeredEvents.isEmpty {
+                                Text("No registered events")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 32)
+                                    .glassEffect(in: .rect(cornerRadius: 20))
+                            } else {
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    LazyHStack(spacing: 16) {
+                                        ForEach(appSession.studentDashboardStore.registeredEvents) { event in
+                                            NavigationLink(value: event) {
+                                                EventCardView(event: event)
+                                            }
+                                            .buttonStyle(.plain)
                                         }
-                                        .buttonStyle(.plain)
                                     }
                                 }
                             }
