@@ -142,7 +142,6 @@ struct FacultyApprovalsListView: View {
                                     ApprovalSummaryCard(
                                         title: event.name,
                                         subtitle: (isPending ? "Pending Action • " : "Processed • ") + formatDate(event.createdAt),
-                                        eventDate: event.dateRangeString,
                                         action: { selectedEventId = eventId }
                                     )
                                 }
