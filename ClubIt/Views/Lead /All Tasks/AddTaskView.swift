@@ -159,7 +159,7 @@ struct AddTaskView: View {
                         displayValue: { $0.rawValue.capitalized }
                     )
                     
-                    DatePicker("Deadline", selection: $deadline)
+                    DatePicker("Deadline", selection: $deadline, in: Date()...)
                 }
             }
             .navigationTitle(initialTask == nil ? "Add Task" : "Edit Task")

@@ -2,13 +2,21 @@
   "colors" : [
     {
       "color" : {
-        "color-space" : "srgb",
-        "components" : {
-          "alpha" : "1.000",
-          "blue" : "0x1F",
-          "green" : "0x99",
-          "red" : "0xE7"
+        "platform" : "universal",
+        "reference" : "systemOrangeColor"
+      },
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
         }
+      ],
+      "color" : {
+        "platform" : "universal",
+        "reference" : "systemOrangeColor"
       },
       "idiom" : "universal"
     }

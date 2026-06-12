@@ -67,7 +67,7 @@ struct EventDetailView: View {
                         }
                         
                         // 7. CTA
-                        actionButton
+                        nativePremiumButton
                             .padding(.top, 24)
                             .padding(.bottom, 30)
                     }
@@ -483,78 +483,110 @@ struct EventDetailView: View {
         }
     }
     
-    // MARK: - Action Button
+    // MARK: - Native Premium Action Button
     
-    private var actionButton: some View {
+    private var nativePremiumButton: some View {
         Group {
             if event.status == .pending {
-                Button(action: {}) {
-                    Text("Pending Approval")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
+                if let role = appSession.currentUser?.role, role != .vicePresident && role != .president && role != .faculty {
+                    Button(action: {}) {
+                        Label("Pending Approval", systemImage: "clock.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.secondary)
+                    .disabled(true)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .tint(.orange)
-                .disabled(true)
             } else if isMyEvent {
                 if event.status == .approved {
                     Button {
                         isShowingPublishAlert = true
                     } label: {
-                        Text("Publish Event")
+                        Label("Publish Event", systemImage: "paperplane.fill")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .tint(.orange)
+                    .shadow(color: .orange.opacity(0.3), radius: 8, x: 0, y: 4)
                 } else {
                     if event.isRegistrationOpen ?? true {
                         NavigationLink(destination: ManageParticipantsView(event: event)) {
-                            Text("View Participants")
+                            Label("View Participants", systemImage: "person.2.fill")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
                         .controlSize(.large)
                         .tint(.blue)
+                        .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                 }
             } else if appSession.currentRole == .faculty {
-                Button(action: {}) {
-                    Text("No Registration Required")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .disabled(true)
-                .padding(.top, 12)
+                EmptyView()
             } else {
                 let isRegistered = appSession.registeredEventIds.contains(event.id)
                 let isFull = event.maxParticipants > 0 && event.maxParticipants < 999999 && appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants
                 let isOpen = event.isRegistrationOpen ?? true
                 
-                Button {
-                    if isRegistered {
+                if isRegistered {
+                    Button {
                         isShowingWithdrawConfirmAlert = true
-                    } else if isOpen && !isFull {
+                    } label: {
+                        Text("Withdraw Registration")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.red)
+                } else if !isOpen {
+                    Button(action: {}) {
+                        Label("Registration Closed", systemImage: "lock.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.secondary)
+                    .disabled(true)
+                } else if isFull {
+                    Button(action: {}) {
+                        Label("Event Full", systemImage: "person.crop.circle.badge.xmark")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.secondary)
+                    .disabled(true)
+                } else {
+                    Button {
                         if event.registrationType == .team {
                             isShowingRegistrationForm = true
                         } else {
                             isShowingRegisterConfirmAlert = true
                         }
+                    } label: {
+                        Text("Register Now")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
                     }
-                } label: {
-                    Text(isRegistered ? "Withdraw Registration" : (!isOpen ? "Registration Closed" : (isFull ? "Event Full" : "Register Now")))
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.orange)
+                    .shadow(color: .orange.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .tint(isRegistered ? .red : (!isOpen ? .secondary : (isFull ? .secondary : .orange)))
-                .disabled((!isRegistered && isFull) || (!isRegistered && !isOpen))
             }
         }
     }

@@ -21,7 +21,7 @@ struct StatBadge: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .minimumScaleFactor(0.5)
             }
             
             Spacer()

@@ -62,7 +62,7 @@ struct ClubProfileBody: View {
                     
                     Spacer()
                     
-                        Image(systemName: isAboutExpanded ? "chevron.down" : "chevron.up")
+                        Image(systemName: isAboutExpanded ? "chevron.up" : "chevron.down")
                             .font(.headline)
                             .bold()
                             .padding()
@@ -101,7 +101,6 @@ struct ClubProfileBody: View {
                                 )
                             }
                             .buttonStyle(.plain)
-                            Spacer()
                             
                             NavigationLink(destination: AchievementsListView()) {
                                 StatBadge(
@@ -148,18 +147,14 @@ struct ClubProfileBody: View {
                                     appSession.clubStore.toggleFollow(for: club.id)
                                 }
                             } label: {
-                                HStack {
-                                    Spacer()
-                                    Text(isFollowing ? "Following" : "Follow")
-                                        .font(.headline.bold())
-                                    Spacer()
-                                }
-                                .padding(.vertical, 14)
-                                .background(isFollowing ? Color.white.opacity(0.1) : Color.orange)
-                                .foregroundColor(isFollowing ? .primary : .white)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                Label(isFollowing ? "Following" : "Follow", systemImage: isFollowing ? "checkmark" : "plus")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.capsule)
+                            .controlSize(.large)
+                            .tint(isFollowing ? .secondary : .orange)
                             .padding(.top, 12)
                         }
                     }

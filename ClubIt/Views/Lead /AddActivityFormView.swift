@@ -35,7 +35,7 @@ struct AddActivityFormView: View {
                 }
                 
                 Section("Time & Location") {
-                    DatePicker("Date & Time", selection: $date)
+                    DatePicker("Date & Time", selection: $date, in: Date()...)
                     
                     TextField("Location (Optional)", text: $location)
                 }

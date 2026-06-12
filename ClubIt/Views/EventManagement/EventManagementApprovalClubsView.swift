@@ -22,8 +22,9 @@ struct EventManagementApprovalClubsView: View {
         let pendingResources = appSession.approvalStore.resources.filter { 
             $0.eventId == eventId && $0.status == .pending 
         }
-        let pendingVenues = appSession.approvalStore.approvals.filter { 
-            $0.eventId == eventId && $0.type == .venue && $0.status == .pending && ($0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId)
+        let allVenueApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId && $0.type == .venue }
+        let pendingVenues = allVenueApprovals.isEmpty ? [Approval(id: UUID(), type: .venue, senderId: UUID(), receiverId: facultyId, eventId: eventId, approvalRelatedId: eventId, status: .pending, remarks: [], createdAt: Date(), updatedAt: nil)] : allVenueApprovals.filter { 
+            $0.status == .pending && ($0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId)
         }
         let pendingBudgets = appSession.approvalStore.budgets.filter { 
             $0.eventId == eventId && $0.status == .pending 
@@ -216,8 +217,9 @@ struct EventManagementEventApprovalCard: View {
         let pendingEvents = appSession.approvalStore.approvals.filter { 
             $0.eventId == event.id && $0.type == .event && $0.status == .pending 
         }
-        let pendingVenues = appSession.approvalStore.approvals.filter { 
-            $0.eventId == event.id && $0.type == .venue && $0.status == .pending 
+        let allVenueApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .venue }
+        let pendingVenues = allVenueApprovals.isEmpty ? [Approval(id: UUID(), type: .venue, senderId: UUID(), receiverId: club.facultyId ?? UUID(), eventId: event.id, approvalRelatedId: event.id, status: .pending, remarks: [], createdAt: Date(), updatedAt: nil)] : allVenueApprovals.filter { 
+            $0.status == .pending 
         }
         let pendingBudgets = appSession.approvalStore.budgets.filter { 
             $0.eventId == event.id && $0.status == .pending 
@@ -232,8 +234,10 @@ struct EventManagementEventApprovalCard: View {
                 let facultyPendingEvents = pendingEvents.filter { $0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId }.count
                 let facultyPendingVenues = pendingVenues.filter { $0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId }.count
                 return pendingResources.count + facultyPendingVenues + facultyPendingEvents
+            } else if appSession.currentRole == .vicePresident {
+                return pendingEvents.filter { $0.receiverId == appSession.currentUser?.id }.count
             } else {
-                return pendingResources.count + pendingVenues.count + pendingBudgets.count
+                return pendingResources.count + pendingVenues.count + pendingBudgets.count + pendingEvents.count
             }
         }()
         
@@ -244,6 +248,8 @@ struct EventManagementEventApprovalCard: View {
                 let facultyId = club.facultyId
                 return appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .rejected && ($0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId) } ||
                        appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .rejected }
+            } else if appSession.currentRole == .vicePresident {
+                return appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .event && $0.receiverId == appSession.currentUser?.id && $0.status == .rejected }
             } else {
                 return appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .rejected } ||
                        appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .rejected } ||
@@ -295,6 +301,8 @@ struct EventManagementEventApprovalCard: View {
                         if facultyPendingVenues > 0 {
                             IndicatorTag(icon: "mappin.and.ellipse", count: facultyPendingVenues, color: .purple)
                         }
+                    } else if appSession.currentRole == .vicePresident {
+                        // VPs don't have resource/budget/venue indicators
                     } else {
                         if pendingEvents.count > 0 {
                             IndicatorTag(icon: "calendar", count: pendingEvents.count, color: .orange)
@@ -333,13 +341,23 @@ struct EventManagementEventApprovalCard: View {
                         .foregroundColor(.red)
                         .textCase(.uppercase)
                 } else {
-                    Text("\(totalPending)")
-                        .font(.subheadline.bold())
-                        .foregroundColor(totalPending > 0 ? .orange : .secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(totalPending > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
-                        .clipShape(Capsule())
+                    if appSession.currentRole == .vicePresident {
+                        Text("!")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.orange)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.orange.opacity(0.1))
+                            .clipShape(Capsule())
+                    } else {
+                        Text("\(totalPending)")
+                            .font(.subheadline.bold())
+                            .foregroundColor(totalPending > 0 ? .orange : .secondary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(totalPending > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
                     
                     Text("Pending")
                         .font(.caption2.bold())
