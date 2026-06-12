@@ -167,11 +167,6 @@ struct VPApprovalEventCard: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    EventDateTag(dateString: event.dateRangeString)
-                }
-                .padding(.bottom, 2)
-                
                 Text(event.name)
                     .font(.headline)
                 Text("Draft approval requested")
