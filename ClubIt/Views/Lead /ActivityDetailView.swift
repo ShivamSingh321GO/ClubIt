@@ -89,17 +89,6 @@ struct ActivityDetailView: View {
             .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if appSession.currentRole == .clubLead {
-                        Button(role: .destructive) {
-                            showingDeleteAlert = true
-                        } label: {
-                            Text("Delete")
-                                .foregroundStyle(.red)
-                        }
-                    }
-                }
-                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
