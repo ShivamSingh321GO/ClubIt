@@ -52,6 +52,17 @@ private struct AnnouncementCard: View {
         return isCreator && hasManageRole
     }
     
+    private var posterName: String {
+        let posterRole = appSession.clubStore.allUsers.first(where: { $0.id == announcement.postedBy })?.role
+        if posterRole == .president {
+            return "President"
+        } else if posterRole == .vicePresident {
+            return "Vice President"
+        } else {
+            return "Event Management Team"
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             
@@ -83,7 +94,7 @@ private struct AnnouncementCard: View {
                         (Text("Posted by ")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                        + Text("Event Management Team")
+                        + Text(posterName)
                             .font(.subheadline)
                             .fontWeight(.bold)
                             .foregroundColor(.primary))

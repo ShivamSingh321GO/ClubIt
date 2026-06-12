@@ -89,7 +89,7 @@ struct ChatRow: View {
                                     onToggleExpansion()
                                 }
                             }) {
-                                Image(systemName: chat.isExpanded ? "chevron.down" : "chevron.up")
+                                Image(systemName: chat.isExpanded ? "chevron.up" : "chevron.down")
                                     .font(.caption2.bold())
                                     .foregroundStyle(.secondary)
                                     .padding(8)

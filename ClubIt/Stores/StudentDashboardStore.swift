@@ -27,7 +27,11 @@ final class StudentDashboardStore {
     }
     
     var registeredEvents: [Event] {
-        eventStore.events.filter { registeredEventIds.contains($0.id) }
+        let today = Calendar.current.startOfDay(for: Date())
+        return eventStore.events.filter { event in
+            registeredEventIds.contains(event.id) &&
+            Calendar.current.startOfDay(for: event.startDate) >= today
+        }.sorted { $0.startDate < $1.startDate }
     }
     
     func selectCategory(_ category: ClubCategory?) {

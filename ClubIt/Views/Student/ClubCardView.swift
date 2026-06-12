@@ -40,7 +40,7 @@ struct ClubCard: View {
                     HStack(spacing: 4) {
                         Image(systemName: "person.2.fill")
                             .font(.caption2)
-                        Text("\(club.memberCount ?? 0) Members")
+                        Text("\(appSession.clubStore.allUsers.filter { $0.clubId == club.id }.count) Members")
                             .font(.caption2)
                     }
                     .foregroundStyle(.secondary)

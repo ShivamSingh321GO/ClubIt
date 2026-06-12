@@ -523,7 +523,9 @@ struct EventManagementApprovalDetailView: View {
                     Picker("Select Category", selection: $selectedTab) {
                         Text("Venue (\(venueApprovalsToDisplay.count))").tag("Venue")
                         Text("Resource (\(allClubResources.count))").tag("Resource")
-                        Text("Budget (\(allClubBudgets.count))").tag("Budget")
+                        if appSession.currentUser?.email != "emt" {
+                            Text("Budget (\(allClubBudgets.count))").tag("Budget")
+                        }
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)

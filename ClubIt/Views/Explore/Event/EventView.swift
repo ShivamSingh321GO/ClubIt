@@ -181,7 +181,13 @@ struct EventView: View {
     }
     
     private var filteredEvents: [Event] {
-        eventStore.events.filter { event in
+        let today = Calendar.current.startOfDay(for: Date())
+        
+        return eventStore.events.filter { event in
+            if Calendar.current.startOfDay(for: event.startDate) < today {
+                return false
+            }
+            
             let matchesScope: Bool
             
             switch scope {
@@ -236,7 +242,7 @@ struct EventView: View {
             }()
             
             return matchesScope && matchesCategory && matchesStatus
-        }
+        }.sorted { $0.startDate < $1.startDate }
     }
     
     private func isMyEvent(_ event: Event) -> Bool {

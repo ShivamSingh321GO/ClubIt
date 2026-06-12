@@ -206,15 +206,14 @@ struct TaskDetailView: View {
                                 }
                             }
                         } label: {
-                            Text("Mark as Complete")
+                            Label("Mark as Complete", systemImage: "checkmark.circle.fill")
                                 .font(.headline)
-                                .bold()
                                 .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
+                        .tint(.blue)
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                         .padding(.bottom, 20)

@@ -149,12 +149,12 @@ struct ExploreEventCard: View {
                         .foregroundStyle(.black)
                     
                     Text(formattedTime)
-                        .font(.system(size: 8, weight: .heavy))
+                        .font(.system(size: 9.5, weight: .bold))
                         .foregroundStyle(.black.opacity(0.8))
                         .padding(.top, 2)
                 }
                 .padding(.vertical, 8)
-                .frame(width: 62)
+                .frame(width: 70)
                 .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .shadow(color: .black.opacity(0.15), radius: 8)
