@@ -69,18 +69,18 @@ struct ClubMemberHomeView: View {
                         EventDetailView(event: event, isMyEvent: false)
                     }
                 }
-                
-                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
-                    Image(systemName: "calendar")
-                        .font(.title2.bold())
-                        .foregroundStyle(.primary)
-                        .frame(width: 56, height: 56)
-                        .glassEffect(in: .circle)
-                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-                }
-                .padding()
+            } // Close ScrollView
+            
+            NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                Image(systemName: "calendar")
+                    .font(.title2.bold())
+                    .foregroundStyle(.primary)
+                    .frame(width: 56, height: 56)
+                    .glassEffect(in: .circle)
+                    .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             }
-            }
+            .padding()
+        } // Close ZStack
         }
         .sheet(item: Bindable(appSession).selectedTask) { task in
             TaskDetailView(task: task)
