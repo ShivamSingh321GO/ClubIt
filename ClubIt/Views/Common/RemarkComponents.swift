@@ -10,14 +10,14 @@ struct RemarkConversationView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             let displayedRemarks = showAllRemarks ? remarks : Array(remarks.suffix(3))
             
             ForEach(displayedRemarks) { remark in
                 let isCurrentUser = remark.authorId == appSession.currentUser?.id
                 let authorName = appSession.clubStore.allUsers.first(where: { $0.id == remark.authorId })?.name ?? "Unknown"
                 
-                VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 6) {
+                VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
                     HStack {
                         if !isCurrentUser {
                             Circle()
@@ -42,8 +42,9 @@ struct RemarkConversationView: View {
                     }
                     
                     Text(remark.content)
-                        .font(.subheadline)
-                        .padding(12)
+                        .font(.footnote)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .background(isCurrentUser ? Color.blue.opacity(0.1) : Color.secondary.opacity(0.1))
                         .cornerRadius(12)
                 }

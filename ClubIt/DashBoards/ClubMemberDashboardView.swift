@@ -18,7 +18,7 @@ struct ClubMemberDashboardView: View {
                 LeadMyClubView()
             }
             
-            Tab("Explore", systemImage: "calendar") {
+            Tab("Explore", systemImage: "globe") {
                 ExploreView()
             }
             

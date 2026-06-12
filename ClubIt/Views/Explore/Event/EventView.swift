@@ -90,7 +90,7 @@ struct EventView: View {
                 
                 if shouldShowToggle {
                     VStack(spacing: -3) {
-                        Text(appSession.currentRole == .clubLead || appSession.currentRole == .clubMember ? "MY\nEVENTS" : (appSession.currentRole == .president ? "COUNCIL\nEVENTS" : "CLUB\nFOLLOWED"))
+                        Text(appSession.currentRole == .clubLead || appSession.currentRole == .clubMember ? "MY\nEVENTS" : (appSession.currentRole == .president ? "COUNCIL\nEVENTS" : (appSession.currentRole == .vicePresident ? "MY CLUB\nEVENTS" : "CLUB\nFOLLOWED")))
                             .multilineTextAlignment(.center)
                             .font(.system(size: 9, weight: .black))
                             .lineLimit(2)
@@ -192,6 +192,15 @@ struct EventView: View {
                     matchesScope = event.clubId == appSession.currentUser?.clubId
                 } else if appSession.currentRole == .president {
                     matchesScope = event.clubId == nil
+                } else if appSession.currentRole == .vicePresident {
+                    let assignedClubIds = Set(appSession.clubStore.allClubs.filter { $0.vicePresidentId == appSession.currentUser?.id }.map { $0.id })
+                    if let clubId = event.clubId {
+                        matchesScope = assignedClubIds.contains(clubId)
+                    } else if let clubIds = event.clubIds {
+                        matchesScope = !assignedClubIds.intersection(clubIds).isEmpty
+                    } else {
+                        matchesScope = false
+                    }
                 } else {
                     if let clubId = event.clubId {
                         matchesScope = appSession.clubStore.followedClubIds.contains(clubId)

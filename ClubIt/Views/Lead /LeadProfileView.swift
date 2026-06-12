@@ -74,21 +74,41 @@ struct LeadProfileView: View {
                 
                 // MARK: - Club
                 Section("Club") {
-                    if let clubId = user.clubId,
-                       let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
-                        
-                        HStack {
-                            Text(club.name)
-                            
-                            Spacer()
-                            
-                            Text(user.role.rawValue.capitalized)
-                                .font(.caption)
+                    if user.role == .vicePresident {
+                        let assignedClubs = appSession.clubStore.allClubs.filter { $0.vicePresidentId == user.id }
+                        if !assignedClubs.isEmpty {
+                            ForEach(assignedClubs) { club in
+                                HStack {
+                                    Text(club.name)
+                                    
+                                    Spacer()
+                                    
+                                    Text(user.role.rawValue.capitalized)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        } else {
+                            Text("No clubs assigned")
                                 .foregroundStyle(.secondary)
                         }
                     } else {
-                        Text("Not part of any club")
-                            .foregroundStyle(.secondary)
+                        if let clubId = user.clubId,
+                           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
+                            
+                            HStack {
+                                Text(club.name)
+                                
+                                Spacer()
+                                
+                                Text(user.role.rawValue.capitalized)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else {
+                            Text("Not part of any club")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 
