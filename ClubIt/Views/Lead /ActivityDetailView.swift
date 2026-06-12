@@ -13,8 +13,7 @@ struct ActivityDetailView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
+        ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     
                     // Header Section
@@ -87,14 +86,6 @@ struct ActivityDetailView: View {
                 }
             }
             .background(Color(.systemBackground))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
             .alert("Delete Activity", isPresented: $showingDeleteAlert) {
                 Button("Delete", role: .destructive) {
                     Task {
@@ -108,10 +99,8 @@ struct ActivityDetailView: View {
                     }
                 }
                 Button("Cancel", role: .cancel) { }
-            } message: {
                 Text("Are you sure you want to delete this activity? This action cannot be undone.")
             }
-        }
     }
     
     // MARK: - Components
@@ -122,7 +111,6 @@ struct ActivityDetailView: View {
             .bold()
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(activity.type.color.opacity(0.2))
             .foregroundStyle(activity.type.color)
             .clipShape(Capsule())
     }

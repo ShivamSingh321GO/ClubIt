@@ -24,9 +24,9 @@ struct VicePresidentHomeView: View {
                             
                             HomeTasksModule(user: user)
                             
-                            // Approval Requests Section
+                            // Approval Management Section
                             HStack {
-                                Text("Approval Requests")
+                                Text("Approval Management")
                                 NavigationLink(destination: VPApprovalsListView(user: user)) {
                                     Image(systemName: "chevron.right")
                                 }
@@ -138,7 +138,7 @@ struct VicePresidentApprovalsModule: View {
                         if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
                            let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
                             NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
-                                VPApprovalEventCard(event: event, approval: approval, club: club)
+                                EventManagementEventApprovalCard(event: event, club: club)
                             }
                             .buttonStyle(.plain)
                         }
@@ -336,13 +336,39 @@ struct VPApprovalsListView: View {
                                             
                                             Spacer()
                                             
-                                            Text(approval.status.rawValue.capitalized)
-                                                .font(.caption.bold())
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 5)
-                                                .background(approval.status == .approved ? Color.green.opacity(0.1) : (approval.status == .rejected ? Color.red.opacity(0.1) : Color.orange.opacity(0.1)))
-                                                .foregroundColor(approval.status == .approved ? .green : (approval.status == .rejected ? .red : .orange))
-                                                .clipShape(Capsule())
+                                            VStack(alignment: .center, spacing: 6) {
+                                                if approval.status == .approved {
+                                                    Image(systemName: "checkmark.seal.fill")
+                                                        .font(.title3)
+                                                        .foregroundColor(.green)
+                                                    Text("Approved")
+                                                        .font(.caption2.bold())
+                                                        .foregroundColor(.green)
+                                                        .textCase(.uppercase)
+                                                } else if approval.status == .rejected {
+                                                    Image(systemName: "xmark.seal.fill")
+                                                        .font(.title3)
+                                                        .foregroundColor(.red)
+                                                    Text("Rejected")
+                                                        .font(.caption2.bold())
+                                                        .foregroundColor(.red)
+                                                        .textCase(.uppercase)
+                                                } else {
+                                                    Text("!")
+                                                        .font(.subheadline.bold())
+                                                        .foregroundColor(.orange)
+                                                        .padding(.horizontal, 12)
+                                                        .padding(.vertical, 6)
+                                                        .background(Color.orange.opacity(0.1))
+                                                        .clipShape(Capsule())
+                                                    
+                                                    Text("Pending")
+                                                        .font(.caption2.bold())
+                                                        .foregroundColor(.secondary)
+                                                        .textCase(.uppercase)
+                                                }
+                                            }
+                                            .fixedSize(horizontal: true, vertical: false)
                                         }
                                         .padding()
                                         .glassEffect(in: .rect(cornerRadius: 24))

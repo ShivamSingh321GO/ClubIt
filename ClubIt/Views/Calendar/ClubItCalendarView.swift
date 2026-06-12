@@ -120,7 +120,7 @@ struct ClubItCalendarView: View {
     
     private func events(for date: Date) -> [Event] {
         appSession.eventStore.events.filter { event in
-            calendar.isDate(event.startDate, inSameDayAs: date)
+            calendar.isDate(event.startDate, inSameDayAs: date) && event.status != .pending
         }
     }
     
@@ -155,7 +155,9 @@ struct DayCell: View {
     var body: some View {
         VStack(spacing: 4) {
             if value.day != -1 {
-                let hasEvents = appSession.eventStore.events.contains { Calendar.current.isDate($0.startDate, inSameDayAs: value.date) }
+                let hasEvents = appSession.eventStore.events.contains { 
+                    Calendar.current.isDate($0.startDate, inSameDayAs: value.date) && $0.status != .pending
+                }
                 let isToday = Calendar.current.isDateInToday(value.date)
                 
                 Text("\(value.day)")
@@ -219,6 +221,10 @@ struct CalendarEventMiniCard: View {
             }
             
             Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.body.bold())
+                .foregroundColor(.secondary.opacity(0.5))
         }
         .padding(16)
         .contentShape(.rect)

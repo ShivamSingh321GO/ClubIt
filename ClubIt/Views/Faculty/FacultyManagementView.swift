@@ -117,7 +117,7 @@ struct FacultyExpandableClubRow: View {
                     
                     Spacer()
                     
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.up")
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.caption.bold())
                         .foregroundColor(.secondary)
                         .padding(8)
@@ -144,7 +144,7 @@ struct FacultyExpandableClubRow: View {
                     .padding(.horizontal)
                     
                     HStack(spacing: 12) {
-                        FacultyStatBadge(icon: "person.2.fill", count: "\(club.memberCount ?? 0)", label: "Members", color: .green)
+                        FacultyStatBadge(icon: "person.2.fill", count: "\(appSession.clubStore.allUsers.filter { $0.clubId == club.id }.count)", label: "Members", color: .green)
                         FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == club.id }.count)", label: "Achievements", color: .orange)
                     }
                     .padding(.horizontal)

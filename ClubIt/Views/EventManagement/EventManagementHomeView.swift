@@ -22,7 +22,11 @@ struct EventManagementHomeView: View {
                             .bold()
                             
                             if user.role == .faculty {
-                                FacultyApprovalsModule(user: user)
+                                if user.email == "emt" {
+                                    EMTApprovalsModule(user: user)
+                                } else {
+                                    FacultyApprovalsModule(user: user)
+                                }
                             } else {
                                 PresidentApprovalsModule(user: user)
                             }
@@ -83,4 +87,45 @@ struct EventManagementHomeView: View {
 #Preview {
     EventManagementHomeView()
         .environment(MockData.session(for: .faculty))
+}
+
+struct EMTApprovalsModule: View {
+    @Environment(AppSession.self) var appSession
+    let user: User
+
+    var body: some View {
+        let eventsWithApprovals = appSession.eventStore.events.filter { event in
+            appSession.approvalStore.approvals.contains { 
+                $0.eventId == event.id && 
+                $0.type == .venue && 
+                $0.status == .pending
+            } ||
+            appSession.approvalStore.resources.contains {
+                $0.eventId == event.id &&
+                $0.status == .pending
+            }
+        }.sorted(by: { $0.startDate > $1.startDate })
+        
+        VStack(alignment: .leading, spacing: 16) {
+            if eventsWithApprovals.isEmpty {
+                Text("No venue or resource requests")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .glassEffect(in: .rect(cornerRadius: 20))
+            } else {
+                VStack(spacing: 16) {
+                    ForEach(eventsWithApprovals.prefix(2)) { event in
+                        if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                            NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
+                                EventManagementEventApprovalCard(event: event, club: club)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

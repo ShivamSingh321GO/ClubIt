@@ -7,11 +7,26 @@ struct UpcomingEventsModule: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(spacing: 16) {
-                ForEach(MockData.sampleEvents) { event in
-                    NavigationLink(value: event) {
-                        ExploreEventCard(event: event, isMyEvent: true)
+                let today = Calendar.current.startOfDay(for: Date())
+                let upcomingEvents = appSession.eventStore.events.filter { event in
+                    event.clubId == user.clubId &&
+                    Calendar.current.startOfDay(for: event.startDate) >= today
+                }.sorted { $0.startDate < $1.startDate }
+                
+                if upcomingEvents.isEmpty {
+                    Text("No upcoming events")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .glassEffect(in: .rect(cornerRadius: 16))
+                } else {
+                    ForEach(upcomingEvents) { event in
+                        NavigationLink(value: event) {
+                            ExploreEventCard(event: event, isMyEvent: true)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
