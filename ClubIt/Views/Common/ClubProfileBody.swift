@@ -73,14 +73,22 @@ struct ClubProfileBody: View {
                 
                 if isAboutExpanded {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("About the Club")
-                            .font(.headline.bold())
-                            .foregroundColor(.primary)
-                        
-                        Text(club.description ?? "No description available.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .lineSpacing(4)
+                        VStack(alignment: .leading, spacing: 12) {
+                            Divider()
+                                .padding(.bottom, 4)
+                                
+                            Text("ABOUT THE CLUB")
+                                .font(.caption.bold())
+                                .foregroundColor(.secondary)
+                            
+                            Text(club.description ?? "No description available.")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                                .lineSpacing(4)
+                            
+                            Divider()
+                                .padding(.top, 4)
+                        }
                         
                         HStack(spacing: 12) {
                             NavigationLink(destination: ClubMemberListView(club: club)) {
@@ -106,9 +114,9 @@ struct ClubProfileBody: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Socials")
-                                .font(.headline.bold())
-                                .foregroundColor(.primary)
+                            Text("SOCIALS")
+                                .font(.caption.bold())
+                                .foregroundColor(.secondary)
                             
                             HStack(spacing: 20) {
                                 let platforms = ["whatsapp", "instagram", "facebook", "linkedin", "discord"]
