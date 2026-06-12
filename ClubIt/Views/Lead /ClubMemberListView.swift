@@ -6,7 +6,30 @@ struct ClubMemberListView: View {
     
     // Filter members from live store data based on clubId
     var members: [User] {
-        appSession.clubStore.allUsers.filter { $0.clubId == club.id }
+        appSession.clubStore.allUsers
+            .filter { $0.clubId == club.id }
+            .sorted { u1, u2 in
+                let priority: (AppRole) -> Int = { role in
+                    if role == .clubLead {
+                        return 0
+                    } else if role.rawValue.lowercased().contains("coordinator") {
+                        return 1
+                    } else if role == .clubMember {
+                        return 2
+                    } else {
+                        return 3
+                    }
+                }
+                
+                let p1 = priority(u1.role)
+                let p2 = priority(u2.role)
+                
+                if p1 != p2 {
+                    return p1 < p2
+                }
+                
+                return u1.name.localizedCaseInsensitiveCompare(u2.name) == .orderedAscending
+            }
     }
     
     var body: some View {

@@ -122,7 +122,7 @@ struct TaskRowView: View {
         }
         .glassEffect(in: .rect(cornerRadius: 20))
         .contextMenu {
-            if task.assignedBy == appSession.currentUser?.id {
+            if task.assignedBy == appSession.currentUser?.id || appSession.currentRole == .clubLead {
                 Button(role: .destructive) {
                     Task {
                         try? await appSession.taskStore.deleteTask(id: task.id)

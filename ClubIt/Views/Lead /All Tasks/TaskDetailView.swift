@@ -153,7 +153,7 @@ struct TaskDetailView: View {
                     .padding(.horizontal, 20)
                     
                     // Event Context
-                    if let event = associatedEvent {
+                    if let event = associatedEvent, event.status == .published {
                         VStack(alignment: .leading, spacing: 12) {
                             sectionHeader(title: "Related Event", icon: "calendar")
                             
@@ -244,17 +244,6 @@ struct TaskDetailView: View {
             })
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    if currentTask.assignedBy == appSession.currentUser?.id {
-                        Button {
-                            showDeleteAlert = true
-                        } label: {
-                            Text("Delete")
-                                .foregroundStyle(.red)
-                        }
-                    }
-                }
-                
                 ToolbarItem(placement: .topBarTrailing) {
                     if currentTask.assignedBy == appSession.currentUser?.id {
                         Button("Edit") {
