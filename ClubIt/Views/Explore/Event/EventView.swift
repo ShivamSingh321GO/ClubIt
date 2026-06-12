@@ -69,7 +69,6 @@ struct EventView: View {
                                     .frame(minWidth: 65)
                                     .background(isSelected ? Color.orange : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
                                     .foregroundStyle(isSelected ? .white : .primary)
-                                    .glassEffect(in: .capsule)
                                     .clipShape(Capsule())
                             }
                             .buttonStyle(.plain)

@@ -198,14 +198,29 @@ struct VPApprovalsListView: View {
 
     enum ApprovalFilter: String, CaseIterable {
         case all = "All"
+        case upcoming = "Upcoming"
         case pending = "Pending"
         case approved = "Approved"
         case rejected = "Rejected"
+        case overdue = "Overdue"
     }
 
     private func count(for filter: ApprovalFilter, approvals: [Approval]) -> Int {
         if filter == .all {
             return approvals.count
+        }
+        if filter == .upcoming {
+            return approvals.filter { approval in
+                guard let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) else { return false }
+                return event.startDate >= Calendar.current.startOfDay(for: Date())
+            }.count
+        }
+        if filter == .overdue {
+            return approvals.filter { approval in
+                guard let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) else { return false }
+                let isPast = event.startDate < Calendar.current.startOfDay(for: Date())
+                return isPast && approval.status == .pending
+            }.count
         }
         return approvals.filter { approval in
             switch filter {
@@ -234,6 +249,15 @@ struct VPApprovalsListView: View {
         let filteredApprovals = approvals.filter { approval in
             if selectedFilter == .all {
                 return true
+            }
+            if selectedFilter == .upcoming {
+                guard let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) else { return false }
+                return event.startDate >= Calendar.current.startOfDay(for: Date())
+            }
+            if selectedFilter == .overdue {
+                guard let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) else { return false }
+                let isPast = event.startDate < Calendar.current.startOfDay(for: Date())
+                return isPast && approval.status == .pending
             }
             switch selectedFilter {
             case .pending: return approval.status == .pending
@@ -280,7 +304,7 @@ struct VPApprovalsListView: View {
                         .padding(.top, 100)
                     } else if filteredApprovals.isEmpty {
                         VStack(spacing: 16) {
-                            Image(systemName: selectedFilter == .pending ? "hourglass" : (selectedFilter == .approved ? "checkmark.circle" : "xmark.circle"))
+                            Image(systemName: selectedFilter == .pending ? "hourglass" : (selectedFilter == .approved ? "checkmark.circle" : (selectedFilter == .upcoming ? "calendar" : (selectedFilter == .overdue ? "exclamationmark.triangle" : "xmark.circle"))))
                                 .font(.system(size: 60))
                                 .foregroundStyle(.secondary)
                             Text("No \(selectedFilter.rawValue) approvals found")

@@ -6,9 +6,11 @@ struct EventManagementApprovalClubsView: View {
     
     enum ApprovalFilter: String, CaseIterable {
         case all = "All"
+        case upcoming = "Upcoming"
         case pending = "Pending"
         case approved = "Approved"
         case rejected = "Rejected"
+        case overdue = "Overdue"
     }
     
     private func getStatus(for eventId: UUID) -> ApprovalFilter {
@@ -60,6 +62,15 @@ struct EventManagementApprovalClubsView: View {
         if filter == .all {
             return allEvents.count
         }
+        if filter == .upcoming {
+            return allEvents.filter { $0.startDate >= Calendar.current.startOfDay(for: Date()) }.count
+        }
+        if filter == .overdue {
+            return allEvents.filter { event in
+                let isPast = event.startDate < Calendar.current.startOfDay(for: Date())
+                return isPast && getStatus(for: event.id) == .pending
+            }.count
+        }
         return allEvents.filter { getStatus(for: $0.id) == filter }.count
     }
     
@@ -109,6 +120,13 @@ struct EventManagementApprovalClubsView: View {
             if selectedFilter == .all {
                 return true
             }
+            if selectedFilter == .upcoming {
+                return event.startDate >= Calendar.current.startOfDay(for: Date())
+            }
+            if selectedFilter == .overdue {
+                let isPast = event.startDate < Calendar.current.startOfDay(for: Date())
+                return isPast && getStatus(for: event.id) == .pending
+            }
             return getStatus(for: event.id) == selectedFilter
         }
         
@@ -140,7 +158,7 @@ struct EventManagementApprovalClubsView: View {
                         FacultyEmptyStateView(icon: "calendar.badge.exclamationmark", title: "No Approvals", message: "There are no events currently requiring or having received approval.")
                     } else if filteredEvents.isEmpty {
                         FacultyEmptyStateView(
-                            icon: selectedFilter == .pending ? "hourglass" : (selectedFilter == .approved ? "checkmark.circle" : "xmark.circle"),
+                            icon: selectedFilter == .pending ? "hourglass" : (selectedFilter == .approved ? "checkmark.circle" : (selectedFilter == .upcoming ? "calendar" : (selectedFilter == .overdue ? "exclamationmark.triangle" : "xmark.circle"))),
                             title: "No \(selectedFilter.rawValue) Approvals",
                             message: "There are no events currently matching the selected filter."
                         )
