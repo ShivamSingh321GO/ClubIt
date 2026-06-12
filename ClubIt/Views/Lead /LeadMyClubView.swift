@@ -15,7 +15,7 @@ struct LeadMyClubView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                ClubProfileBody(club: appSession.clubStore.club)
+                ClubProfileBody(club: appSession.clubStore.club, startExpanded: false)
                     .padding(.vertical, 16)
             }
             .navigationTitle("My Club")

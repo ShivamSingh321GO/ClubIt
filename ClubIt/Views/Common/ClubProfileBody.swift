@@ -6,13 +6,14 @@ struct ClubProfileBody: View {
     let showExtraSections: Bool
     let showFollowButton: Bool
     
-    init(club: Club, showExtraSections: Bool = true, showFollowButton: Bool = false) {
+    @State private var isAboutExpanded: Bool
+    
+    init(club: Club, showExtraSections: Bool = true, showFollowButton: Bool = false, startExpanded: Bool = true) {
         self.club = club
         self.showExtraSections = showExtraSections
         self.showFollowButton = showFollowButton
+        self._isAboutExpanded = State(initialValue: startExpanded)
     }
-    
-    @State private var isAboutExpanded: Bool = true
     
     var body: some View {
         VStack(spacing: 24) {
