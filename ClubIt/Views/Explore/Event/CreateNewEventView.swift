@@ -579,7 +579,6 @@ struct CreateNewEventView: View {
                     var budgetsToSave: [Budget] = []
                     var resourcesToSave: [Resource] = []
                     var approvalsToSave: [Approval] = []
-                    var remarksToSave: [RemarkMessage] = []
                     
                     // 2. Prepare Budget Items
                     for item in budgetItems {
@@ -659,13 +658,6 @@ struct CreateNewEventView: View {
                             updatedAt: nil
                         )
                         approvalsToSave.append(eventApproval)
-                        remarksToSave.append(RemarkMessage(
-                            id: UUID(),
-                            approvalId: eventApproval.id,
-                            authorId: currentUser.id,
-                            content: "Draft event submitted to Vice President for approval",
-                            createdAt: Date()
-                        ))
                     } else if let club = club {
                         // Let AppSession handle the sequential forwarding:
                         // First to President if budget exists, else straight to EMT.
@@ -678,9 +670,6 @@ struct CreateNewEventView: View {
                     
                     if !approvalsToSave.isEmpty {
                         try await appSession.approvalStore.submitApprovalRequests(approvalsToSave)
-                    }
-                    if !remarksToSave.isEmpty {
-                        try await appSession.approvalStore.addRemarks(remarksToSave)
                     }
                 }
                 

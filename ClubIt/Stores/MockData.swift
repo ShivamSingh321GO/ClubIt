@@ -52,7 +52,7 @@ struct MockData {
         )
         
         let users = [
-            User(id: leadId, email: "tjlead", name: "Aryan", instituteId: instituteId, role: .clubLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3rd Year", bio: "TechnoJam club leader | UI designer", createdAt: Date(), status: .active),
+            User(id: leadId, email: "tjlead", name: "Rahul", instituteId: instituteId, role: .clubLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3rd Year", bio: "TechnoJam club leader | UI designer", createdAt: Date(), status: .active),
             User(id: UUID(), email: "tjm1", name: "Shivam", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
             User(id: UUID(), email: "tjm2", name: "Mayank", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Web developer", createdAt: Date(), status: .active),
             User(id: UUID(), email: "tjm3", name: "Rohan", instituteId: instituteId, role: .clubMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3nd Year", bio: "Web developer", createdAt: Date(), status: .active)
@@ -220,11 +220,11 @@ struct MockData {
         
 
         // Add President
-        users.append(User(id: presidentId, email: "president", name: "Dr. Arun Mehra", instituteId: instituteId, role: .president, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
+        users.append(User(id: presidentId, email: "president", name: "Kamakshi", instituteId: instituteId, role: .president, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
         
         // Add Vice Presidents
         users.append(User(id: vpTechId, email: "vpTech", name: "Rahul Sharma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Council", year: "4th Year", bio: "VP Technical", createdAt: Date(), status: .active))
-        users.append(User(id: vpLitId, email: "vpLit", name: "Kavya Gupta", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Council", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
+        users.append(User(id: vpLitId, email: "vpLit", name: "Aryan", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Council", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
         users.append(User(id: vpBizId, email: "vpBiz", name: "Ishaan Verma", instituteId: instituteId, role: .vicePresident, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Council", year: "4th Year", bio: "VP Professional", createdAt: Date(), status: .active))
 
         // Add Event Management Team

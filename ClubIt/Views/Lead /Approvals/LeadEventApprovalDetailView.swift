@@ -4,7 +4,7 @@ struct LeadEventApprovalDetailView: View {
     @Environment(AppSession.self) var appSession
     let eventId: UUID
     
-    @State private var selectedTab: String = "Venue"
+    @State private var selectedTab: String = "Event"
     @State private var replyText: String = ""
     @State private var replyingToItemId: UUID? = nil
     @State private var replyingToType: ApprovalType? = nil
@@ -16,6 +16,13 @@ struct LeadEventApprovalDetailView: View {
     var club: Club? {
         guard let event = event else { return nil }
         return appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })
+    }
+
+    private var allClubEventApprovals: [Approval] {
+        if let vpApp = vpApproval {
+            return [vpApp]
+        }
+        return []
     }
 
     private var allClubResources: [Resource] {
@@ -413,6 +420,7 @@ struct LeadEventApprovalDetailView: View {
                     
                     // Segmented Filter
                     Picker("Select Category", selection: $selectedTab) {
+                        Text("Event (\(allClubEventApprovals.count))").tag("Event")
                         Text("Venue (\(allClubVenueApprovals.count))").tag("Venue")
                         Text("Resource (\(allClubResources.count))").tag("Resource")
                         Text("Budget (\(allClubBudgets.count))").tag("Budget")
@@ -434,6 +442,8 @@ struct LeadEventApprovalDetailView: View {
                     
                     // Content List
                     switch selectedTab {
+                    case "Event":
+                        eventSection(allClubEventApprovals)
                     case "Venue":
                         venueSection(allClubVenueApprovals)
                     case "Resource":
@@ -458,6 +468,30 @@ struct LeadEventApprovalDetailView: View {
         }
     }
     
+    @ViewBuilder
+    private func eventSection(_ approvals: [Approval]) -> some View {
+        VStack(spacing: 16) {
+            ForEach(approvals.sorted(by: { $0.createdAt > $1.createdAt })) { approval in
+                LeadItemApprovalCard(
+                    title: "VP Draft Review",
+                    icon: "doc.text.fill",
+                    iconColor: .orange,
+                    status: approval.status.rawValue,
+                    details: [
+                        ("Category", event?.category.rawValue ?? "N/A"),
+                        ("Reviewer", vpUser?.name ?? "N/A")
+                    ],
+                    approvalId: approval.id,
+                    onReply: {
+                        replyingToItemId = approval.id
+                        replyingToType = .event
+                    }
+                )
+            }
+        }
+        .padding(.horizontal)
+    }
+
     @ViewBuilder
     private func resourceSection(_ resources: [Resource]) -> some View {
         let externalResources = resources.filter { $0.type == .external }
@@ -773,7 +807,7 @@ struct LeadItemApprovalCard: View {
                 }
                 
                 Button(action: onReply) {
-                    Label("Reply to Faculty", systemImage: "arrowshape.turn.up.left.fill")
+                    Label("Reply", systemImage: "arrowshape.turn.up.left.fill")
                         .font(.caption.bold())
                         .foregroundColor(.blue)
                         .padding(.vertical, 8)

@@ -244,7 +244,6 @@ final class AppSession {
         }
         
         var approvalsToSave: [Approval] = []
-        var remarksToSave: [RemarkMessage] = []
         
         for budget in eventBudgets {
             let budgetApproval = Approval(
@@ -260,20 +259,10 @@ final class AppSession {
                 updatedAt: nil
             )
             approvalsToSave.append(budgetApproval)
-            remarksToSave.append(Remark(
-                id: UUID(),
-                approvalId: budgetApproval.id,
-                authorId: senderId,
-                content: "Forwarded: Budget approval requested for \(budget.itemName)",
-                createdAt: Date()
-            ))
         }
         
         if !approvalsToSave.isEmpty {
             try await approvalStore.submitApprovalRequests(approvalsToSave)
-        }
-        if !remarksToSave.isEmpty {
-            try await approvalStore.addRemarks(remarksToSave)
         }
     }
     
@@ -284,7 +273,6 @@ final class AppSession {
         let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
         
         var approvalsToSave: [Approval] = []
-        var remarksToSave: [RemarkMessage] = []
         
         // 1. Resource Approvals
         for resource in eventResources {
@@ -301,13 +289,6 @@ final class AppSession {
                 updatedAt: nil
             )
             approvalsToSave.append(resApproval)
-            remarksToSave.append(Remark(
-                id: UUID(),
-                approvalId: resApproval.id,
-                authorId: senderId,
-                content: "Forwarded: Resource approval requested for \(resource.name)",
-                createdAt: Date()
-            ))
         }
         
         // 2. Faculty Event Approval
@@ -324,13 +305,6 @@ final class AppSession {
             updatedAt: nil
         )
         approvalsToSave.append(facultyEventApproval)
-        remarksToSave.append(Remark(
-            id: UUID(),
-            approvalId: facultyEventApproval.id,
-            authorId: senderId,
-            content: "Forwarded: Event creation approval requested",
-            createdAt: Date()
-        ))
         
         // 3. Venue Booking Approval
         if let event = eventStore.events.first(where: { $0.id == eventId }) {
@@ -348,20 +322,10 @@ final class AppSession {
                 updatedAt: nil
             )
             approvalsToSave.append(venueApproval)
-            remarksToSave.append(Remark(
-                id: UUID(),
-                approvalId: venueApproval.id,
-                authorId: senderId,
-                content: "Forwarded: Venue booking approval requested for \(event.location)",
-                createdAt: Date()
-            ))
         }
         
         if !approvalsToSave.isEmpty {
             try await approvalStore.submitApprovalRequests(approvalsToSave)
-        }
-        if !remarksToSave.isEmpty {
-            try await approvalStore.addRemarks(remarksToSave)
         }
     }
     

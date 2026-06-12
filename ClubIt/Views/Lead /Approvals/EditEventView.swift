@@ -422,11 +422,6 @@ struct EditEventView: View {
                                 id: eventApproval.id,
                                 status: .pending
                             )
-                            try? await appSession.approvalStore.addRemark(
-                                approvalId: eventApproval.id,
-                                authorId: currentUser.id,
-                                content: "Event details updated. Resubmitted for Vice President approval."
-                            )
                         }
                     }
                 }
@@ -440,11 +435,6 @@ struct EditEventView: View {
                                 id: venueApproval.id,
                                 status: .pending,
                                 approvalRelatedId: selectedVenue?.id
-                            )
-                            try await appSession.approvalStore.addRemark(
-                                approvalId: venueApproval.id,
-                                authorId: currentUser.id,
-                                content: "Venue details updated: \(venue). Resubmitted for approval."
                             )
                         }
                     }
@@ -462,11 +452,6 @@ struct EditEventView: View {
                             // Find specific approval for this budget item
                             if let itemApproval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == draft.id }) {
                                 try? await appSession.approvalStore.updateApproval(id: itemApproval.id, status: .pending)
-                                try? await appSession.approvalStore.addRemark(
-                                    approvalId: itemApproval.id,
-                                    authorId: currentUser.id,
-                                    content: "Budget item updated: \(draft.name). Resubmitted."
-                                )
                             }
                         }
                     }
@@ -519,11 +504,6 @@ struct EditEventView: View {
                                 updatedAt: nil
                             )
                             try await appSession.approvalStore.submitApprovalRequest(budgetApproval)
-                            try await appSession.approvalStore.addRemark(
-                                approvalId: budgetApproval.id,
-                                authorId: currentUser.id,
-                                content: "New budget item added: \(draft.name)"
-                            )
                         }
                     }
                 }
@@ -540,11 +520,6 @@ struct EditEventView: View {
                             // Find specific approval for this resource item
                             if let itemApproval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == draft.id }) {
                                 try? await appSession.approvalStore.updateApproval(id: itemApproval.id, status: .pending)
-                                try? await appSession.approvalStore.addRemark(
-                                    approvalId: itemApproval.id,
-                                    authorId: currentUser.id,
-                                    content: "Resource item updated: \(draft.name). Resubmitted."
-                                )
                             }
                         }
                     }
@@ -595,11 +570,6 @@ struct EditEventView: View {
                                 updatedAt: nil
                             )
                             try await appSession.approvalStore.submitApprovalRequest(resApproval)
-                            try await appSession.approvalStore.addRemark(
-                                approvalId: resApproval.id,
-                                authorId: currentUser.id,
-                                content: "New university resource added: \(draft.name)"
-                            )
                         }
                     }
                 }
@@ -655,11 +625,6 @@ struct EditEventView: View {
                                 updatedAt: nil
                             )
                             try await appSession.approvalStore.submitApprovalRequest(resApproval)
-                            try await appSession.approvalStore.addRemark(
-                                approvalId: resApproval.id,
-                                authorId: currentUser.id,
-                                content: "New rental resource added: \(draft.name)"
-                            )
                         }
                     }
                 }
