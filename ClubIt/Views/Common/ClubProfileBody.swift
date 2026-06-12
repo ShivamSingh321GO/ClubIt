@@ -12,7 +12,7 @@ struct ClubProfileBody: View {
         self.showFollowButton = showFollowButton
     }
     
-    @State private var isAboutExpanded: Bool = false
+    @State private var isAboutExpanded: Bool = true
     
     var body: some View {
         VStack(spacing: 24) {

@@ -70,7 +70,7 @@ struct ExploreEventCard: View {
                                     Text("REGISTRATIONS")
                                         .font(.caption2.bold())
                                         .foregroundStyle(.secondary)
-                                    let registeredCount = (event.status == .pending || event.status == .approved) ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count
+                                    let registeredCount = event.status == .pending ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count
                                     Text(event.maxParticipants >= 999999 ? "\(registeredCount)" : "\(registeredCount) / \(event.maxParticipants)")
                                         .font(.footnote.bold())
                                         .foregroundStyle(.primary)

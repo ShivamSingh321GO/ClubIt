@@ -57,7 +57,7 @@ struct EventCardView: View {
                         .font(.caption)
                         .bold()
                     
-                    Text("\(event.numberOfRegistrations ?? 0)")
+                    Text("\(appSession.registrationStore.getRegistrations(for: event.id).count)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     

@@ -302,9 +302,10 @@ struct EventDetailView: View {
                 )
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.clubId == nil ? "Associated Clubs" : "Organized by")
-                    .font(.caption2)
+                Text(event.clubId == nil ? "Associated Clubs" : "Hosted by")
+                    .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(.secondary)
+                    .textCase(.uppercase)
                 Text(organizerName)
                     .font(.subheadline.bold())
                     .foregroundColor(.primary)
@@ -346,12 +347,14 @@ struct EventDetailView: View {
             .frame(width: 40)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("About the Event")
-                    .font(.headline)
+                Text("ABOUT THE EVENT")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .textCase(.uppercase)
                 
                 Text(event.description)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.primary)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -373,14 +376,16 @@ struct EventDetailView: View {
             .frame(width: 40)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Event Agenda")
-                    .font(.headline)
+                Text("EVENT AGENDA")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .textCase(.uppercase)
                 
                 let lines = agenda.components(separatedBy: .newlines).filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
                 ForEach(lines, id: \.self) { line in
                     Text(line)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -406,26 +411,27 @@ struct EventDetailView: View {
                 .frame(width: 40)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Registrations")
-                        .font(.headline)
+                    Text("REGISTRATIONS")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .textCase(.uppercase)
                     
                     Group {
                         if event.maxParticipants >= 999999 {
-                            Text("\(event.status == .approved ? 0 : registrations.count) Registered")
+                            Text("\(registrations.count) Registered")
                                 .font(.subheadline)
                                 .bold()
                                 .foregroundColor(.primary)
                         } else {
-                            Text("\(event.status == .approved ? 0 : registrations.count) Registered / ")
-                            + Text("\(event.maxParticipants)")
+                            Text("\(registrations.count) Registered / ")
                                 .font(.subheadline)
                                 .bold()
                                 .foregroundColor(.primary)
-                            + Text(" total")
+                            + Text("\(event.maxParticipants) total")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
                         }
                     }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
                 }
                 
                 Spacer()
@@ -555,6 +561,12 @@ struct EventDetailView: View {
     
     
     // MARK: - Utility
+    
+    private func sectionHeader(title: String, icon: String) -> some View {
+        Label(title.uppercased(), systemImage: icon)
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(.secondary)
+    }
     
     private var thinDivider: some View {
         Rectangle()
