@@ -3,6 +3,7 @@ import SwiftUI
 struct ApprovalSummaryCard: View {
     let title: String
     let subtitle: String
+    var eventDate: String? = nil
     let action: () -> Void
     
     var body: some View {
@@ -19,6 +20,11 @@ struct ApprovalSummaryCard: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
+                    if let eventDate = eventDate {
+                        EventDateTag(dateString: eventDate)
+                            .padding(.bottom, 2)
+                    }
+
                     Text("Approval Request")
                         .font(.caption)
                         .foregroundColor(.secondary)

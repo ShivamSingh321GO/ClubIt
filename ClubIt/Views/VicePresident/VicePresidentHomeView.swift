@@ -6,7 +6,8 @@ struct VicePresidentHomeView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
+            ZStack(alignment: .bottomTrailing) {
+                ZStack {
                 ScrollView(showsIndicators: false) {
                     if let user = appSession.currentUser {
                         VStack(alignment: .leading, spacing: 24) {
@@ -36,9 +37,6 @@ struct VicePresidentHomeView: View {
                             VicePresidentApprovalsModule(user: user) { id in
                                 selectedEventId = id
                             }
-                            
-                            ClubItCalendarView()
-                                .padding(.top, 8)
                         }
                         .padding(.horizontal)
                         .navigationTitle("Home")
@@ -84,6 +82,17 @@ struct VicePresidentHomeView: View {
                     .background(Color.black.opacity(0.1))
                     .transition(.opacity)
                 }
+                } // Close inner ZStack
+                
+                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                    Image(systemName: "calendar")
+                        .font(.title2.bold())
+                        .foregroundStyle(.primary)
+                        .frame(width: 56, height: 56)
+                        .glassEffect(in: .circle)
+                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                }
+                .padding()
             }
         }
         .sheet(item: Bindable(appSession).selectedTask) { task in
@@ -106,7 +115,14 @@ struct VicePresidentApprovalsModule: View {
             approval.type == .event &&
             approval.status == .pending &&
             appSession.eventStore.events.contains(where: { $0.id == approval.eventId })
-        }.sorted(by: { $0.createdAt > $1.createdAt })
+        }.sorted(by: { a1, a2 in
+            guard let e1 = appSession.eventStore.events.first(where: { $0.id == a1.eventId }),
+                  let e2 = appSession.eventStore.events.first(where: { $0.id == a2.eventId }) else { return false }
+            if Calendar.current.isDate(e1.startDate, inSameDayAs: e2.startDate) {
+                return (e1.startTime ?? Date.distantFuture) < (e2.startTime ?? Date.distantFuture)
+            }
+            return e1.startDate < e2.startDate
+        })
         
         VStack(alignment: .leading, spacing: 16) {
             if pendingApprovals.isEmpty {
@@ -151,6 +167,11 @@ struct VPApprovalEventCard: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    EventDateTag(dateString: event.dateRangeString)
+                }
+                .padding(.bottom, 2)
+                
                 Text(event.name)
                     .font(.headline)
                 Text("Draft approval requested")
@@ -201,7 +222,14 @@ struct VPApprovalsListView: View {
             approval.receiverId == user.id &&
             approval.type == .event &&
             appSession.eventStore.events.contains(where: { $0.id == approval.eventId })
-        }.sorted(by: { $0.createdAt > $1.createdAt })
+        }.sorted(by: { a1, a2 in
+            guard let e1 = appSession.eventStore.events.first(where: { $0.id == a1.eventId }),
+                  let e2 = appSession.eventStore.events.first(where: { $0.id == a2.eventId }) else { return false }
+            if Calendar.current.isDate(e1.startDate, inSameDayAs: e2.startDate) {
+                return (e1.startTime ?? Date.distantFuture) < (e2.startTime ?? Date.distantFuture)
+            }
+            return e1.startDate < e2.startDate
+        })
 
         let filteredApprovals = approvals.filter { approval in
             if selectedFilter == .all {

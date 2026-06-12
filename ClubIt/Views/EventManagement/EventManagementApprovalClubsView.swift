@@ -98,7 +98,12 @@ struct EventManagementApprovalClubsView: View {
             let hasResources = appSession.approvalStore.resources.contains { $0.eventId == event.id }
             let hasBudgets = appSession.approvalStore.budgets.contains { $0.eventId == event.id }
             return hasEvents || hasResources || hasBudgets
-        }.sorted(by: { $0.createdAt > $1.createdAt })
+        }.sorted(by: { 
+            if Calendar.current.isDate($0.startDate, inSameDayAs: $1.startDate) {
+                return ($0.startTime ?? Date.distantFuture) < ($1.startTime ?? Date.distantFuture)
+            }
+            return $0.startDate < $1.startDate
+        })
 
         let filteredEvents = allEventsWithApprovals.filter { event in
             if selectedFilter == .all {
@@ -243,17 +248,9 @@ struct EventManagementEventApprovalCard: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.name)
-                    .font(.headline)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                
-                Text(club.name)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                
                 HStack(spacing: 8) {
+                    EventDateTag(dateString: event.dateRangeString)
+                    
                     if appSession.currentRole == .president {
                         if pendingBudgets.count > 0 {
                             IndicatorTag(icon: "indianrupeesign.circle.fill", count: pendingBudgets.count, color: .green)
@@ -287,7 +284,17 @@ struct EventManagementEventApprovalCard: View {
                         }
                     }
                 }
-                .padding(.top, 4)
+                .padding(.bottom, 2)
+                
+                Text(event.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                
+                Text(club.name)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
             
             Spacer()

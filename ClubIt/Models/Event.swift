@@ -256,6 +256,16 @@ struct Event: Identifiable, Hashable, Codable {
         }
         return nil
     }
+
+    var dateRangeString: String {
+        let startStr = startDate.formatted(.dateTime.day().month())
+        let endStr = endDate.formatted(.dateTime.day().month())
+        if startStr == endStr {
+            return startStr
+        } else {
+            return "\(startStr) - \(endStr)"
+        }
+    }
 }
 
 

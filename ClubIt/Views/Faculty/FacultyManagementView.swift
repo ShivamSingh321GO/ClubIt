@@ -117,7 +117,7 @@ struct FacultyExpandableClubRow: View {
                     
                     Spacer()
                     
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.up")
                         .font(.caption.bold())
                         .foregroundColor(.secondary)
                         .padding(8)

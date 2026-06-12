@@ -7,7 +7,8 @@ struct StudentHomeView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            ZStack(alignment: .bottomTrailing) {
+                VStack(spacing: 0) {
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
@@ -58,6 +59,17 @@ struct StudentHomeView: View {
             .navigationDestination(for: Event.self) { event in
                 EventDetailView(event: event, isMyEvent: false)
             }
+            
+            NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                Image(systemName: "calendar")
+                    .font(.title2.bold())
+                    .foregroundStyle(.primary)
+                    .frame(width: 56, height: 56)
+                    .glassEffect(in: .circle)
+                    .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+            }
+            .padding()
+            } // Close ZStack
         }
         .fullScreenCover(isPresented: $isSearchActive) {
             ClubSearchView()
@@ -72,14 +84,6 @@ struct StudentHomeView: View {
                     .bold()
                 
                 Spacer()
-                
-                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
-                    Image(systemName: "calendar")
-                        .font(.title3)
-                        .foregroundColor(.orange)
-                        .padding(8)
-                        .background(.orange.opacity(0.1), in: Circle())
-                }
             }
             .padding(.horizontal)
             

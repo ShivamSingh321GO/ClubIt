@@ -77,7 +77,6 @@ struct ChatRow: View {
                         Text("Tap to start chatting")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                            .italic()
                             .lineLimit(1)
                     }
                     
@@ -85,9 +84,18 @@ struct ChatRow: View {
                     
                     if chat.type == .event {
                         HStack(spacing: 16) {
-                            Image(systemName: chat.isExpanded ? "chevron.up" : "chevron.down")
-                                .font(.caption2.bold())
-                                .foregroundStyle(.secondary)
+                            Button(action: {
+                                withAnimation(.spring()) {
+                                    onToggleExpansion()
+                                }
+                            }) {
+                                Image(systemName: chat.isExpanded ? "chevron.down" : "chevron.up")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.secondary)
+                                    .padding(8)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
                         }
                     } else if chat.unreadCount > 0 {
                         Text("\(chat.unreadCount)")

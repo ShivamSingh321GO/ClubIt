@@ -33,7 +33,14 @@ struct FacultyApprovalsListView: View {
                     .padding(.top, 40)
                 } else {
                     VStack(spacing: 16) {
-                        ForEach(groupedApprovals.keys.compactMap { $0 }.sorted(by: { $0.uuidString < $1.uuidString }), id: \.self) { eventId in
+                        ForEach(groupedApprovals.keys.compactMap { $0 }.sorted(by: { id1, id2 in
+                            guard let e1 = appSession.eventStore.events.first(where: { $0.id == id1 }),
+                                  let e2 = appSession.eventStore.events.first(where: { $0.id == id2 }) else { return false }
+                            if Calendar.current.isDate(e1.startDate, inSameDayAs: e2.startDate) {
+                                return (e1.startTime ?? Date.distantFuture) < (e2.startTime ?? Date.distantFuture)
+                            }
+                            return e1.startDate < e2.startDate
+                        }), id: \.self) { eventId in
                             if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
                                 let eventApprovals = groupedApprovals[eventId] ?? []
                                 let isPending = eventApprovals.contains { $0.status == .pending }
@@ -41,6 +48,7 @@ struct FacultyApprovalsListView: View {
                                 ApprovalSummaryCard(
                                     title: event.name,
                                     subtitle: (isPending ? "Pending Action • " : "Processed • ") + formatDate(event.createdAt),
+                                    eventDate: event.dateRangeString,
                                     action: { selectedEventId = eventId }
                                 )
                             }

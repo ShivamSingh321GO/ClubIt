@@ -41,17 +41,9 @@ struct LeadApprovalEventCard: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.name)
-                    .font(.headline)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                
-                Text(club?.name ?? "Club")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                
                 HStack(spacing: 8) {
+                    EventDateTag(dateString: event.dateRangeString)
+                    
                     if pendingResources.count > 0 {
                         IndicatorTag(icon: "cart.fill", count: pendingResources.count, color: .blue)
                     }
@@ -62,7 +54,17 @@ struct LeadApprovalEventCard: View {
                         IndicatorTag(icon: "indianrupeesign.circle.fill", count: pendingBudgets.count, color: .green)
                     }
                 }
-                .padding(.top, 4)
+                .padding(.bottom, 2)
+                
+                Text(event.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                
+                Text(club?.name ?? "Club")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
             
             Spacer()

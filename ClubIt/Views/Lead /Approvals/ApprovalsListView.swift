@@ -77,7 +77,14 @@ struct ApprovalsListView: View {
             }
         }
 
-        let uniqueEvents = Array(Set(sortedApprovals.compactMap { $0.eventId }))
+        let uniqueEvents = Array(Set(sortedApprovals.compactMap { $0.eventId })).sorted { id1, id2 in
+            guard let event1 = appSession.eventStore.events.first(where: { $0.id == id1 }),
+                  let event2 = appSession.eventStore.events.first(where: { $0.id == id2 }) else { return false }
+            if Calendar.current.isDate(event1.startDate, inSameDayAs: event2.startDate) {
+                return (event1.startTime ?? Date.distantFuture) < (event2.startTime ?? Date.distantFuture)
+            }
+            return event1.startDate < event2.startDate
+        }
         
         let filteredEvents = uniqueEvents.filter { eventId in
             if selectedFilter == .all {

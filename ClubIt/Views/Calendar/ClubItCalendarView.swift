@@ -108,6 +108,7 @@ struct ClubItCalendarView: View {
             ScrollView(showsIndicators: false) {
                 content
                     .padding(.vertical, 10)
+                    .padding(.horizontal)
             }
             .background(Color(.systemBackground))
             .navigationTitle("Calendar")

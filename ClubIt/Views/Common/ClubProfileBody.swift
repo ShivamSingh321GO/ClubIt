@@ -12,14 +12,19 @@ struct ClubProfileBody: View {
         self.showFollowButton = showFollowButton
     }
     
-    @State private var isAboutExpanded: Bool = true
+    @State private var isAboutExpanded: Bool = false
     
     var body: some View {
         VStack(spacing: 24) {
             // MARK: - About Club Card
             VStack(alignment: .leading, spacing: 20) {
                 // Header
-                HStack(spacing: 16) {
+                Button {
+                    withAnimation(.spring()) {
+                        isAboutExpanded.toggle()
+                    }
+                } label: {
+                    HStack(spacing: 16) {
                     ZStack {
                         Circle()
                             .fill(LinearGradient(colors: [.indigo.opacity(0.3), .purple.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -56,18 +61,15 @@ struct ClubProfileBody: View {
                     
                     Spacer()
                     
-                    Button {
-                        withAnimation(.spring()) {
-                            isAboutExpanded.toggle()
-                        }
-                    } label: {
-                        Image(systemName: isAboutExpanded ? "chevron.up" : "chevron.down")
+                        Image(systemName: isAboutExpanded ? "chevron.down" : "chevron.up")
                             .font(.headline)
                             .bold()
                             .padding()
                             .glassEffect(in: .circle)
                     }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 
                 if isAboutExpanded {
                     VStack(alignment: .leading, spacing: 12) {

@@ -90,25 +90,7 @@ struct ActivityCard: View {
             }
         }
         .padding(16)
-        .background(
-            ZStack {
-                Color.clear
-                activity.type.color.opacity(0.05)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-        )
         .glassEffect(in: .rect(cornerRadius: 20))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(
-                    LinearGradient(
-                        colors: [activity.type.color.opacity(0.3), .clear, activity.type.color.opacity(0.1)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
         .contentShape(Rectangle())
         .onTapGesture {
             onTap?(activity)

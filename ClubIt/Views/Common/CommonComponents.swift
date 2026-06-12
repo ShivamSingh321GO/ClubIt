@@ -19,3 +19,19 @@ struct IndicatorTag: View {
         .clipShape(Capsule())
     }
 }
+
+struct EventDateTag: View {
+    let dateString: String
+    
+    var body: some View {
+        HStack(spacing: 3) {
+            Text("Event \(dateString)")
+                .font(.system(size: 10, weight: .bold))
+        }
+        .foregroundColor(.orange)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(Color.orange.opacity(0.1))
+        .clipShape(Capsule())
+    }
+}

@@ -7,7 +7,8 @@ struct LeadHomeView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
+            ZStack(alignment: .bottomTrailing) {
+                ZStack {
                 ScrollView(showsIndicators: false) {
                     if let user = appSession.currentUser {
                         VStack(alignment: .leading, spacing: 24) {
@@ -34,9 +35,6 @@ struct LeadHomeView: View {
                             HomeApprovalsModule(user: user) { id in
                                 selectedEventId = id
                             }
-                            
-                            ClubItCalendarView()
-                                .padding(.top, 8)
                         }
                         .padding(.horizontal)
                         .navigationTitle("Home")
@@ -79,6 +77,17 @@ struct LeadHomeView: View {
                     .background(Color.black.opacity(0.1))
                     .transition(.opacity)
                 }
+                } // Close inner ZStack
+                
+                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                    Image(systemName: "calendar")
+                        .font(.title2.bold())
+                        .foregroundStyle(.primary)
+                        .frame(width: 56, height: 56)
+                        .glassEffect(in: .circle)
+                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                }
+                .padding()
             }
         }
         .sheet(item: Bindable(appSession).selectedTask) { task in
