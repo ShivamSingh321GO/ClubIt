@@ -128,6 +128,38 @@ struct EventView: View {
             }
             
             ZStack {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        if filteredEvents.isEmpty {
+                            ContentUnavailableView(
+                                "No Events Found",
+                                systemImage: "calendar",
+                                description: Text("There are no events in this filter right now.")
+                            )
+                            .padding(.top, 40)
+                            .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                        } else {
+                            ForEach(filteredEvents) { event in
+                                NavigationLink {
+                                    EventDetailView(event: event, isMyEvent: isMyEvent(event))
+                                } label: {
+                                    ExploreEventCard(
+                                        event: event,
+                                        isMyEvent: isMyEvent(event)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                                    removal: .move(edge: .top).combined(with: .opacity)
+                                ))
+                            }
+                        }
+                    }
+                    .padding(.bottom, 12)
+                }
+                .opacity(isRefreshing ? 0 : 1)
+                
                 if isRefreshing {
                     VStack {
                         ProgressView()
@@ -140,38 +172,6 @@ struct EventView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                } else {
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 16) {
-                            if filteredEvents.isEmpty {
-                                ContentUnavailableView(
-                                    "No Events Found",
-                                    systemImage: "calendar",
-                                    description: Text("There are no events in this filter right now.")
-                                )
-                                .padding(.top, 40)
-                                .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                            } else {
-                                ForEach(filteredEvents) { event in
-                                    NavigationLink {
-                                        EventDetailView(event: event, isMyEvent: isMyEvent(event))
-                                    } label: {
-                                        ExploreEventCard(
-                                            event: event,
-                                            isMyEvent: isMyEvent(event)
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
-                                    .transition(.asymmetric(
-                                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                                        removal: .move(edge: .top).combined(with: .opacity)
-                                    ))
-                                }
-                            }
-                        }
-                        .padding(.bottom, 12)
-                    }
-                    .transition(.opacity)
                 }
             }
         }

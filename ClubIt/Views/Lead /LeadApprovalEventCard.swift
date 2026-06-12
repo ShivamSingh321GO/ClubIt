@@ -42,8 +42,6 @@ struct LeadApprovalEventCard: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
-                    EventDateTag(dateString: event.dateRangeString)
-                    
                     if pendingResources.count > 0 {
                         IndicatorTag(icon: "cart.fill", count: pendingResources.count, color: .blue)
                     }

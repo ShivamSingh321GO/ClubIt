@@ -23,6 +23,12 @@ struct StatBadge: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.caption.bold())
+                .foregroundColor(color.opacity(0.5))
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

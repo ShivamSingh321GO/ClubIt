@@ -16,9 +16,11 @@ struct ApprovalsListView: View {
     
     enum ApprovalFilter: String, CaseIterable {
         case all = "All"
+        case upcoming = "Upcoming"
         case pending = "Pending"
         case approved = "Approved"
         case rejected = "Rejected"
+        case overdue = "Overdue"
     }
     
     private func getStatus(for eventId: UUID, sortedApprovals: [Approval]) -> ApprovalFilter {
@@ -61,6 +63,19 @@ struct ApprovalsListView: View {
         if filter == .all {
             return uniqueEvents.count
         }
+        if filter == .upcoming {
+            return uniqueEvents.filter { eventId in
+                guard let event = appSession.eventStore.events.first(where: { $0.id == eventId }) else { return false }
+                return event.startDate >= Calendar.current.startOfDay(for: Date())
+            }.count
+        }
+        if filter == .overdue {
+            return uniqueEvents.filter { eventId in
+                guard let event = appSession.eventStore.events.first(where: { $0.id == eventId }) else { return false }
+                let isPast = event.startDate < Calendar.current.startOfDay(for: Date())
+                return isPast && getStatus(for: eventId, sortedApprovals: sortedApprovals) == .pending
+            }.count
+        }
         return uniqueEvents.filter { eventId in
             getStatus(for: eventId, sortedApprovals: sortedApprovals) == filter
         }.count
@@ -89,6 +104,15 @@ struct ApprovalsListView: View {
         let filteredEvents = uniqueEvents.filter { eventId in
             if selectedFilter == .all {
                 return true
+            }
+            if selectedFilter == .upcoming {
+                guard let event = appSession.eventStore.events.first(where: { $0.id == eventId }) else { return false }
+                return event.startDate >= Calendar.current.startOfDay(for: Date())
+            }
+            if selectedFilter == .overdue {
+                guard let event = appSession.eventStore.events.first(where: { $0.id == eventId }) else { return false }
+                let isPast = event.startDate < Calendar.current.startOfDay(for: Date())
+                return isPast && getStatus(for: eventId, sortedApprovals: sortedApprovals) == .pending
             }
             return getStatus(for: eventId, sortedApprovals: sortedApprovals) == selectedFilter
         }
@@ -128,7 +152,7 @@ struct ApprovalsListView: View {
                         } else if filteredEvents.isEmpty {
                             ContentUnavailableView(
                                 "No \(selectedFilter.rawValue) Requests",
-                                systemImage: selectedFilter == .pending ? "hourglass" : (selectedFilter == .approved ? "checkmark.circle" : "xmark.circle"),
+                                systemImage: selectedFilter == .pending ? "hourglass" : (selectedFilter == .approved ? "checkmark.circle" : (selectedFilter == .upcoming ? "calendar" : (selectedFilter == .overdue ? "exclamationmark.triangle" : "xmark.circle"))),
                                 description: Text("No requests match the selected filter.")
                             )
                             .padding(.top, 40)
