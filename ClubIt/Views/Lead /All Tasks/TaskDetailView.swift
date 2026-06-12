@@ -328,14 +328,17 @@ struct TaskDetailView: View {
     }
     
     private var priorityBadge: some View {
-        Text(currentTask.priority.rawValue.uppercased())
-            .font(.caption2)
-            .bold()
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(currentTask.priority == .high ? .red.opacity(0.2) : .orange.opacity(0.2))
-            .foregroundStyle(currentTask.priority == .high ? .red : .orange)
-            .clipShape(Capsule())
+        Label {
+            Text(currentTask.priority.rawValue.uppercased())
+        } icon: {
+            Image(systemName: currentTask.priority == .high ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
+        }
+        .font(.caption)
+        .foregroundStyle(currentTask.priority == .high ? .red : .orange)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color.secondary.opacity(0.1))
+        .clipShape(Capsule())
     }
     
     private var statusColor: Color {
@@ -348,12 +351,11 @@ struct TaskDetailView: View {
     
     private var statusBadge: some View {
         Text(currentTask.status.rawValue.uppercased())
-            .font(.caption2)
-            .bold()
+            .font(.caption)
+            .foregroundStyle(statusColor)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(statusColor.opacity(0.2))
-            .foregroundStyle(statusColor)
+            .background(Color.secondary.opacity(0.1))
             .clipShape(Capsule())
     }
     
