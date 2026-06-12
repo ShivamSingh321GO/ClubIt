@@ -691,11 +691,29 @@ struct EventManagementApprovalDetailView: View {
                     // Remarks History
                     if let approval = vpApproval {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Remarks & Conversation")
-                                .font(.headline)
+                            HStack {
+                                Text("Remarks & Conversation")
+                                    .font(.headline)
+                                Spacer()
+                                Button(action: {
+                                    withAnimation {
+                                        replyingToApprovalId = approval.id
+                                        replyText = ""
+                                    }
+                                }) {
+                                    Label("Reply", systemImage: "arrowshape.turn.up.left.fill")
+                                        .font(.caption.bold())
+                                        .foregroundColor(.blue)
+                                        .padding(.vertical, 6)
+                                        .padding(.horizontal, 12)
+                                        .background(Color.blue.opacity(0.1))
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
                             
                             RemarkConversationView(approvalId: approval.id)
-                                .padding()
+                                .padding(12)
                                 .glassEffect(in: .rect(cornerRadius: 20))
                         }
                         .padding(.horizontal)

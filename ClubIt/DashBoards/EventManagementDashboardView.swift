@@ -7,7 +7,7 @@ struct EventManagementDashboardView: View {
                 EventManagementHomeView()
             }
             
-            Tab("Explore", systemImage: "calendar") {
+            Tab("Explore", systemImage: "globe") {
                 ExploreView()
             }
             

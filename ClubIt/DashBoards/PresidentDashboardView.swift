@@ -14,7 +14,7 @@ struct PresidentDashboardView: View {
                 PresidentHomeView()
             }
             
-            Tab("Explore", systemImage: "calendar") {
+            Tab("Explore", systemImage: "globe") {
                 ExploreView()
             }
             

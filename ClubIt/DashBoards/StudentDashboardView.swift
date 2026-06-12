@@ -13,7 +13,7 @@ struct StudentDashboardView: View {
             Tab("Home", systemImage: "house") {
                 StudentHomeView()
             }
-            Tab("Explore", systemImage: "calendar") {
+            Tab("Explore", systemImage: "globe") {
                 ExploreView()
             }
             
