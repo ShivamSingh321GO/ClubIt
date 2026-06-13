@@ -181,15 +181,7 @@ struct StudentProfileView: View {
     
     private func clubGridItem(club: Club) -> some View {
         HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                Image(club.logo)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .clipShape(Circle())
-            }
-            .frame(width: 32, height: 32)
+            ClubLogoView(logo: club.logo, imageData: club.imageData, size: 32, iconSize: 20)
             
             Text(club.name)
                 .font(.caption.bold())
@@ -260,17 +252,7 @@ struct StudentProfileView: View {
     
     private func clubRow(club: Club) -> some View {
         HStack(spacing: 12) {
-            // Club Logo
-            ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                
-                Image(club.logo)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .clipShape(Circle())
-            }
-            .frame(width: 36, height: 36)
+            ClubLogoView(logo: club.logo, imageData: club.imageData, size: 36, iconSize: 22)
             
             Text(club.name)
                 .font(.body)

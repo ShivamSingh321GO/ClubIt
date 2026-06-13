@@ -18,6 +18,26 @@ struct ClubLogoView: View {
                     .scaledToFill()
                     .frame(width: size, height: size)
                     .clipShape(Circle())
+            } else if logo.starts(with: "http"), let url = URL(string: logo) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: size, height: size)
+                            .clipShape(Circle())
+                    case .failure, .empty:
+                        ZStack {
+                            Circle()
+                                .fill(Color.gray.opacity(0.2))
+                            ProgressView()
+                        }
+                        .frame(width: size, height: size)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
             } else if !logo.isEmpty && UIImage(named: logo) != nil {
                 Image(logo)
                     .resizable()

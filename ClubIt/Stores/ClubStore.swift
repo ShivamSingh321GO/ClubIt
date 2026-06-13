@@ -63,14 +63,43 @@ final class ClubStore {
     
     @MainActor
     func updateClub(name: String, tagLine: String, description: String, category: ClubCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) async throws {
-        // 1. Update Supabase
+        var logoUrl = logo
+        
+        // 1. Upload logo image to Supabase Storage bucket 'clubProfile-images' if new imageData is provided
+        if let imageData {
+            do {
+                let storagePath = "\(club.id.uuidString)/logo.jpg"
+                try await client.storage
+                    .from("clubProfile-images")
+                    .upload(
+                        storagePath,
+                        data: imageData,
+                        options: FileOptions(
+                            contentType: "image/jpeg",
+                            upsert: true
+                        )
+                    )
+                
+                let publicURL = try client.storage
+                    .from("clubProfile-images")
+                    .getPublicURL(path: storagePath)
+                
+                logoUrl = publicURL.absoluteString
+                print("DEBUG: Uploaded club logo to clubProfile-images Storage. Public URL: \(logoUrl)")
+            } catch {
+                print("DEBUG ERROR: Failed to upload logo image: \(error.localizedDescription)")
+                throw error
+            }
+        }
+        
+        // 2. Update Supabase table
         let updateData: [String: AnyJSON] = [
             "name": .string(name),
             "tag_line": .string(tagLine),
             "description": .string(description),
             "category": .string(category.rawValue),
             "socials": .object(socials.mapValues { .string($0) }),
-            "logo": .string(logo)
+            "logo": .string(logoUrl)
         ]
         
         try await client
@@ -79,7 +108,7 @@ final class ClubStore {
             .eq("id", value: club.id)
             .execute()
             
-        // 2. Update local state
+        // 3. Update local state
         club.name = name
         club.tagLine = tagLine
         club.description = description
@@ -87,10 +116,10 @@ final class ClubStore {
         club.memberCount = memberCount
         club.eventCount = eventCount
         club.socials = socials
-        club.logo = logo
+        club.logo = logoUrl
         club.imageData = imageData
         
-        // 3. Refresh global list
+        // 4. Refresh global list
         try? await fetchAllClubs()
     }
     

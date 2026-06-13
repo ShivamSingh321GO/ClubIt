@@ -20,17 +20,7 @@ struct ClubCard: View {
             
             HStack(alignment: .top, spacing: 14) {
                 
-                // Club Logo
-                ZStack {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                    
-                    Image(club.logo)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .clipShape(Circle())
-                }
-                .frame(width: 50, height: 50)
+                ClubLogoView(logo: club.logo, imageData: club.imageData, size: 50, iconSize: 30)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(club.name)

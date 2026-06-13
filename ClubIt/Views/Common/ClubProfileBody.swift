@@ -26,29 +26,7 @@ struct ClubProfileBody: View {
                     }
                 } label: {
                     HStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(LinearGradient(colors: [.indigo.opacity(0.3), .purple.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: 60, height: 60)
-                        
-                        if let imageData = club.imageData, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 60, height: 60)
-                                .clipShape(Circle())
-                        } else if !club.logo.isEmpty && UIImage(named: club.logo) != nil {
-                            Image(club.logo)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 60, height: 60)
-                                .clipShape(Circle())
-                        } else {
-                            Image(systemName: "flame.fill")
-                                .font(.title.bold())
-                                .foregroundColor(.white)
-                        }
-                    }
+                    ClubLogoView(logo: club.logo, imageData: club.imageData, size: 60, iconSize: 35)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text(club.name)
