@@ -18,6 +18,9 @@ struct LeadMyClubView: View {
                 ClubProfileBody(club: appSession.clubStore.club, startExpanded: false)
                     .padding(.vertical, 16)
             }
+            .refreshable {
+                await appSession.refreshData()
+            }
             .navigationTitle("My Club")
             .toolbarTitleDisplayMode(.inlineLarge)
             .toolbar {
@@ -38,6 +41,9 @@ struct LeadMyClubView: View {
             ActivityDetailView(activity: activity)
                 .environment(appSession)
                 .presentationDetents([.large])
+        }
+        .task {
+            await appSession.refreshData()
         }
     }
 }

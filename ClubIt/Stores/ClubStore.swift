@@ -68,7 +68,16 @@ final class ClubStore {
         // 1. Upload logo image to Supabase Storage bucket 'clubProfile-images' if new imageData is provided
         if let imageData {
             do {
-                let storagePath = "\(club.id.uuidString)/logo.jpg"
+                // Remove older logo files in this club's folder to avoid storage bloat
+                if let files = try? await client.storage.from("clubProfile-images").list(path: club.id.uuidString) {
+                    let pathsToDelete = files.map { "\(club.id.uuidString)/\($0.name)" }
+                    if !pathsToDelete.isEmpty {
+                        try? await client.storage.from("clubProfile-images").remove(paths: pathsToDelete)
+                    }
+                }
+                
+                // Use a unique filename incorporating a timestamp to bypass cached URL/image lookups
+                let storagePath = "\(club.id.uuidString)/logo_\(Int(Date().timeIntervalSince1970)).jpg"
                 try await client.storage
                     .from("clubProfile-images")
                     .upload(

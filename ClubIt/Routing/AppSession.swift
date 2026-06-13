@@ -97,20 +97,30 @@ final class AppSession {
     /// (events, approvals, budgets, resources, tasks) without showing any loading UI.
     @MainActor
     func silentRefreshKeyData() async {
-        guard isLoggedIn, currentUser != nil else { return }
+        guard isLoggedIn, let user = currentUser else { return }
         
-        // Fetch the 5 critical tables in parallel — no loading indicator
+        // Fetch key data in parallel including clubs
         async let eventsTask: Void = { try? await self.eventStore.fetchAllEvents() }()
         async let approvalsTask: Void = { try? await self.approvalStore.fetchApprovals() }()
         async let budgetsTask: Void = { try? await self.approvalStore.fetchBudgets() }()
         async let resourcesTask: Void = { try? await self.approvalStore.fetchResources() }()
         async let tasksTask: Void = { try? await self.taskStore.fetchTasks() }()
+        async let clubsTask: Void = { try? await self.clubStore.fetchAllClubs() }()
+        
+        // If user is affiliated with a club, refresh details in parallel
+        async let clubDetailsTask: Void = {
+            if let clubId = user.clubId {
+                try? await self.clubStore.fetchClubDetails(id: clubId)
+            }
+        }()
         
         await eventsTask
         await approvalsTask
         await budgetsTask
         await resourcesTask
         await tasksTask
+        await clubsTask
+        await clubDetailsTask
         
         print("DEBUG: Silent background sync complete")
     }

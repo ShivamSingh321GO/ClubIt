@@ -22,6 +22,9 @@ struct StudentHomeView: View {
                     }
                     .padding(.vertical, 20)
                 }
+                .refreshable {
+                    await appSession.refreshData()
+                }
             }
             .background(Color(.systemBackground))
             .navigationTitle(isSearchActive ? "" : "Home")
@@ -73,6 +76,9 @@ struct StudentHomeView: View {
         }
         .fullScreenCover(isPresented: $isSearchActive) {
             ClubSearchView()
+        }
+        .task {
+            await appSession.refreshData()
         }
     }
     
