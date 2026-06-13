@@ -8,6 +8,7 @@ struct AddImageSectionView: View {
     @State private var title: String = ""
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var pickedImagesData: [Data] = []
+    @State private var isUploading: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -77,42 +78,56 @@ struct AddImageSectionView: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
+                    .disabled(isUploading)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        saveSection()
-                    } label: {
-                        Image(systemName: "checkmark")
+                    if isUploading {
+                        ProgressView()
+                    } else {
+                        Button {
+                            saveSection()
+                        } label: {
+                            Image(systemName: "checkmark")
+                        }
+                        .disabled(title.isEmpty || pickedImagesData.isEmpty)
                     }
-                    .disabled(title.isEmpty || pickedImagesData.isEmpty)
                 }
             }
         }
+        .disabled(isUploading)
     }
     
     private func saveSection() {
-        let mediaItems = pickedImagesData.map { data in
-            ClubImage(
-                clubId: appSession.clubStore.club.id,
-                eventId: nil,
-                type: .image,
-                title: title,
-                fileUrl: "",
-                imageData: data,
-                uploadedBy: appSession.currentUser?.id ?? UUID(),
-                createdAt: Date()
-            )
+        guard !title.isEmpty && !pickedImagesData.isEmpty else { return }
+        isUploading = true
+        
+        Task {
+            do {
+                let clubId = appSession.clubStore.club.id
+                let userId = appSession.currentUser?.id ?? UUID()
+                
+                // Upload all picked images
+                for data in pickedImagesData {
+                    try await appSession.clubImageStore.addImage(
+                        title: title,
+                        imageData: data,
+                        clubId: clubId,
+                        uploadedBy: userId
+                    )
+                }
+                
+                await MainActor.run {
+                    isUploading = false
+                    dismiss()
+                }
+            } catch {
+                print("DEBUG: Upload failed: \(error)")
+                await MainActor.run {
+                    isUploading = false
+                }
+            }
         }
-        
-        let newSection = ClubImageSection(
-            title: title,
-            images: mediaItems,
-            remainingCount: max(0, mediaItems.count - 6)
-        )
-        
-        appSession.clubImageStore.addSection(newSection)
-        dismiss()
     }
 }
 

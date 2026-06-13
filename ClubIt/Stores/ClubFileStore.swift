@@ -21,10 +21,23 @@ final class ClubFileStore {
     }
     
     @MainActor
-    func addFile(_ file: ClubFile) async throws {
+    func addFile(_ file: ClubFile, fileData: Data) async throws {
+        // 1. Upload file data to Supabase Storage
+        let publicUrl = try await ImageUploadService.shared.uploadClubFile(
+            fileData: fileData,
+            fileName: file.name,
+            clubId: file.clubId,
+            fileId: file.id
+        )
+        
+        // 2. Set the public file URL on the metadata record
+        var updatedFile = file
+        updatedFile.fileURL = publicUrl
+        
+        // 3. Insert metadata record in the database
         try await client
             .from("club_files")
-            .insert(file)
+            .insert(updatedFile)
             .execute()
         
         try await fetchFiles(clubId: file.clubId)
@@ -32,11 +45,20 @@ final class ClubFileStore {
     
     @MainActor
     func deleteFile(_ file: ClubFile) async throws {
+        // 1. Delete record from Supabase database
         try await client
             .from("club_files")
             .delete()
             .eq("id", value: file.id)
             .execute()
+        
+        // 2. Delete file from Supabase storage bucket if URL exists
+        if let fileUrlString = file.fileURL, let url = URL(string: fileUrlString) {
+            let storagePath = "\(file.clubId.uuidString)/\(url.lastPathComponent)"
+            try? await client.storage
+                .from("club-files")
+                .remove(paths: [storagePath])
+        }
         
         try await fetchFiles(clubId: file.clubId)
     }

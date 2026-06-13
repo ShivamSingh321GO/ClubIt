@@ -8,10 +8,11 @@ struct AddClubFileView: View {
     @State private var selectedFileURL: URL?
     @State private var fileName = ""
     @State private var fileSize = ""
+    @State private var selectedFileData: Data? = nil
     @State private var showingFileImporter = false
     @State private var errorMessage: String?
     
-    var onSave: (ClubFile) -> Void
+    var onSave: (ClubFile, Data) -> Void
     
     var body: some View {
         NavigationStack {
@@ -98,7 +99,10 @@ struct AddClubFileView: View {
     
     private func handleSelectedFile(_ url: URL) {
         // Start accessing the security-scoped resource
-        guard url.startAccessingSecurityScopedResource() else { return }
+        guard url.startAccessingSecurityScopedResource() else {
+            errorMessage = "Failed to access file security scope."
+            return
+        }
         defer { url.stopAccessingSecurityScopedResource() }
         
         do {
@@ -111,12 +115,16 @@ struct AddClubFileView: View {
                 fileSize = "Unknown size"
             }
             
+            // Read raw data from the file to upload
+            let fileData = try Data(contentsOf: url)
+            selectedFileData = fileData
             selectedFileURL = url
+            
             if name.isEmpty {
                 name = fileName
             }
         } catch {
-            errorMessage = "Failed to get file info: \(error.localizedDescription)"
+            errorMessage = "Failed to read file: \(error.localizedDescription)"
         }
     }
     
@@ -128,7 +136,7 @@ struct AddClubFileView: View {
             return
         }
         
-        guard let url = selectedFileURL else {
+        guard let data = selectedFileData, let url = selectedFileURL else {
             errorMessage = "Please select a file to upload."
             return
         }
@@ -139,15 +147,15 @@ struct AddClubFileView: View {
             name: trimmedName,
             size: fileSize,
             uploadedBy: "Lead",
-            fileURL: url.absoluteString,
+            fileURL: url.absoluteString, // Placeholder URL string, will be replaced with Supabase public URL in Store
             createdAt: Date()
         )
         
-        onSave(newFile)
+        onSave(newFile, data)
         dismiss()
     }
 }
 
 #Preview {
-    AddClubFileView { _ in }
+    AddClubFileView { _, _ in }
 }

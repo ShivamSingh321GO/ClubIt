@@ -69,7 +69,7 @@ struct ClubImagesView: View {
                                 .buttonStyle(.plain)
                                 
                                 LazyVGrid(columns: columns, spacing: 10) {
-                                    ForEach(Array(section.images.prefix(6).enumerated()), id: \.offset) { index, media in
+                                    ForEach(Array(section.images.prefix(6).enumerated()), id: \.element.id) { index, media in
                                         ZStack {
                                             Button {
                                                 currentGalleryImages = section.images
@@ -106,12 +106,16 @@ struct ClubImagesView: View {
                     }
                     .padding(16)
                 }
+                .refreshable {
+                    try? await appSession.clubImageStore.fetchImages(clubId: appSession.clubStore.club.id)
+                }
             }
         }
         .navigationTitle("Images")
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $isGalleryPresented) {
             FullScreenGalleryView(images: currentGalleryImages, selectedIndex: $selectedImageIndex)
+                .environment(appSession)
         }
         .sheet(isPresented: $isAddSectionPresented) {
             AddImageSectionView()

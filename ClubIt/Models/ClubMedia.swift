@@ -13,7 +13,7 @@ enum MediaType: String, Codable {
     case link
 }
 
-struct ClubImage: Identifiable, Codable {
+struct ClubImage: Identifiable, Codable, Hashable {
     var id = UUID()
     var clubId: UUID
     var eventId: UUID?
@@ -23,6 +23,17 @@ struct ClubImage: Identifiable, Codable {
     var imageData: Data? = nil
     var uploadedBy: UUID
     var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case clubId = "club_id"
+        case eventId = "event_id"
+        case type
+        case title
+        case fileUrl = "file_url"
+        case uploadedBy = "uploaded_by"
+        case createdAt = "created_at"
+    }
 }
 
 

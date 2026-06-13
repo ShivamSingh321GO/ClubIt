@@ -150,6 +150,7 @@ final class AppSession {
                 try await activityStore.fetchActivities(clubId: clubId)
                 try await clubFileStore.fetchFiles(clubId: clubId)
                 try await clubLinkStore.fetchLinks(clubId: clubId)
+                try await clubImageStore.fetchImages(clubId: clubId)
                 print("DEBUG: Personal club data loaded: \(clubStore.club.name)")
             } catch {
                 print("DEBUG ERROR: Personal club data failed: \(error.localizedDescription)")

@@ -42,6 +42,7 @@ struct ClubImageDetailView: View {
         }
         .fullScreenCover(isPresented: $isGalleryPresented) {
             FullScreenGalleryView(images: liveSection.images, selectedIndex: $selectedImageIndex)
+                .environment(appSession)
         }
     }
     
@@ -52,7 +53,7 @@ struct ClubImageDetailView: View {
             ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: columns, spacing: 10) {
                     let images = liveSection.images
-                    ForEach(Array(images.enumerated()), id: \.offset) { index, media in
+                    ForEach(Array(images.enumerated()), id: \.element.id) { index, media in
                         Button(action: {
                             selectedImageIndex = index
                             isGalleryPresented = true
@@ -68,6 +69,9 @@ struct ClubImageDetailView: View {
                 }
                 .padding(16)
             }
+            .refreshable {
+                try? await appSession.clubImageStore.fetchImages(clubId: appSession.clubStore.club.id)
+            }
         } else {
             Color.clear
         }
@@ -75,20 +79,20 @@ struct ClubImageDetailView: View {
     
     private func handlePhotoSelection(_ items: [PhotosPickerItem]) {
         Task {
+            let clubId = appSession.clubStore.club.id
+            let userId = appSession.currentUser?.id ?? UUID()
+            
             for item in items {
                 if let data = try? await item.loadTransferable(type: Data.self) {
-                    let newImage = ClubImage(
-                        clubId: appSession.clubStore.club.id,
-                        type: .image,
-                        title: liveSection.title,
-                        fileUrl: "", // placeholder as we use imageData
-                        imageData: data,
-                        uploadedBy: appSession.currentUser?.id ?? UUID(),
-                        createdAt: Date()
-                    )
-                    
-                    await MainActor.run {
-                        appSession.clubImageStore.addImageToSection(sectionId: section.id, image: newImage)
+                    do {
+                        try await appSession.clubImageStore.addImage(
+                            title: liveSection.title,
+                            imageData: data,
+                            clubId: clubId,
+                            uploadedBy: userId
+                        )
+                    } catch {
+                        print("DEBUG: Failed to add image to section: \(error)")
                     }
                 }
             }
