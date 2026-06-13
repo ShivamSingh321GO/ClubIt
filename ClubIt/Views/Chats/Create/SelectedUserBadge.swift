@@ -7,15 +7,7 @@ struct SelectedUserBadge: View {
     var body: some View {
         VStack(spacing: 4) {
             ZStack(alignment: .topTrailing) {
-                AsyncImage(url: URL(string: user.profileImg ?? "")) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Color.gray.opacity(0.1)
-                }
-                .frame(width: 50, height: 50)
-                .clipShape(Circle())
+                UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 50)
                 
                 Button(action: onRemove) {
                     Image(systemName: "xmark.circle.fill")
@@ -42,21 +34,13 @@ struct UserSelectionGridItem: View {
         Button(action: onToggle) {
             VStack(spacing: 8) {
                 ZStack(alignment: .bottomTrailing) {
-                    AsyncImage(url: URL(string: user.profileImg ?? "")) { image in
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    } placeholder: {
-                        Color.gray.opacity(0.1)
-                    }
-                    .frame(width: 70, height: 70)
-                    .clipShape(Circle())
-                    .overlay {
-                        if isSelected {
-                            Circle()
-                                .stroke(Color.blue, lineWidth: 2)
+                    UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 70)
+                        .overlay {
+                            if isSelected {
+                                Circle()
+                                    .stroke(Color.blue, lineWidth: 2)
+                            }
                         }
-                    }
                     
                     if isSelected {
                         Image(systemName: "checkmark.circle.fill")
@@ -97,15 +81,7 @@ struct UserGridItem: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            AsyncImage(url: URL(string: user.profileImg ?? "")) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                Color.gray.opacity(0.1)
-            }
-            .frame(width: 70, height: 70)
-            .clipShape(Circle())
+            UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 70)
             
             VStack(spacing: 2) {
                 Text(user.name)

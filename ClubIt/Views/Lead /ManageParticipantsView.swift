@@ -151,31 +151,7 @@ struct ParticipantRow: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Avatar
-            Group {
-                if let imageData = user.imageData, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 44, height: 44)
-                        .clipShape(Circle())
-                } else if !(user.profileImg?.isEmpty ?? true) {
-                    Image(user.profileImg ?? "")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 44, height: 44)
-                        .clipShape(Circle())
-                } else {
-                    ZStack {
-                        Circle()
-                            .fill(Color.orange.gradient.opacity(0.1))
-                            .frame(width: 44, height: 44)
-                        Text(String(user.name.prefix(1)))
-                            .font(.subheadline.bold())
-                            .foregroundColor(.orange)
-                    }
-                }
-            }
+            UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 44)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.name)

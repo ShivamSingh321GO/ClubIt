@@ -6,8 +6,13 @@ struct LeadProfileView: View {
     
     var user: User?
     
+    @State private var isLoading = false
+    
     private var displayUser: User? {
-        user ?? appSession.currentUser
+        if let user {
+            return appSession.clubStore.allUsers.first(where: { $0.id == user.id }) ?? user
+        }
+        return appSession.currentUser
     }
     
     private var isCurrentUser: Bool {
@@ -20,28 +25,7 @@ struct LeadProfileView: View {
                 // MARK: - Profile Header
                 Section {
                     HStack(spacing: 16) {
-                        if let imageData = user.imageData, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 70, height: 70)
-                                .clipShape(Circle())
-                        } else if !(user.profileImg?.isEmpty ?? true) {
-                            Image(user.profileImg ?? "")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 70, height: 70)
-                                .clipShape(Circle())
-                        } else {
-                            Circle()
-                                .fill(Color.secondary.opacity(0.1))
-                                .frame(width: 70, height: 70)
-                                .overlay(
-                                    Text(String(user.name.prefix(1)))
-                                        .font(.title)
-                                        .foregroundColor(.primary)
-                                )
-                        }
+                        UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 70)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text(user.name)
@@ -148,6 +132,21 @@ struct LeadProfileView: View {
                             Text("Edit")
                         }
                     }
+                }
+            }
+            .refreshable {
+                try? await appSession.clubStore.fetchAllUsers()
+            }
+            .task {
+                isLoading = true
+                try? await appSession.clubStore.fetchAllUsers()
+                isLoading = false
+            }
+            .overlay {
+                if isLoading {
+                    ProgressView()
+                        .padding()
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
                 }
             }
         } else {

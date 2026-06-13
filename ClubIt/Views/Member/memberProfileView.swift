@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MemberProfileView: View {
     @Environment(AppSession.self) private var appSession
+    @State private var isLoading = false
     
     var body: some View {
         if let user = appSession.currentUser {
@@ -16,24 +17,7 @@ struct MemberProfileView: View {
                 // MARK: - Profile Header
                 Section {
                     HStack(spacing: 16) {
-                        if let imageData = user.imageData, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 70, height: 70)
-                                .clipShape(Circle())
-                        } else if !(user.profileImg?.isEmpty ?? true) {
-                            Image(user.profileImg ?? "")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 70, height: 70)
-                                .clipShape(Circle())
-                        } else {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .frame(width: 70, height: 70)
-                                .foregroundStyle(.secondary)
-                        }
+                        UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 70)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text(user.name)
@@ -117,6 +101,21 @@ struct MemberProfileView: View {
                     } label: {
                         Text("Edit")
                     }
+                }
+            }
+            .refreshable {
+                try? await appSession.clubStore.fetchAllUsers()
+            }
+            .task {
+                isLoading = true
+                try? await appSession.clubStore.fetchAllUsers()
+                isLoading = false
+            }
+            .overlay {
+                if isLoading {
+                    ProgressView()
+                        .padding()
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
                 }
             }
         } else {

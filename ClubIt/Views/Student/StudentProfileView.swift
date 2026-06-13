@@ -6,8 +6,13 @@ struct StudentProfileView: View {
     
     var user: User?
     
+    @State private var isLoading = false
+    
     private var displayUser: User? {
-        user ?? appSession.currentUser ?? MockData.studentUser
+        if let user {
+            return appSession.clubStore.allUsers.first(where: { $0.id == user.id }) ?? user
+        }
+        return appSession.currentUser ?? MockData.studentUser
     }
     
     private var isCurrentUser: Bool {
@@ -50,6 +55,21 @@ struct StudentProfileView: View {
                 }
             }
         }
+        .refreshable {
+            try? await appSession.clubStore.fetchAllUsers()
+        }
+        .task {
+            isLoading = true
+            try? await appSession.clubStore.fetchAllUsers()
+            isLoading = false
+        }
+        .overlay {
+            if isLoading {
+                ProgressView()
+                    .padding()
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+            }
+        }
     }
     
     // MARK: - Sections
@@ -57,24 +77,8 @@ struct StudentProfileView: View {
     private var profileInfoCard: some View {
         HStack(spacing: 20) {
             // Profile Image
-            Group {
-                if let imageData = displayUser?.imageData, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else if let profileImg = displayUser?.profileImg, !profileImg.isEmpty {
-                    Image(profileImg)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .frame(width: 80, height: 80)
-            .clipShape(Circle())
-            .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 2))
+            UserAvatarView(name: displayUser?.name ?? "", profileImg: displayUser?.profileImg, imageData: displayUser?.imageData, size: 80)
+                .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 2))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayUser?.name ?? "Kamakshi")

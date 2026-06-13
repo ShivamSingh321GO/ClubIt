@@ -38,44 +38,7 @@ struct ClubMemberListView: View {
                 ForEach(members) { member in
                     NavigationLink(destination: LeadProfileView(user: member)) {
                         HStack(spacing: 16) {
-                            if let imageData = member.imageData, let uiImage = UIImage(data: imageData) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 50, height: 50)
-                                    .clipShape(Circle())
-                            } else if !(member.profileImg?.isEmpty ?? true) {
-                                AsyncImage(url: URL(string: member.profileImg ?? "")) { phase in
-                                    if let image = phase.image {
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 50, height: 50)
-                                            .clipShape(Circle())
-                                    } else if phase.error != nil {
-                                        Circle()
-                                            .fill(Color.secondary.opacity(0.1))
-                                            .frame(width: 50, height: 50)
-                                            .overlay(
-                                                Text(String(member.name.prefix(1)))
-                                                    .font(.headline)
-                                                    .foregroundColor(.primary)
-                                            )
-                                    } else {
-                                        ProgressView()
-                                            .frame(width: 50, height: 50)
-                                    }
-                                }
-                            } else {
-                                Circle()
-                                    .fill(Color.secondary.opacity(0.1))
-                                    .frame(width: 50, height: 50)
-                                    .overlay(
-                                        Text(String(member.name.prefix(1)))
-                                            .font(.headline)
-                                            .foregroundColor(.primary)
-                                    )
-                            }
+                            UserAvatarView(name: member.name, profileImg: member.profileImg, imageData: member.imageData, size: 50)
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(member.name)
@@ -107,6 +70,12 @@ struct ClubMemberListView: View {
         }
         .navigationTitle("Members")
         .navigationBarTitleDisplayMode(.inline)
+        .refreshable {
+            try? await appSession.clubStore.fetchAllUsers()
+        }
+        .task {
+            try? await appSession.clubStore.fetchAllUsers()
+        }
     }
 }
 

@@ -8,6 +8,7 @@
 
 import Foundation
 import Observation
+import Supabase
 
 @Observable
 final class AppSession {
@@ -106,6 +107,7 @@ final class AppSession {
         async let resourcesTask: Void = { try? await self.approvalStore.fetchResources() }()
         async let tasksTask: Void = { try? await self.taskStore.fetchTasks() }()
         async let clubsTask: Void = { try? await self.clubStore.fetchAllClubs() }()
+        async let usersTask: Void = { try? await self.clubStore.fetchAllUsers() }()
         
         // If user is affiliated with a club, refresh details in parallel
         async let clubDetailsTask: Void = {
@@ -120,6 +122,7 @@ final class AppSession {
         await resourcesTask
         await tasksTask
         await clubsTask
+        await usersTask
         await clubDetailsTask
         
         print("DEBUG: Silent background sync complete")
@@ -208,18 +211,80 @@ final class AppSession {
         studentDashboardStore.registeredEventIds = []
     }
     
-    func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, imageData: Data?) {
+    @MainActor
+    func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, imageData: Data?) async throws {
         guard var user = currentUser else { return }
+        var profileImgUrl = user.profileImg ?? ""
+        
+        let client = SupabaseManager.shared.client
+        
+        // 1. Upload profile image to Supabase Storage bucket 'userProfile-images' if new imageData is provided
+        if let imageData {
+            do {
+                // Remove older avatar files in this user's folder to avoid storage bloat
+                if let files = try? await client.storage.from("userProfile-images").list(path: user.id.uuidString) {
+                    let pathsToDelete = files.map { "\(user.id.uuidString)/\($0.name)" }
+                    if !pathsToDelete.isEmpty {
+                        _ = try? await client.storage.from("userProfile-images").remove(paths: pathsToDelete)
+                    }
+                }
+                
+                // Use a unique filename incorporating a timestamp to bypass cached URL/image lookups
+                let storagePath = "\(user.id.uuidString)/avatar_\(Int(Date().timeIntervalSince1970)).jpg"
+                try await client.storage
+                    .from("userProfile-images")
+                    .upload(
+                        storagePath,
+                        data: imageData,
+                        options: FileOptions(
+                            contentType: "image/jpeg",
+                            upsert: true
+                        )
+                    )
+                
+                let publicURL = try client.storage
+                    .from("userProfile-images")
+                    .getPublicURL(path: storagePath)
+                
+                profileImgUrl = publicURL.absoluteString
+                print("DEBUG: Uploaded user profile image. Public URL: \(profileImgUrl)")
+            } catch {
+                print("DEBUG ERROR: Failed to upload user profile image: \(error.localizedDescription)")
+                throw error
+            }
+        }
+        
+        // 2. Update Supabase table
+        let updateData: [String: AnyJSON] = [
+            "name": .string(name),
+            "bio": .string(bio),
+            "phone_number": .string(phoneNumber),
+            "course": .string(course),
+            "year": .string(year),
+            "profile_img": .string(profileImgUrl)
+        ]
+        
+        try await client
+            .from("users")
+            .update(updateData)
+            .eq("id", value: user.id)
+            .execute()
+        
+        // 3. Update local state
         user.name = name
         user.bio = bio
         user.phoneNumber = phoneNumber
         user.course = course
         user.year = year
-        user.imageData = imageData
+        user.profileImg = profileImgUrl
+        user.imageData = nil // Clear local imageData so the view uses the remote URL
         currentUser = user
         
         // Sync with global users list
         clubStore.updateMember(updatedUser: user)
+        
+        // Refresh global users list from database so other views see the changes
+        try? await clubStore.fetchAllUsers()
     }
     
     @MainActor

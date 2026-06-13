@@ -93,15 +93,23 @@ struct EditProfileView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
-                    appSession.updateUserProfile(
-                        name: name,
-                        bio: bio,
-                        phoneNumber: phoneNumber,
-                        course: course,
-                        year: year,
-                        imageData: imageData
-                    )
-                    dismiss()
+                    Task {
+                        do {
+                            try await appSession.updateUserProfile(
+                                name: name,
+                                bio: bio,
+                                phoneNumber: phoneNumber,
+                                course: course,
+                                year: year,
+                                imageData: imageData
+                            )
+                            await MainActor.run {
+                                dismiss()
+                            }
+                        } catch {
+                            print("DEBUG ERROR: Failed to save profile: \(error.localizedDescription)")
+                        }
+                    }
                 }
                 .bold()
                 .disabled(name.isEmpty)
