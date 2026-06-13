@@ -6,6 +6,7 @@ struct EventManagementHomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
+                ZStack {
                 ScrollView(showsIndicators: false) {
                 if let user = appSession.currentUser {
                     VStack(alignment: .leading, spacing: 28) {
@@ -68,6 +69,26 @@ struct EventManagementHomeView: View {
                         }
                     }
                 }
+                }
+                .refreshable {
+                    await appSession.refreshData()
+                }
+                
+                if appSession.isRefreshing {
+                    VStack {
+                        ProgressView()
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(12)
+                        Text("Loading data...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.1))
+                    .transition(.opacity)
+                }
+                } // Close inner ZStack
                 
                 NavigationLink(destination: ClubItCalendarView(standalone: true)) {
                     Image(systemName: "calendar")
@@ -79,7 +100,9 @@ struct EventManagementHomeView: View {
                 }
                 .padding()
             }
-            }
+        }
+        .task {
+            await appSession.refreshData()
         }
     }
 }

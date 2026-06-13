@@ -15,6 +15,7 @@ final class AppSession {
     var currentRole: AppRole?
     var isLoggedIn: Bool = false
     var isRefreshing: Bool = false
+    private var lastRefreshDate: Date = .distantPast
     
     var activeDashboardTab: Int = 0
     var activeExploreTab: Int = 0
@@ -75,9 +76,43 @@ final class AppSession {
         self.activityStore = ActivityStore()
         self.registrationStore = RegistrationStore()
         
-        self.timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        startBackgroundPolling()
+    }
+    
+    /// Starts a 30-second polling timer that silently syncs key data from Supabase.
+    /// This ensures events, approvals, and tasks created by other users appear
+    /// without requiring a manual pull-to-refresh or re-login.
+    private func startBackgroundPolling() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             self?.currentTime = Date()
+            guard let self = self, self.isLoggedIn else { return }
+            Task { @MainActor in
+                await self.silentRefreshKeyData()
+            }
         }
+    }
+    
+    /// Lightweight silent refresh that fetches only the frequently-changing tables
+    /// (events, approvals, budgets, resources, tasks) without showing any loading UI.
+    @MainActor
+    func silentRefreshKeyData() async {
+        guard isLoggedIn, currentUser != nil else { return }
+        
+        // Fetch the 5 critical tables in parallel — no loading indicator
+        async let eventsTask: Void = { try? await self.eventStore.fetchAllEvents() }()
+        async let approvalsTask: Void = { try? await self.approvalStore.fetchApprovals() }()
+        async let budgetsTask: Void = { try? await self.approvalStore.fetchBudgets() }()
+        async let resourcesTask: Void = { try? await self.approvalStore.fetchResources() }()
+        async let tasksTask: Void = { try? await self.taskStore.fetchTasks() }()
+        
+        await eventsTask
+        await approvalsTask
+        await budgetsTask
+        await resourcesTask
+        await tasksTask
+        
+        print("DEBUG: Silent background sync complete")
     }
 
     @MainActor
@@ -85,6 +120,7 @@ final class AppSession {
         currentUser = user
         currentRole = role
         isLoggedIn = true
+        lastRefreshDate = .distantPast // Reset debounce so initial load always fires
         
         await refreshData()
     }
@@ -92,7 +128,13 @@ final class AppSession {
     @MainActor
     func refreshData() async {
         guard isLoggedIn, let user = currentUser else { return }
+        // Debounce: skip if already refreshing or if last refresh was less than 5 seconds ago
+        guard !isRefreshing, Date().timeIntervalSince(lastRefreshDate) > 5 else {
+            print("DEBUG: Skipping refresh (debounced)")
+            return
+        }
         isRefreshing = true
+        lastRefreshDate = Date()
         
         print("DEBUG: Starting Data Refresh for \(user.name)...")
         

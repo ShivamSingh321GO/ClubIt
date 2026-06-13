@@ -5,6 +5,7 @@ struct PresidentHomeView: View {
     
     var body: some View {
         NavigationStack {
+            ZStack {
             ScrollView(showsIndicators: false) {
                 if let user = appSession.currentUser {
                     VStack(alignment: .leading, spacing: 28) {
@@ -74,6 +75,28 @@ struct PresidentHomeView: View {
                     }
                 }
             }
+            .refreshable {
+                await appSession.refreshData()
+            }
+            
+            if appSession.isRefreshing {
+                VStack {
+                    ProgressView()
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                    Text("Loading data...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.1))
+                .transition(.opacity)
+            }
+            } // Close ZStack
+        }
+        .task {
+            await appSession.refreshData()
         }
         .sheet(item: Bindable(appSession).selectedTask) { task in
             TaskDetailView(task: task)

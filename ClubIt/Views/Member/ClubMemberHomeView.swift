@@ -79,6 +79,9 @@ struct ClubMemberHomeView: View {
                     }
                 }
             } // Close ScrollView
+            .refreshable {
+                await appSession.refreshData()
+            }
             
             NavigationLink(destination: ClubItCalendarView(standalone: true)) {
                 Image(systemName: "calendar")
@@ -90,6 +93,9 @@ struct ClubMemberHomeView: View {
             }
             .padding()
         } // Close ZStack
+        }
+        .task {
+            await appSession.refreshData()
         }
         .sheet(item: Bindable(appSession).selectedTask) { task in
             TaskDetailView(task: task)

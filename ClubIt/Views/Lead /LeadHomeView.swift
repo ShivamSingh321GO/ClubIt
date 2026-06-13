@@ -90,6 +90,9 @@ struct LeadHomeView: View {
                 .padding()
             }
         }
+        .task {
+            await appSession.refreshData()
+        }
         .sheet(item: Bindable(appSession).selectedTask) { task in
             TaskDetailView(task: task)
                 .presentationDragIndicator(.visible)
