@@ -190,29 +190,29 @@ struct EditEventView: View {
             }
             
             Section {
-                Button {
-                    isShowingAddResourcesItems = true
-                } label: {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(.blue)
-                        Text("Manage Resources")
-                    }
-                }
-                .foregroundStyle(.primary)
-                
-                if !universityResources.isEmpty || !rentalResources.isEmpty {
+                if universityResources.isEmpty && rentalResources.isEmpty {
                     Button {
-                        isShowingResourceSummary = true
+                        isShowingAddResourcesItems = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(.blue)
+                            Text("Manage Resources")
+                        }
+                    }
+                    .foregroundStyle(.primary)
+                } else {
+                    Button {
+                        isShowingAddResourcesItems = true
                     } label: {
                         HStack {
                             Text("\(universityResources.count + rentalResources.count) items added")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Image(systemName: "chevron.right")
+                            Text("Edit")
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.blue)
                         }
                     }
                     .buttonStyle(.plain)
@@ -222,30 +222,30 @@ struct EditEventView: View {
             }
 
             Section {
-                Button {
-                    isShowingAddBudgetItems = true
-                } label: {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(.blue)
-                        Text("Manage Budget Items")
+                if budgetItems.isEmpty {
+                    Button {
+                        isShowingAddBudgetItems = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(.blue)
+                            Text("Manage Budget Items")
+                        }
                     }
-                }
-                .foregroundStyle(.primary)
-                
-                if !budgetItems.isEmpty {
+                    .foregroundStyle(.primary)
+                } else {
                     let total = budgetItems.reduce(0) { $0 + (Double($1.price) ?? 0) * Double($1.quantity) }
                     Button {
-                        isShowingBudgetSummary = true
+                        isShowingAddBudgetItems = true
                     } label: {
                         HStack {
                             Text("\(budgetItems.count) items • Total: ₹\(Int(total))")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Image(systemName: "chevron.right")
+                            Text("Edit")
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.blue)
                         }
                     }
                     .buttonStyle(.plain)
@@ -410,19 +410,33 @@ struct EditEventView: View {
                 // Check if Vice President exists and event approval status
                 let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
                 let hasVP = club?.vicePresidentId != nil
-                let vpApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event && $0.receiverId == club?.vicePresidentId })
-                let isVPApproved = vpApproval?.status == .approved
+                let vpApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .event && $0.receiverId == club?.vicePresidentId }.sorted(by: { $0.createdAt > $1.createdAt })
+                let isVPApproved = vpApprovals.first?.status == .approved
                 let shouldCreateApprovalsForNewItems = !hasVP || isVPApproved
 
                 // 3. Conditional Re-submission Logic for VP
                 if let vicePresidentUserId = club?.vicePresidentId {
-                    if let eventApproval = appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event && $0.receiverId == vicePresidentUserId }) {
-                        if eventApproval.status == .rejected {
-                            try? await appSession.approvalStore.updateApproval(
-                                id: eventApproval.id,
-                                status: .pending
-                            )
-                        }
+                    let eventApproval = vpApprovals.first
+                    if eventApproval?.status == .rejected {
+                        try await appSession.approvalStore.updateApproval(
+                            id: eventApproval!.id,
+                            status: .pending
+                        )
+                    } else if eventApproval?.status == .approved {
+                        // Create a NEW approval request for the edits
+                        let newApproval = Approval(
+                            id: UUID(),
+                            type: .event,
+                            senderId: currentUser.id,
+                            receiverId: vicePresidentUserId,
+                            eventId: event.id,
+                            approvalRelatedId: event.id,
+                            status: .pending,
+                            remarks: [],
+                            createdAt: Date(),
+                            updatedAt: nil
+                        )
+                        try await appSession.approvalStore.submitApprovalRequest(newApproval)
                     }
                 }
 

@@ -693,9 +693,24 @@ struct EventManagementApprovalDetailView: View {
                     // Remarks History
                     if let approval = vpApproval {
                         VStack(alignment: .leading, spacing: 12) {
+                            Text("Remarks")
+                                .font(.headline)
+                            ZStack {
+                                Color.clear.frame(width: 0, height: 0)
+                                    .onAppear {
+                                        Task {
+                                            try? await appSession.approvalStore.fetchRemarks(for: approval.id)
+                                        }
+                                    }
+                                
+                                if let remarks = appSession.approvalStore.remarkMessages[approval.id], !remarks.isEmpty {
+                                    RemarkConversationView(approvalId: approval.id)
+                                        .padding(12)
+                                        .glassEffect(in: .rect(cornerRadius: 20))
+                                }
+                            }
+                            
                             HStack {
-                                Text("Remarks & Conversation")
-                                    .font(.headline)
                                 Spacer()
                                 Button(action: {
                                     withAnimation {
@@ -706,17 +721,14 @@ struct EventManagementApprovalDetailView: View {
                                     Label("Reply", systemImage: "arrowshape.turn.up.left.fill")
                                         .font(.caption.bold())
                                         .foregroundColor(.blue)
-                                        .padding(.vertical, 6)
+                                        .padding(.vertical, 8)
                                         .padding(.horizontal, 12)
                                         .background(Color.blue.opacity(0.1))
                                         .clipShape(Capsule())
                                 }
                                 .buttonStyle(.plain)
                             }
-                            
-                            RemarkConversationView(approvalId: approval.id)
-                                .padding(12)
-                                .glassEffect(in: .rect(cornerRadius: 20))
+                            .padding(.top, 4)
                         }
                         .padding(.horizontal)
                         

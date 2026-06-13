@@ -228,8 +228,9 @@ struct EventDetailView: View {
                         .textCase(.uppercase)
                     Text(formattedDateTime)
                         .font(.footnote.bold())
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -609,9 +610,23 @@ struct EventDetailView: View {
     // MARK: - Helpers
     
     private var formattedDateTime: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d, h:mm a"
-        return formatter.string(from: event.startDate)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d, yyyy"
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "h:mm a"
+        
+        let startDateStr = dateFormatter.string(from: event.startDate)
+        let endDateStr = dateFormatter.string(from: event.endDate)
+        
+        let startTimeStr = timeFormatter.string(from: event.startTime ?? event.startDate)
+        let endTimeStr = event.endTime != nil ? timeFormatter.string(from: event.endTime!) : timeFormatter.string(from: event.endDate)
+        
+        if startDateStr == endDateStr {
+            return "\(startDateStr) • \(startTimeStr) - \(endTimeStr)"
+        } else {
+            return "\(startDateStr) (\(startTimeStr)) - \(endDateStr) (\(endTimeStr))"
+        }
     }
     
     private var categoryIcon: String {

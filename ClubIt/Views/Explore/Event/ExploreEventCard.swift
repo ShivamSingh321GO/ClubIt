@@ -193,8 +193,9 @@ struct ExploreEventCard: View {
         let status = event.status
         let color: Color = {
             switch status {
+            case .pending: return .orange
             case .approved: return .green
-            default: return .green
+            default: return .blue
             }
         }()
         

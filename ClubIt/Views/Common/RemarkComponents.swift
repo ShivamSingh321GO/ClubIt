@@ -15,7 +15,12 @@ struct RemarkConversationView: View {
             
             ForEach(displayedRemarks) { remark in
                 let isCurrentUser = remark.authorId == appSession.currentUser?.id
-                let authorName = appSession.clubStore.allUsers.first(where: { $0.id == remark.authorId })?.name ?? "Unknown"
+                let authorName: String = {
+                    let name = appSession.clubStore.allUsers.first(where: { $0.id == remark.authorId })?.name ?? "Unknown"
+                    if name.lowercased() == "kavya" { return "Kavya (Club Lead)" }
+                    if name.lowercased() == "aryan" { return "Aryan (Vice President)" }
+                    return name
+                }()
                 
                 VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
                     HStack {

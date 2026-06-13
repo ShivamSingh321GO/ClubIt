@@ -86,9 +86,19 @@ struct LeadEventApprovalDetailView: View {
         return appSession.clubStore.allUsers.first(where: { $0.id == vpId })
     }
     
+    private var allVpApprovals: [Approval] {
+        guard let event = event, let club = club, let vpId = club.vicePresidentId else { return [] }
+        return appSession.approvalStore.approvals.filter { 
+            $0.eventId == event.id && $0.type == .event && $0.receiverId == vpId 
+        }.sorted(by: { $0.createdAt > $1.createdAt })
+    }
+    
     private var vpApproval: Approval? {
-        guard let event = event, let club = club, let vpId = club.vicePresidentId else { return nil }
-        return appSession.approvalStore.approvals.first(where: { $0.eventId == event.id && $0.type == .event && $0.receiverId == vpId })
+        allVpApprovals.first
+    }
+    
+    private var lastApprovedVpApproval: Approval? {
+        allVpApprovals.first(where: { $0.status == .approved })
     }
     
     private var vpRejectionRemark: String? {
@@ -256,7 +266,7 @@ struct LeadEventApprovalDetailView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     
                     // Club Header
-                    LeadDetailClubHeaderView(club: club, event: event)
+                    LeadDetailClubHeaderView(club: club, event: event, canEdit: true, isEditedAfterApproval: vpStepStatus == .pending && lastApprovedVpApproval != nil)
                         .padding(.horizontal)
                     
                     // Sequential Approval Status Tracker
@@ -472,21 +482,30 @@ struct LeadEventApprovalDetailView: View {
     private func eventSection(_ approvals: [Approval]) -> some View {
         VStack(spacing: 16) {
             ForEach(approvals.sorted(by: { $0.createdAt > $1.createdAt })) { approval in
-                LeadItemApprovalCard(
-                    title: "VP Draft Review",
-                    icon: "doc.text.fill",
-                    iconColor: .orange,
-                    status: approval.status.rawValue,
-                    details: [
-                        ("Category", event?.category.rawValue ?? "N/A"),
-                        ("Reviewer", vpUser?.name ?? "N/A")
-                    ],
-                    approvalId: approval.id,
-                    onReply: {
-                        replyingToItemId = approval.id
-                        replyingToType = .event
+                VStack(alignment: .leading, spacing: 4) {
+                    LeadItemApprovalCard(
+                        title: "VP Draft Review",
+                        icon: "doc.text.fill",
+                        iconColor: .orange,
+                        status: approval.status.rawValue,
+                        details: [
+                            ("Category", event?.category.rawValue ?? "N/A"),
+                            ("Reviewer", vpUser?.name ?? "N/A")
+                        ],
+                        approvalId: approval.id,
+                        onReply: {
+                            replyingToItemId = approval.id
+                            replyingToType = .event
+                        }
+                    )
+                    
+                    if approval.id == vpApproval?.id && approval.status == .pending, let lastApproved = lastApprovedVpApproval {
+                        Text("Last approved on \(formatDateShort(lastApproved.createdAt))")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .padding(.leading, 12)
                     }
-                )
+                }
             }
         }
         .padding(.horizontal)
@@ -563,17 +582,10 @@ struct LeadEventApprovalDetailView: View {
             
             VStack(spacing: 16) {
                 ForEach(budgets.sorted(by: { $0.createdAt > $1.createdAt })) { budget in
-                    LeadItemApprovalCard(
-                        title: budget.itemName,
-                        icon: "indianrupeesign.circle.fill",
-                        iconColor: .green,
-                        status: budget.status.rawValue,
-                        details: [
-                            ("Unit Price", "₹\(String(format: "%.0f", budget.unitPrice))"),
-                            ("Quantity", "\(budget.quantity)"),
-                            ("Total", "₹\(String(format: "%.0f", budget.totalAmount))")
-                        ],
-                        approvalId: appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id })?.id,
+                    PresidentBudgetRequestCard(
+                        budget: budget,
+                        onReject: {}, // Not applicable for Lead
+                        onApprove: {}, // Not applicable for Lead
                         onReply: {
                             replyingToItemId = budget.id
                             replyingToType = .budget
@@ -650,6 +662,8 @@ struct LeadDetailClubHeaderView: View {
     @Environment(AppSession.self) var appSession
     let club: Club
     let event: Event
+    var canEdit: Bool = true
+    var isEditedAfterApproval: Bool = false
     @State private var isShowingEditEvent = false
     
     var body: some View {
@@ -665,8 +679,20 @@ struct LeadDetailClubHeaderView: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(event.name)
-                    .font(.headline)
+                HStack {
+                    Text(event.name)
+                        .font(.headline)
+                    
+                    if isEditedAfterApproval {
+                        Text("Edited")
+                            .font(.system(size: 10, weight: .bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.15))
+                            .foregroundColor(.blue)
+                            .clipShape(Capsule())
+                    }
+                }
                 Text(club.name)
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -674,11 +700,13 @@ struct LeadDetailClubHeaderView: View {
             
             Spacer()
             
-            Button("Edit") {
-                isShowingEditEvent = true
+            if canEdit {
+                Button("Edit") {
+                    isShowingEditEvent = true
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
         }
         .padding(16)
         .glassEffect(in: .rect(cornerRadius: 20))
@@ -797,7 +825,7 @@ struct LeadItemApprovalCard: View {
                 
                 if let approvalId = approvalId {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("REMARKS")
+                        Text("Remarks")
                             .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
                         
@@ -806,14 +834,17 @@ struct LeadItemApprovalCard: View {
                     .padding(.top, 4)
                 }
                 
-                Button(action: onReply) {
-                    Label("Reply", systemImage: "arrowshape.turn.up.left.fill")
-                        .font(.caption.bold())
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Capsule())
+                HStack {
+                    Spacer()
+                    Button(action: onReply) {
+                        Label("Reply", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
                 }
                 .padding(.top, 4)
             }

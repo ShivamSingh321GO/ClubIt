@@ -316,7 +316,7 @@ struct PresidentBudgetRequestCard: View {
                 }
                 
                 Button(action: onReply) {
-                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                    Label(appSession.currentUser?.role == .clubLead ? "Reply" : "Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
                         .font(.caption.bold())
                         .foregroundColor(.blue)
                         .padding(.vertical, 8)
@@ -355,15 +355,7 @@ struct PresidentBudgetRequestCard: View {
             }
         }
         .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
-                )
-        )
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        .glassEffect(in: .rect(cornerRadius: 24))
     }
     
     func formatDate(_ date: Date) -> String {
