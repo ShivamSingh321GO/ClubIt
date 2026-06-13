@@ -66,7 +66,7 @@ final class AppSession {
         self.taskStore = taskStore
         self.venueStore = VenueStore()
         
-        self.clubAchievementStore = AchievementStore(clubId: clubStore.club.id)
+        self.clubAchievementStore = AchievementStore()
         self.announcementStore = AnnouncementStore()
         self.clubLinkStore = ClubLinkStore()
         self.clubFileStore = ClubFileStore()
@@ -144,8 +144,8 @@ final class AppSession {
                 print("DEBUG: Loading personal club data for \(clubId)")
                 try await clubStore.fetchClubDetails(id: clubId)
                 
-                // Update achievement store with the real ID
-                self.clubAchievementStore = AchievementStore(clubId: clubId)
+                // Fetch achievements from Supabase
+                try await clubAchievementStore.fetchAchievements(clubId: clubId)
                 
                 try await activityStore.fetchActivities(clubId: clubId)
                 try await clubFileStore.fetchFiles(clubId: clubId)

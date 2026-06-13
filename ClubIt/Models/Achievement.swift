@@ -38,4 +38,13 @@ struct Achievement: Identifiable, Codable {
     var description: String
     var type: AchievementType
     var createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case clubId = "club_id"
+        case title
+        case description
+        case type
+        case createdAt = "created_at"
+    }
 }

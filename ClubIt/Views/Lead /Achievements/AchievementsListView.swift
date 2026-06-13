@@ -68,8 +68,12 @@ struct AchievementsListView: View {
                         .contextMenu {
                             if appSession.currentRole == .clubLead {
                                 Button(role: .destructive) {
-                                    withAnimation {
-                                        appSession.clubAchievementStore.deleteAchievement(achievement)
+                                    Task {
+                                        do {
+                                            try await appSession.clubAchievementStore.deleteAchievement(achievement)
+                                        } catch {
+                                            print("DEBUG ERROR: Failed to delete achievement: \(error.localizedDescription)")
+                                        }
                                     }
                                 } label: {
                                     Label("Delete", systemImage: "trash")

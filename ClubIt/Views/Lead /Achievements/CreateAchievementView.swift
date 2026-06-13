@@ -50,8 +50,16 @@ struct CreateAchievementView: View {
                             type: selectedType,
                             createdAt: Date()
                         )
-                        appSession.clubAchievementStore.addAchievement(newAchievement)
-                        dismiss()
+                        Task {
+                            do {
+                                try await appSession.clubAchievementStore.addAchievement(newAchievement)
+                                await MainActor.run {
+                                    dismiss()
+                                }
+                            } catch {
+                                print("DEBUG ERROR: Failed to add achievement: \(error.localizedDescription)")
+                            }
+                        }
                     } label: {
                         Image(systemName: "checkmark")
                     }
