@@ -82,14 +82,12 @@ final class ChatStore {
         return filtered.sorted(by: stableChatSort)
     }
     
-    /// A deterministic sort: most-recent-message first, with chat ID as tiebreaker
+    /// A deterministic sort: most-recent-activity first, with chat ID as tiebreaker
     /// so the list never shuffles when two chats share the same timestamp.
+    /// Sorts purely by timestamp — does NOT group by "has message" vs "no message"
+    /// because placeholder text (e.g. "Tap to start chatting") set during local
+    /// chat creation would flip to empty after a DB re-fetch, causing reorder.
     private func stableChatSort(_ c1: Chat, _ c2: Chat) -> Bool {
-        let hasMsg1 = !c1.lastMessage.isEmpty
-        let hasMsg2 = !c2.lastMessage.isEmpty
-        if hasMsg1 != hasMsg2 {
-            return hasMsg1
-        }
         let t1 = c1.lastMessageAt ?? c1.createdAt
         let t2 = c2.lastMessageAt ?? c2.createdAt
         if t1 != t2 {
@@ -571,7 +569,6 @@ final class ChatStore {
             icon: user.profileImg,
             createdBy: userId,
             createdAt: Date(),
-            lastMessage: "Tap to start chatting",
             participantIds: [userId, user.id]
         )
         
@@ -622,7 +619,6 @@ final class ChatStore {
             icon: icon ?? "person.2.fill",
             createdBy: userId,
             createdAt: Date(),
-            lastMessage: "Group created",
             participantIds: allParticipantIds
         )
         
@@ -675,7 +671,6 @@ final class ChatStore {
             clubId: clubId,
             createdBy: userId,
             createdAt: Date(),
-            lastMessage: "Event chat created",
             participantIds: allParticipantIds
         )
         
@@ -730,7 +725,7 @@ final class ChatStore {
             parentChatId: parentId,
             createdBy: userId,
             createdAt: Date(),
-            lastMessage: "Sub-chat created"
+            lastMessage: ""
         )
         newChat.parentChatId = parentId
         
