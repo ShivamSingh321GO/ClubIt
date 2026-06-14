@@ -5,17 +5,17 @@ struct ChatBox: View {
     @Environment(AppSession.self) private var appSession
     @State private var messageText: String = ""
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showAttachmentMenu = false
-    @State private var dragOffset: CGFloat = 0
     @State private var showChatInfo = false
     @State private var showAddSubChat = false
     @State private var subChatName = ""
-    
-    var messages: [Message] {
-        appSession.chatStore.messages[chat.id] ?? []
-    }
+    @FocusState private var isMessageFieldFocused: Bool
     
     var body: some View {
+        // Read messages directly inside body for proper Observation tracking
+        let chatMessages = appSession.chatStore.messages[chat.id] ?? []
+        
         VStack(spacing: 0) {
             headerView
             
@@ -24,34 +24,25 @@ struct ChatBox: View {
                 ScrollView {
                     VStack(spacing: 12) {
                         
-                        Text("Today 12:08 AM") // Mock time
+                        Text(todayDateString())
                             .font(.caption2.bold())
                             .foregroundStyle(.secondary)
                             .padding(.bottom, 8)
                         
-                        ForEach(messages) { message in
+                        ForEach(chatMessages) { message in
                             let isCurrentUser = message.senderId == appSession.chatStore.userId
                             
-                            ZStack(alignment: .trailing) {
-                                MessageBubble(message: message, isCurrentUser: isCurrentUser)
-                                    .offset(x: dragOffset)
-                                
-                                Text(timeString(for: message.createdAt))
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                                    .frame(width: 60, alignment: .leading)
-                                    .offset(x: 60 + dragOffset)
-                            }
-                            .id(message.id)
-                            .transition(.asymmetric(
-                                insertion: .scale(scale: 0.1, anchor: isCurrentUser ? .bottomTrailing : .bottomLeading)
-                                    .combined(with: .opacity)
-                                    .combined(with: .move(edge: .bottom)),
-                                removal: .opacity
-                            ))
+                            MessageBubble(message: message, isCurrentUser: isCurrentUser)
+                                .id(message.id)
+                                .transition(.asymmetric(
+                                    insertion: .scale(scale: 0.1, anchor: isCurrentUser ? .bottomTrailing : .bottomLeading)
+                                        .combined(with: .opacity)
+                                        .combined(with: .move(edge: .bottom)),
+                                    removal: .opacity
+                                ))
                         }
                         
-                        if let lastMessage = messages.last, lastMessage.senderId == appSession.chatStore.userId {
+                        if let lastMessage = chatMessages.last, lastMessage.senderId == appSession.chatStore.userId {
                             HStack {
                                 Spacer()
                                 Text("Delivered")
@@ -65,23 +56,13 @@ struct ChatBox: View {
                     }
                     .padding(.vertical, 16)
                     .contentShape(Rectangle())
-                    .gesture(
-                        DragGesture()
-                            .onChanged { value in
-                                if value.translation.width < 0 {
-                                    // limit drag offset
-                                    dragOffset = max(value.translation.width, -60)
-                                }
-                            }
-                            .onEnded { _ in
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dragOffset = 0
-                                }
-                            }
-                    )
+                    .onTapGesture {
+                        isMessageFieldFocused = false
+                    }
                 }
-                .onChange(of: messages.count) {
-                    if let lastId = messages.last?.id {
+                .scrollDismissesKeyboard(.interactively)
+                .onChange(of: chatMessages.count) {
+                    if let lastId = chatMessages.last?.id {
                         withAnimation {
                             proxy.scrollTo(lastId, anchor: .bottom)
                         }
@@ -95,8 +76,20 @@ struct ChatBox: View {
         .navigationBarHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .background(Color.chatBackground.ignoresSafeArea())
-        .onAppear {
-            appSession.chatStore.markAsRead(for: chat.id)
+        .task {
+            appSession.chatStore.activeChatId = chat.id
+            await appSession.chatStore.fetchMessages(for: chat.id)
+            await appSession.chatStore.markAsRead(for: chat.id)
+        }
+        .onDisappear {
+            appSession.chatStore.activeChatId = nil
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                Task {
+                    await appSession.chatStore.markAsRead(for: chat.id)
+                }
+            }
         }
         .sheet(isPresented: $showAttachmentMenu) {
             AttachmentMenu { type in
@@ -159,7 +152,7 @@ struct ChatBox: View {
             } label: {
                 VStack(spacing: 4) {
                     avatarView
-                    Text(chat.name)
+                    Text(chat.displayName)
                         .font(.subheadline.bold())
                         .foregroundColor(.primary)
                 }
@@ -226,19 +219,19 @@ struct ChatBox: View {
             
             HStack(spacing: 8) {
                 TextField("Message", text: $messageText, axis: .vertical)
+                    .focused($isMessageFieldFocused)
                     .textFieldStyle(.plain)
                     .lineLimit(1...5)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .foregroundColor(.primary)
+                    .submitLabel(.send)
+                    .onSubmit {
+                        sendCurrentMessage()
+                    }
                 
                 Button {
-                    if !messageText.isEmpty {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            appSession.chatStore.sendMessage(messageText, to: chat.id)
-                            messageText = ""
-                        }
-                    }
+                    sendCurrentMessage()
                 } label: {
                     if messageText.isEmpty {
                         Image(systemName: "mic")
@@ -248,7 +241,7 @@ struct ChatBox: View {
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 28))
-                            .foregroundColor(.blue) // Native blue for send arrow
+                            .foregroundColor(.blue)
                             .padding(.trailing, 4)
                     }
                 }
@@ -264,18 +257,33 @@ struct ChatBox: View {
         .background(Color.chatBackground)
     }
     
-    private func timeString(for date: Date) -> String {
+    // MARK: - Send Message
+    private func sendCurrentMessage() {
+        guard !messageText.isEmpty else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            appSession.chatStore.sendMessage(messageText, to: chat.id)
+            messageText = ""
+        }
+    }
+    
+    
+    private func todayDateString() -> String {
         let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+        formatter.dateFormat = "EEEE, MMM d"
+        return "Today " + formatter.string(from: Date())
     }
 }
 
 #Preview {
     let session = AppSession()
-    let mockChat = session.chatStore.chats[0]
     NavigationStack {
-        ChatBox(chat: mockChat)
-            .environment(session)
+        ChatBox(chat: Chat(
+            id: UUID(),
+            type: .individual,
+            name: "Preview Chat",
+            createdBy: UUID(),
+            createdAt: Date()
+        ))
+        .environment(session)
     }
 }

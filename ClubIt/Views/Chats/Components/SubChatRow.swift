@@ -10,7 +10,7 @@ struct SubChatRow: View {
                 .frame(width: 1)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(chat.name)
+                Text(chat.displayName)
                     .font(.subheadline.bold())
                     .foregroundStyle(.primary)
                     .lineLimit(1)

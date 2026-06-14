@@ -21,25 +21,12 @@ struct ChatRow: View {
     var body: some View {
         HStack(spacing: 16) {
             // Avatar/Icon
-            ZStack(alignment: .bottomTrailing) {
-                chatIcon
-                
-                // Online indicator for individual chats
-                if chat.type == .individual {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 12, height: 12)
-                        .overlay(
-                            Circle().stroke(Color.chatBackground, lineWidth: 2)
-                        )
-                        .offset(x: -2, y: -2)
-                }
-            }
-            .frame(width: 54, height: 54)
+            chatIcon
+                .frame(width: 54, height: 54)
             
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .top) {
-                    Text(chat.name)
+                    Text(chat.displayName)
                         .font(.system(size: 16, weight: .semibold, design: .default))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
@@ -58,8 +45,7 @@ struct ChatRow: View {
                                 .clipShape(Capsule())
                         }
                     } else {
-                        // Timestamp (Mocked here since we don't have lastMessageTime on Chat model, using createdAt)
-                        Text(timeString(from: chat.createdAt))
+                        Text(timeString(from: chat.lastMessageAt ?? chat.createdAt))
                             .font(.caption)
                             .foregroundStyle(chat.unreadCount > 0 ? Color.chatAccent : .secondary)
                             .fontWeight(chat.unreadCount > 0 ? .semibold : .regular)

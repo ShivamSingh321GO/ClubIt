@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct EventManagementDashboardView: View {
+    @Environment(AppSession.self) var appSession
+    
     var body: some View {
         TabView {
             Tab("Home", systemImage: "house") {
@@ -14,11 +16,12 @@ struct EventManagementDashboardView: View {
             Tab("Chats", systemImage: "message") {
                 ChatsView()
             }
+            .badge(appSession.chatStore.totalUnreadCount)
         }
     }
 }
 
-#Preview {
-    EventManagementDashboardView()
-        .environment(MockData.session(for: .faculty))
-}
+//#Preview {
+//    EventManagementDashboardView()
+//        .environment(MockData.session(for: .faculty))
+//}

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ClubLeadDashboardView: View {
-//    @Environment(AppSession.self) var appSession
+    @Environment(AppSession.self) var appSession
     
     var body: some View {
         TabView {
@@ -28,6 +28,7 @@ struct ClubLeadDashboardView: View {
             Tab("Chats", systemImage: "message") {
                 ChatsView()
             }
+            .badge(appSession.chatStore.totalUnreadCount)
         }
     }
 }

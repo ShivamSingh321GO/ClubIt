@@ -26,9 +26,18 @@ struct SelectedUserBadge: View {
 }
 
 struct UserSelectionGridItem: View {
+    @Environment(AppSession.self) private var appSession
     let user: User
     let isSelected: Bool
     let onToggle: () -> Void
+    
+    private var clubName: String {
+        if let clubId = user.clubId,
+           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
+            return club.name
+        }
+        return roleName(for: user.role)
+    }
     
     var body: some View {
         Button(action: onToggle) {
@@ -56,7 +65,7 @@ struct UserSelectionGridItem: View {
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     
-                    Text(getClubSubtitle(for: user.name))
+                    Text(clubName)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
@@ -66,18 +75,30 @@ struct UserSelectionGridItem: View {
         .buttonStyle(.plain)
     }
     
-    private func getClubSubtitle(for name: String) -> String {
-        switch name {
-        case "Ayush", "Shivam": return "Quizzards"
-        case "Mayank", "Ansh": return "TechnoJam"
-        case "Kamakshi", "Anushka": return "NoteVeda"
-        default: return "Club member"
+    private func roleName(for role: AppRole) -> String {
+        switch role {
+        case .clubLead: return "Club Lead"
+        case .clubMember: return "Club Member"
+        case .president: return "President"
+        case .vicePresident: return "Vice President"
+        case .faculty: return "Faculty"
+        case .admin: return "Admin"
+        case .student: return "Student"
         }
     }
 }
 
 struct UserGridItem: View {
+    @Environment(AppSession.self) private var appSession
     let user: User
+    
+    private var clubName: String {
+        if let clubId = user.clubId,
+           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
+            return club.name
+        }
+        return roleName(for: user.role)
+    }
     
     var body: some View {
         VStack(spacing: 8) {
@@ -88,7 +109,7 @@ struct UserGridItem: View {
                     .font(.subheadline.bold())
                     .lineLimit(1)
                 
-                Text(getClubName(for: user.name))
+                Text(clubName)
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -96,12 +117,15 @@ struct UserGridItem: View {
         }
     }
     
-    private func getClubName(for name: String) -> String {
-        switch name {
-        case "Ayush", "Shivam": return "Quizzards"
-        case "Mayank", "Ansh": return "TechnoJam"
-        case "Kamakshi", "Anushka": return "NoteVeda"
-        default: return "Club member"
+    private func roleName(for role: AppRole) -> String {
+        switch role {
+        case .clubLead: return "Club Lead"
+        case .clubMember: return "Club Member"
+        case .president: return "President"
+        case .vicePresident: return "Vice President"
+        case .faculty: return "Faculty"
+        case .admin: return "Admin"
+        case .student: return "Student"
         }
     }
 }

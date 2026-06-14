@@ -6,7 +6,9 @@ struct CreateChatView: View {
     @State private var searchText = ""
     @State private var selectedUser: User? = nil
     
-    let suggestedUsers = MockData.allMockUsers
+    private var suggestedUsers: [User] {
+        appSession.clubStore.allUsers.filter { $0.id != appSession.chatStore.userId }
+    }
     
     var filteredUsers: [User] {
         if searchText.isEmpty {

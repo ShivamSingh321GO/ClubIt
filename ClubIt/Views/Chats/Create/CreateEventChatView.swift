@@ -8,7 +8,9 @@ struct CreateEventChatView: View {
     @State private var searchText = ""
     @State private var selectedUsers: Set<UUID> = []
     
-    let suggestedUsers = MockData.allMockUsers
+    private var suggestedUsers: [User] {
+        appSession.clubStore.allUsers.filter { $0.id != appSession.chatStore.userId }
+    }
     
     var filteredUsers: [User] {
         if searchText.isEmpty {
@@ -108,7 +110,7 @@ struct CreateEventChatView: View {
                     Button {
                         appSession.chatStore.createEventChat(
                             name: eventName,
-                            clubId: UUID(),
+                            clubId: appSession.currentUserClubId ?? UUID(),
                             icon: nil,
                             memberIds: Array(selectedUsers)
                         )

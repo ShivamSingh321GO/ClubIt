@@ -5,21 +5,34 @@ struct MessageBubble: View {
     let isCurrentUser: Bool
     
     var body: some View {
-        HStack(alignment: .bottom, spacing: 4) {
-            if isCurrentUser { Spacer(minLength: 50) }
+        VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
+            HStack(alignment: .bottom, spacing: 4) {
+                if isCurrentUser { Spacer(minLength: 50) }
+                
+                Text(message.content)
+                    .font(.body)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(isCurrentUser ? Color.chatAccent : Color(UIColor.darkGray).opacity(0.8))
+                    .foregroundStyle(.white)
+                    .clipShape(iMessageBubbleShape(isCurrentUser: isCurrentUser))
+                
+                if !isCurrentUser { Spacer(minLength: 50) }
+            }
             
-            Text(message.content)
-                .font(.body)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(isCurrentUser ? Color.chatAccent : Color(UIColor.darkGray).opacity(0.8))
-                .foregroundStyle(.white)
-                .clipShape(iMessageBubbleShape(isCurrentUser: isCurrentUser))
-            
-            if !isCurrentUser { Spacer(minLength: 50) }
+            Text(timeString(for: message.createdAt))
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
+                .padding(isCurrentUser ? .trailing : .leading, 8)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 2)
+    }
+    
+    private func timeString(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 

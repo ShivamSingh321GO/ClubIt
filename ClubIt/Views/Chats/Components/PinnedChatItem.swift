@@ -64,7 +64,7 @@ struct PinnedChatItem: View {
             .frame(width: 60, height: 60)
             
             // Name label below
-            Text(name.split(separator: " ").first ?? "")
+            Text(String(name.split(separator: " ").first ?? ""))
                 .font(.caption)
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)

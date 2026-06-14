@@ -23,37 +23,40 @@ struct ChatsView: View {
                 VStack(spacing: 0) {
                     
                     ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 32) {
-                        
-                        // Custom Search Bar
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                            TextField("Search", text: $searchText)
-                                .foregroundColor(.white)
+                        VStack(alignment: .leading, spacing: 32) {
                             
-                            Spacer()
-                        }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                        .background(Color.chatPillBackground.opacity(0.8))
-                        .clipShape(Capsule())
-                        .overlay(
-                            Capsule().stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
-                        .padding(.horizontal, 16)
-                        // Filter Categories
-                        filterBar(selectedCategory: $chatStore.selectedCategory)
+                            // Custom Search Bar
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                TextField("Search", text: $searchText)
+                                    .foregroundColor(.white)
+                                
+                                Spacer()
+                            }
+                            .padding(.vertical, 12)
                             .padding(.horizontal, 16)
-                        
-                        // Pinned Chats
-                        pinnedChatsSection
-                        
-                        // Chat List
-                        chatListSection
+                            .background(Color.chatPillBackground.opacity(0.8))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                            )
+                            .padding(.horizontal, 16)
+                            // Filter Categories
+                            filterBar(selectedCategory: $chatStore.selectedCategory)
+                                .padding(.horizontal, 16)
+                            
+                            // Pinned Chats
+                            pinnedChatsSection
+                            
+                            // Chat List
+                            chatListSection
+                        }
+                        .padding(.top, 8)
                     }
-                    .padding(.top, 8)
-                }
+                    .refreshable {
+                        await appSession.chatStore.fetchChats()
+                    }
             }
             
  
@@ -135,6 +138,9 @@ struct ChatsView: View {
                 .presentationBackground(Color.chatBackground)
             }
         }
+        .task {
+            await appSession.chatStore.fetchChats()
+        }
     }
 }
     
@@ -206,7 +212,7 @@ struct ChatsView: View {
                         ForEach(pinnedChats) { chat in
                             NavigationLink(destination: ChatBox(chat: chat)) {
                                 PinnedChatItem(
-                                    name: chat.name,
+                                    name: chat.displayName,
                                     icon: chat.icon ?? "person.circle.fill",
                                     unreadCount: chat.unreadCount,
                                     onTogglePin: {
@@ -229,7 +235,7 @@ struct ChatsView: View {
     // MARK: - Chat List
     private var chatListSection: some View {
         let chats = appSession.chatStore.filteredChats.filter {
-            searchText.isEmpty ? true : $0.name.localizedCaseInsensitiveContains(searchText)
+            searchText.isEmpty ? true : ($0.displayName).localizedCaseInsensitiveContains(searchText)
         }
         
         return VStack(spacing: 0) {
@@ -401,7 +407,8 @@ struct ChatsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                .padding(.top, 40)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 60)
             }
         }
     }

@@ -95,7 +95,7 @@ final class AppSession {
     }
     
     /// Lightweight silent refresh that fetches only the frequently-changing tables
-    /// (events, approvals, budgets, resources, tasks) without showing any loading UI.
+    /// (events, approvals, budgets, resources, tasks, chats) without showing any loading UI.
     @MainActor
     func silentRefreshKeyData() async {
         guard isLoggedIn, let user = currentUser else { return }
@@ -134,6 +134,10 @@ final class AppSession {
         currentRole = role
         isLoggedIn = true
         lastRefreshDate = .distantPast // Reset debounce so initial load always fires
+        
+        // Initialize chat store with the logged-in user's ID and start realtime
+        chatStore.userId = user.id
+        chatStore.startRealtimeSubscription()
         
         await refreshData()
     }
@@ -181,6 +185,7 @@ final class AppSession {
         async let tasksTask: Void = { try? await taskStore.fetchTasks() }()
         async let announcementsTask: Void = { try? await announcementStore.fetchAnnouncements() }()
         async let venuesTask: Void = { try? await venueStore.fetchVenues() }()
+        async let chatsTask: Void = { await chatStore.fetchChats() }()
         
         await clubsTask
         await usersTask
@@ -192,6 +197,7 @@ final class AppSession {
         await tasksTask
         await announcementsTask
         await venuesTask
+        await chatsTask
         
         // 3. Sync registrations
         let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
@@ -209,6 +215,8 @@ final class AppSession {
         registeredEventIds = []
         favouritedEventIds = []
         studentDashboardStore.registeredEventIds = []
+        chatStore.stopRealtimeSubscription()
+        chatStore.clearData()
     }
     
     @MainActor
