@@ -185,7 +185,7 @@ final class AppSession {
         async let tasksTask: Void = { try? await taskStore.fetchTasks() }()
         async let announcementsTask: Void = { try? await announcementStore.fetchAnnouncements() }()
         async let venuesTask: Void = { try? await venueStore.fetchVenues() }()
-        async let chatsTask: Void = { await chatStore.fetchChats() }()
+        async let chatsTask: Void = { await chatStore.fetchChatsIfNeeded() }()
         
         await clubsTask
         await usersTask

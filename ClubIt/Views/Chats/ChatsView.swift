@@ -139,7 +139,10 @@ struct ChatsView: View {
             }
         }
         .task {
-            await appSession.chatStore.fetchChats()
+            // Only triggers a network call if data is stale (>30s) or never loaded.
+            // On normal tab switches this returns immediately, preventing the
+            // flash-empty / reorder issues.
+            await appSession.chatStore.fetchChatsIfNeeded()
         }
     }
 }

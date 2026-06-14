@@ -19,6 +19,17 @@ final class ChatStore {
     // Set from AppSession on sign-in
     var userId: UUID = UUID()
     
+    // ── Fetch lifecycle guards ──
+    // Tracks whether the very first fetch has completed, so views
+    // know whether the empty state is "loading" vs "truly empty".
+    private(set) var hasFetchedInitialData = false
+    // Serialises network fetches so only one can be in-flight at a time.
+    private var isFetching = false
+    // Timestamp of the last completed fetch, used for debouncing.
+    private var lastFetchDate: Date = .distantPast
+    // Debounce timer for realtime participant-change events.
+    private var participantDebounceTask: Task<Void, Never>?
+    
     // Realtime channels
     private var messagesChannel: RealtimeChannelV2?
     private var participantsChannel: RealtimeChannelV2?
@@ -41,16 +52,7 @@ final class ChatStore {
     
     var pinnedChats: [Chat] {
         chats.filter { $0.isPinned && !$0.isArchived && !$0.isRequest && $0.parentChatId == nil }
-            .sorted { (c1, c2) -> Bool in
-                let hasMsg1 = !c1.lastMessage.isEmpty
-                let hasMsg2 = !c2.lastMessage.isEmpty
-                if hasMsg1 != hasMsg2 {
-                    return hasMsg1
-                }
-                let t1 = c1.lastMessageAt ?? c1.createdAt
-                let t2 = c2.lastMessageAt ?? c2.createdAt
-                return t1 > t2
-            }
+            .sorted(by: stableChatSort)
             .prefix(5).map { $0 }
     }
     
@@ -77,16 +79,24 @@ final class ChatStore {
             filtered = topLevelChats.filter { $0.isRequest && !$0.isArchived }
         }
         
-        return filtered.sorted { (c1, c2) -> Bool in
-            let hasMsg1 = !c1.lastMessage.isEmpty
-            let hasMsg2 = !c2.lastMessage.isEmpty
-            if hasMsg1 != hasMsg2 {
-                return hasMsg1
-            }
-            let t1 = c1.lastMessageAt ?? c1.createdAt
-            let t2 = c2.lastMessageAt ?? c2.createdAt
+        return filtered.sorted(by: stableChatSort)
+    }
+    
+    /// A deterministic sort: most-recent-message first, with chat ID as tiebreaker
+    /// so the list never shuffles when two chats share the same timestamp.
+    private func stableChatSort(_ c1: Chat, _ c2: Chat) -> Bool {
+        let hasMsg1 = !c1.lastMessage.isEmpty
+        let hasMsg2 = !c2.lastMessage.isEmpty
+        if hasMsg1 != hasMsg2 {
+            return hasMsg1
+        }
+        let t1 = c1.lastMessageAt ?? c1.createdAt
+        let t2 = c2.lastMessageAt ?? c2.createdAt
+        if t1 != t2 {
             return t1 > t2
         }
+        // Stable tiebreaker — prevents order flickering between fetches
+        return c1.id.uuidString < c2.id.uuidString
     }
     
     func getSubChats(for parentId: UUID) -> [Chat] {
@@ -95,8 +105,32 @@ final class ChatStore {
     
     // MARK: - Fetch Chats
     
+    /// Called by views on appear — skips the network call entirely if data
+    /// was fetched recently (within 30s) and the initial load already completed.
+    @MainActor
+    func fetchChatsIfNeeded() async {
+        if hasFetchedInitialData && Date().timeIntervalSince(lastFetchDate) < 30 {
+            return
+        }
+        await fetchChats()
+    }
+    
+    /// Full fetch from Supabase.  Uses in-place merging so the SwiftUI list
+    /// never sees an empty intermediate state.
     @MainActor
     func fetchChats() async {
+        // ── Serialisation: only one fetch can run at a time ──
+        guard !isFetching else {
+            print("DEBUG: [ChatStore] Skipping fetchChats — already in progress")
+            return
+        }
+        isFetching = true
+        defer {
+            isFetching = false
+            lastFetchDate = Date()
+            hasFetchedInitialData = true
+        }
+        
         do {
             // 1. Fetch all chat_participants for current user
             let participants: [ChatParticipant] = try await client
@@ -108,7 +142,8 @@ final class ChatStore {
             
             let chatIds = participants.map { $0.chatId }
             guard !chatIds.isEmpty else {
-                self.chats = []
+                // User genuinely has no chats — clear the list.
+                if !self.chats.isEmpty { self.chats = [] }
                 return
             }
             
@@ -121,8 +156,7 @@ final class ChatStore {
                 .execute()
                 .value
             
-            // 3. Also fetch sub-chats (parent_chat_id in chatIds) that the user might not directly participate in
-            // but should see because they're in the parent event chat
+            // 3. Also fetch sub-chats for event chats
             let eventChatIds = fetchedChats.filter { $0.type == .event }.map { $0.id }
             if !eventChatIds.isEmpty {
                 let subChats: [Chat] = try await client
@@ -132,14 +166,13 @@ final class ChatStore {
                     .execute()
                     .value
                 
-                // Merge sub-chats that aren't already in fetchedChats
                 let existingIds = Set(fetchedChats.map { $0.id })
                 for sub in subChats where !existingIds.contains(sub.id) {
                     fetchedChats.append(sub)
                 }
             }
             
-            // 3.5 Fetch all participant records for these chats to resolve individual chat display names and participantIds
+            // 3.5 Fetch all participant records for resolving display names
             let allParticipants: [ChatParticipant] = try await client
                 .from("chat_participants")
                 .select()
@@ -159,7 +192,7 @@ final class ChatStore {
                 }
             }
             
-            // Fetch user info for those other users
+            // Fetch user info for individual chat partners
             var usersMap: [UUID: User] = [:]
             if !otherUserIds.isEmpty {
                 do {
@@ -178,7 +211,12 @@ final class ChatStore {
             // 4. Apply per-user state from participants
             let participantMap = Dictionary(uniqueKeysWithValues: participants.map { ($0.chatId, $0) })
             
-            // We'll prepare to fetch unread counts and last message in parallel
+            // Snapshot of current transient UI state to preserve across merge
+            let existingChatState: [UUID: Chat] = Dictionary(
+                uniqueKeysWithValues: self.chats.map { ($0.id, $0) }
+            )
+            
+            // Fetch unread counts and last message in parallel
             await withTaskGroup(of: (UUID, String, Date?, Int).self) { group in
                 for i in fetchedChats.indices {
                     let chatId = fetchedChats[i].id
@@ -236,7 +274,7 @@ final class ChatStore {
                 }
             }
             
-            // Set fields from participant mapping
+            // Enrich fetched chats with participant & transient UI state
             for i in fetchedChats.indices {
                 let chatId = fetchedChats[i].id
                 if let chatParts = participantsByChat[chatId] {
@@ -257,12 +295,48 @@ final class ChatStore {
                     fetchedChats[i].isMuted = p.isMuted
                     fetchedChats[i].isRequest = (p.status == .pending)
                 }
+                
+                // Preserve transient UI-only state from the previous array
+                if let existing = existingChatState[chatId] {
+                    fetchedChats[i].isExpanded = existing.isExpanded
+                }
             }
             
-            self.chats = fetchedChats
-            print("DEBUG: [ChatStore] Fetched \(fetchedChats.count) chats")
+            // ── In-place merge ──
+            // Instead of `self.chats = fetchedChats` (which swaps the entire
+            // array and causes SwiftUI to flash), we merge surgically:
+            //   • Update existing chats in-place
+            //   • Append genuinely new chats
+            //   • Remove chats that no longer exist on the server
+            let newChatMap = Dictionary(uniqueKeysWithValues: fetchedChats.map { ($0.id, $0) })
+            let newIds = Set(newChatMap.keys)
+            let oldIds = Set(self.chats.map { $0.id })
+            
+            // Update existing chats in-place (preserves array identity for SwiftUI)
+            for i in self.chats.indices {
+                if let updated = newChatMap[self.chats[i].id] {
+                    self.chats[i] = updated
+                }
+            }
+            
+            // Remove chats that were deleted server-side
+            let removedIds = oldIds.subtracting(newIds)
+            if !removedIds.isEmpty {
+                self.chats.removeAll { removedIds.contains($0.id) }
+            }
+            
+            // Append genuinely new chats
+            let addedIds = newIds.subtracting(oldIds)
+            for id in addedIds {
+                if let chat = newChatMap[id] {
+                    self.chats.append(chat)
+                }
+            }
+            
+            print("DEBUG: [ChatStore] Merged \(fetchedChats.count) chats (updated \(oldIds.intersection(newIds).count), added \(addedIds.count), removed \(removedIds.count))")
         } catch {
             print("DEBUG ERROR: [ChatStore] fetchChats failed: \(error)")
+            // On failure, keep existing chats — never wipe the list
         }
     }
     
@@ -842,8 +916,14 @@ final class ChatStore {
             
             for await _ in participantInsertions {
                 if Task.isCancelled { break }
-                // Refresh chat list when participant changes happen
-                await fetchChats()
+                // Debounce: wait 2 seconds before refreshing to batch rapid changes
+                // (e.g. when creating a group adds multiple participants at once)
+                self.participantDebounceTask?.cancel()
+                self.participantDebounceTask = Task {
+                    try? await Task.sleep(for: .seconds(2))
+                    guard !Task.isCancelled else { return }
+                    await self.fetchChats()
+                }
             }
         }
         
@@ -986,5 +1066,10 @@ final class ChatStore {
         messages = [:]
         chatParticipants = [:]
         selectedCategory = .all
+        hasFetchedInitialData = false
+        isFetching = false
+        lastFetchDate = .distantPast
+        participantDebounceTask?.cancel()
+        participantDebounceTask = nil
     }
 }
