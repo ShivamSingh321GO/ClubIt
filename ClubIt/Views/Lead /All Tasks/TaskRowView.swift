@@ -72,11 +72,23 @@ struct TaskRowView: View {
                 
                 // Title and Description
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(task.title)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundStyle(task.status == .completed ? .secondary : .primary)
-                        .strikethrough(task.status == .completed)
+                    HStack(spacing: 8) {
+                        Text(task.title)
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(task.status == .completed ? .secondary : .primary)
+                            .strikethrough(task.status == .completed)
+                            
+                        if let updatedAt = task.updatedAt, abs(updatedAt.timeIntervalSince(task.createdAt)) > 60 {
+                            Text("Edited")
+                                .font(.system(size: 10, weight: .bold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.blue.opacity(0.15))
+                                .foregroundColor(.blue)
+                                .clipShape(Capsule())
+                        }
+                    }
                     
                     if !task.description.isEmpty {
                         Text(task.description)

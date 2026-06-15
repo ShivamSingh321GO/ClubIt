@@ -57,62 +57,73 @@ struct CreateNewEventView: View {
     var body: some View {
         if showSuccessView {
             let isPresident = appSession.currentUser?.role == .president
-            VStack(spacing: 28) {
+            VStack(spacing: 32) {
                 Spacer()
                 
-                ZStack {
-                    Circle()
-                        .fill(Color.orange.opacity(0.1))
-                        .frame(width: 88, height: 88)
-                    Image(systemName: isPresident ? "checkmark.circle.fill" : "doc.text.badge.plus")
-                        .font(.system(size: 44))
-                        .foregroundColor(.orange)
-                }
+                Image(systemName: isPresident ? "checkmark.circle.fill" : "doc.text.badge.plus")
+                    .font(.system(size: 80))
+                    .foregroundStyle(isPresident ? Color.green.gradient : Color.orange.gradient)
+                    .symbolEffect(.bounce, options: .nonRepeating)
+                    .padding(.bottom, 8)
                 
-                VStack(spacing: 12) {
-                    Text(isPresident ? "Event Published!" : "Event Draft Created!")
-                        .font(.title2.bold())
+                VStack(spacing: 16) {
+                    Text(isPresident ? "Event Published" : "Draft Sent")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
                         .multilineTextAlignment(.center)
                     
-                    Text(isPresident ? "Your event '\(eventName)' has been successfully published and is now live for all users." : "Your event '\(eventName)' has been saved as a draft. It has been sent to the Vice President for initial review.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    Text(isPresident ? "Your event '\(eventName)' has been successfully published and is now live." : "Your event '\(eventName)' has been saved as a draft and sent to the Vice President for review.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                        .lineSpacing(4)
+                        .padding(.horizontal, 32)
                 }
                 
                 Spacer()
                 
-                VStack(spacing: 14) {
+                VStack(spacing: 16) {
                     if !isPresident {
                         NavigationLink(destination: LeadEventApprovalDetailView(eventId: currentEventId)) {
                             Text("View Event Draft")
                                 .font(.headline)
-                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.orange)
-                                .cornerRadius(16)
                         }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .buttonBorderShape(.capsule)
+                        .tint(.orange)
                     }
                     
-                    Button {
-                        dismiss()
-                    } label: {
-                        Text("Go to Dashboard")
-                            .font(.headline)
-                            .foregroundColor(.orange)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange.opacity(0.12))
-                            .cornerRadius(16)
+                    if isPresident {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("Go to Dashboard")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .buttonBorderShape(.capsule)
+                        .tint(.orange)
+                    } else {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("Go to Dashboard")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .buttonBorderShape(.capsule)
+                        .tint(.orange)
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .padding(.bottom, 32)
             }
-            .navigationTitle(isPresident ? "Event Published" : "Draft Saved")
+            .navigationTitle("")
             .navigationBarBackButtonHidden(true)
         } else {
             Form {

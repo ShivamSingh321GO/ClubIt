@@ -79,11 +79,18 @@ struct SignInView: View {
                             await viewModel.signIn(appSession: appSession)
                         }
                     } label: {
-                        Text("Login")
-                            .bold()
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(.white)
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Login")
+                                .bold()
+                                .frame(maxWidth: .infinity)
+                                .foregroundColor(.white)
+                        }
                     }
+                    .disabled(viewModel.isLoading)
                     .listRowBackground(Color.goldenBrown)
                 }
                 

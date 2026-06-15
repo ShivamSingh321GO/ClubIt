@@ -82,7 +82,7 @@ struct FacultyHomeView: View {
                 await appSession.refreshData()
             }
             
-            if appSession.isRefreshing {
+            if appSession.isRefreshing && appSession.eventStore.events.isEmpty {
                 VStack {
                     ProgressView()
                         .padding()

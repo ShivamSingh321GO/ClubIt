@@ -52,10 +52,22 @@ struct TaskDetailView: View {
                             Spacer()
                         }
                         
-                        Text(currentTask.title)
-                            .font(.title2)
-                            .bold()
-                            .foregroundStyle(.primary)
+                        HStack(alignment: .center, spacing: 8) {
+                            Text(currentTask.title)
+                                .font(.title2)
+                                .bold()
+                                .foregroundStyle(.primary)
+                            
+                            if let updatedAt = currentTask.updatedAt, abs(updatedAt.timeIntervalSince(currentTask.createdAt)) > 60 {
+                                Text("(Edited)")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.secondary.opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                        }
                             
                         Divider().padding(.top, 12)
                     }

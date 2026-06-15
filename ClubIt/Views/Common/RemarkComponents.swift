@@ -11,58 +11,76 @@ struct RemarkConversationView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            let displayedRemarks = showAllRemarks ? remarks : Array(remarks.suffix(3))
-            
-            ForEach(displayedRemarks) { remark in
-                let isCurrentUser = remark.authorId == appSession.currentUser?.id
-                let authorName: String = {
-                    let name = appSession.clubStore.allUsers.first(where: { $0.id == remark.authorId })?.name ?? "Unknown"
-                    if name.lowercased() == "kavya" { return "Kavya (Club Lead)" }
-                    if name.lowercased() == "aryan" { return "Aryan (Vice President)" }
-                    return name
-                }()
-                
-                VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
-                    HStack {
-                        if !isCurrentUser {
-                            Circle()
-                                .fill(Color.orange.opacity(0.1))
-                                .frame(width: 24, height: 24)
-                                .overlay(
-                                    Text(authorName.isEmpty ? "U" : String(authorName.prefix(1)))
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(.orange)
-                                )
-                            
-                            Text(authorName)
-                                .font(.caption.bold())
-                                .foregroundColor(.primary)
-                        }
-                        
-                        Spacer()
-                        
-                        Text(formatDate(remark.createdAt))
-                            .font(.system(size: 8))
-                            .foregroundColor(.secondary)
-                    }
+            if remarks.isEmpty {
+                let isLead = appSession.currentUser?.role == .clubLead
+                HStack {
+                    if isLead { Spacer() }
                     
-                    Text(remark.content)
+                    Text("Initial draft submitted.")
                         .font(.footnote)
+                        .foregroundColor(isLead ? .primary : .secondary)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(isCurrentUser ? Color.blue.opacity(0.1) : Color.secondary.opacity(0.1))
+                        .background(isLead ? Color.blue.opacity(0.1) : Color.secondary.opacity(0.1))
                         .cornerRadius(12)
+                        .padding(.horizontal, 4)
+                        
+                    if !isLead { Spacer() }
                 }
-                .padding(.horizontal, 4)
-            }
-            
-            if remarks.count > 3 && !showAllRemarks {
-                Button(action: { withAnimation { showAllRemarks = true } }) {
-                    Text("Show \(remarks.count - 3) more remarks...")
-                        .font(.caption.bold())
-                        .foregroundColor(.blue)
+            } else {
+                let displayedRemarks = showAllRemarks ? remarks : Array(remarks.suffix(3))
+                
+                ForEach(displayedRemarks) { remark in
+                    let isCurrentUser = remark.authorId == appSession.currentUser?.id
+                    let authorName: String = {
+                        let name = appSession.clubStore.allUsers.first(where: { $0.id == remark.authorId })?.name ?? "Unknown"
+                        if name.lowercased() == "kavya" { return "Kavya (Club Lead)" }
+                        if name.lowercased() == "aryan" { return "Aryan (Vice President)" }
+                        return name
+                    }()
+                    
+                    VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
+                        HStack {
+                            if !isCurrentUser {
+                                Circle()
+                                    .fill(Color.orange.opacity(0.1))
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Text(authorName.isEmpty ? "U" : String(authorName.prefix(1)))
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.orange)
+                                    )
+                                
+                                Text(authorName)
+                                    .font(.caption.bold())
+                                    .foregroundColor(.primary)
+                            }
+                            
+                            Spacer()
+                            
+                            Text(formatDate(remark.createdAt))
+                                .font(.system(size: 8))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Text(remark.content)
+                            .font(.footnote)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(isCurrentUser ? Color.blue.opacity(0.1) : Color.secondary.opacity(0.1))
+                            .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 4)
                 }
-                .padding(.leading, 4)
+                
+                if remarks.count > 3 && !showAllRemarks {
+                    Button(action: { withAnimation { showAllRemarks = true } }) {
+                        Text("Show \(remarks.count - 3) more remarks...")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                    }
+                    .padding(.leading, 4)
+                }
             }
         }
         .onAppear {

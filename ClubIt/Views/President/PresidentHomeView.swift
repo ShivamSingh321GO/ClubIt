@@ -66,7 +66,7 @@ struct PresidentHomeView: View {
                     }
                 }
                 
-                if appSession.isRefreshing {
+                if appSession.isRefreshing && appSession.eventStore.events.isEmpty {
                     VStack {
                         ProgressView()
                             .padding()

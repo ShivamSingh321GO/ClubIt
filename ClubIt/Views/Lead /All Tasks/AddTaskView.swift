@@ -262,6 +262,10 @@ struct AddTaskView: View {
             }
         }
         
+        let now = Date()
+        let creationDate = initialTask?.createdAt ?? now
+        let updatedDate = initialTask != nil ? now : creationDate
+        
         let defaultClubId = appSession.clubStore.allClubs.first?.id ?? UUID()
         let taskToSave = Tasks(
             id: initialTask?.id ?? UUID(),
@@ -277,7 +281,8 @@ struct AddTaskView: View {
             deadline: deadline,
             priority: priority,
             status: initialTask?.status ?? .pending,
-            createdAt: initialTask?.createdAt ?? Date()
+            createdAt: creationDate,
+            updatedAt: updatedDate
         )
         
         Task {

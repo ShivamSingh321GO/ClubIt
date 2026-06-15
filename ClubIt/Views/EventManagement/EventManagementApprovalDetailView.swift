@@ -31,6 +31,8 @@ struct EventManagementApprovalDetailView: View {
     @State private var replyingToApprovalId: UUID? = nil
     @State private var replyText: String = ""
     
+    @State private var isProcessingApproval = false
+    
     var body: some View {
         Group {
             if appSession.currentRole == .vicePresident {
@@ -120,6 +122,9 @@ struct EventManagementApprovalDetailView: View {
             Button("Approve") {
                 if let approval = eventToApprove {
                     Task {
+                        isProcessingApproval = true
+                        defer { isProcessingApproval = false }
+                        
                         if appSession.currentRole == .vicePresident {
                             try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
                             if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
@@ -170,6 +175,22 @@ struct EventManagementApprovalDetailView: View {
         .onAppear {
             if appSession.currentRole == .president {
                 selectedTab = "Budget"
+            }
+        }
+        .overlay {
+            if isProcessingApproval {
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    VStack {
+                        ProgressView()
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(12)
+                        Text("Processing...")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                    }
+                }
             }
         }
     }
@@ -580,7 +601,7 @@ struct EventManagementApprovalDetailView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header
-                    LeadDetailClubHeaderView(club: club, event: event, canEdit: false, isEditedAfterApproval: isEdited)
+                    ClubHeaderView(club: club, event: event, isEditedAfterApproval: isEdited)
                     
                     // Event Details Section
                     VStack(alignment: .leading, spacing: 12) {
@@ -588,37 +609,43 @@ struct EventManagementApprovalDetailView: View {
                             .font(.headline)
                             .foregroundColor(.orange)
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack(alignment: .top) {
                                 Label("Date & Time", systemImage: "calendar")
                                     .font(.subheadline.bold())
                                 Spacer()
-                                VStack(alignment: .trailing, spacing: 2) {
+                                VStack(alignment: .trailing, spacing: 4) {
                                     Text(event.dashboardDateLine1)
                                         .font(.caption)
+                                        .multilineTextAlignment(.trailing)
                                     Text(event.dashboardDateLine2)
                                         .font(.caption2)
                                         .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.trailing)
                                 }
                             }
                             
-                            HStack {
+                            Divider().opacity(0.3)
+                            
+                            HStack(alignment: .top) {
                                 Label("Venue requested", systemImage: "mappin.and.ellipse")
                                     .font(.subheadline.bold())
-                                Spacer()
+                                Spacer(minLength: 16)
                                 Text(event.location)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.trailing)
                             }
                             
                             if !event.description.isEmpty {
-                                Divider()
-                                VStack(alignment: .leading, spacing: 4) {
+                                Divider().opacity(0.3)
+                                VStack(alignment: .leading, spacing: 6) {
                                     Text("Description")
                                         .font(.subheadline.bold())
                                     Text(event.description)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
+                                        .lineSpacing(4)
                                 }
                             }
                         }

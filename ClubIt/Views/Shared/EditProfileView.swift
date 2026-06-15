@@ -84,8 +84,9 @@ struct EditProfileView: View {
             }
             
             Section("Bio") {
-                TextEditor(text: $bio)
-                    .frame(minHeight: 100)
+                TextField("Write something about yourself...", text: $bio, axis: .vertical)
+                    .lineLimit(4...10)
+                    .frame(minHeight: 100, alignment: .topLeading)
             }
         }
         .navigationTitle("Edit Profile")

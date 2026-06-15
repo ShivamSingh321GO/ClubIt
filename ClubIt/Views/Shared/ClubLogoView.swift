@@ -41,8 +41,8 @@ struct ClubLogoView: View {
             } else if !logo.isEmpty && UIImage(named: logo) != nil {
                 Image(logo)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: iconSize, height: iconSize)
+                    .scaledToFill()
+                    .frame(width: size, height: size)
                     .clipShape(Circle())
             } else {
                 Image(systemName: "flame.fill")

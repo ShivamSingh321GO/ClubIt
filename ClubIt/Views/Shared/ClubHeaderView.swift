@@ -4,11 +4,38 @@ struct ClubHeaderView: View {
     @Environment(AppSession.self) var appSession
     let club: Club
     let event: Event
+    var isEditedAfterApproval: Bool = false
     
     var body: some View {
         NavigationLink(destination: EventDetailView(event: event, isMyEvent: false)) {
             HStack(spacing: 16) {
                 ZStack {
+                if let bannerUrl = event.bannerImage, let url = URL(string: bannerUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 60, height: 60)
+                                .background(Color.secondary.opacity(0.1))
+                                .clipShape(Circle())
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                        case .failure:
+                            Circle()
+                                .fill(Color.orange.gradient.opacity(0.1))
+                                .frame(width: 60, height: 60)
+                            Text(String(club.name.prefix(1)))
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.orange)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                } else {
                     Circle()
                         .fill(Color.orange.gradient.opacity(0.1))
                         .frame(width: 60, height: 60)
@@ -17,11 +44,24 @@ struct ClubHeaderView: View {
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.orange)
                 }
+                }
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(event.name)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                    HStack(spacing: 8) {
+                        Text(event.name)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            
+                        if isEditedAfterApproval {
+                            Text("Edited")
+                                .font(.system(size: 10, weight: .bold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.blue.opacity(0.15))
+                                .foregroundColor(.blue)
+                                .clipShape(Capsule())
+                        }
+                    }
                     
                     Text(club.name)
                         .font(.caption)

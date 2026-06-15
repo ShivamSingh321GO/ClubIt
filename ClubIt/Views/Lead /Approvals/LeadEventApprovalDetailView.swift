@@ -669,13 +669,40 @@ struct LeadDetailClubHeaderView: View {
     var body: some View {
         HStack(spacing: 16) {
             ZStack {
-                Circle()
-                    .fill(Color.orange.gradient.opacity(0.1))
-                    .frame(width: 60, height: 60)
-                
-                Text(String(club.name.prefix(1)))
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.orange)
+                if let bannerUrl = event.bannerImage, let url = URL(string: bannerUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 60, height: 60)
+                                .background(Color.secondary.opacity(0.1))
+                                .clipShape(Circle())
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                        case .failure:
+                            Circle()
+                                .fill(Color.orange.gradient.opacity(0.1))
+                                .frame(width: 60, height: 60)
+                            Text(String(club.name.prefix(1)))
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.orange)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                } else {
+                    Circle()
+                        .fill(Color.orange.gradient.opacity(0.1))
+                        .frame(width: 60, height: 60)
+                    
+                    Text(String(club.name.prefix(1)))
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.orange)
+                }
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -854,7 +881,7 @@ struct LeadItemApprovalCard: View {
                 
                 if let approvalId = approvalId {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Remarks")
+                        Text("REMARKS")
                             .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.secondary)
                         
