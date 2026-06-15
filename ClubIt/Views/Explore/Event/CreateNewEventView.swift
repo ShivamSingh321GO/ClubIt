@@ -698,7 +698,12 @@ struct CreateNewEventView: View {
         }
     }
 
-    
+    private func resetForm() {
+        currentEventId = UUID()
+        eventName = ""
+        eventDescription = ""
+        // ... other properties if needed ...
+    }
 }
 
 struct BudgetSummarySheet: View {

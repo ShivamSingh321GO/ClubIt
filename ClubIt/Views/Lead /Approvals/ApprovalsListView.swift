@@ -42,7 +42,12 @@ struct ApprovalsListView: View {
             isRejected = appSession.approvalStore.budgets.contains { $0.eventId == eventId && $0.status == .rejected }
         } else {
             let approval = sortedApprovals.first(where: { $0.eventId == eventId })
-            totalPending = pendingResources.count + pendingVenues.count + pendingBudgets.count
+            let event = appSession.eventStore.events.first(where: { $0.id == eventId })
+            let realVenueApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId && $0.type == .venue }
+            let fakeVenuePending = (realVenueApprovals.isEmpty && !(event?.location.isEmpty ?? true)) ? 1 : 0
+            let mainPending = approval?.status == .pending ? 1 : 0
+            
+            totalPending = pendingResources.count + pendingVenues.count + fakeVenuePending + pendingBudgets.count + mainPending
             let mainRejected = approval?.status == .rejected
             isRejected = mainRejected || 
                          appSession.approvalStore.resources.contains { $0.eventId == eventId && $0.status == .rejected } ||

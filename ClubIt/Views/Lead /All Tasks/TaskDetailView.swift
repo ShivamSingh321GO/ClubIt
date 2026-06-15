@@ -115,12 +115,9 @@ struct TaskDetailView: View {
                                         Button("Delegate") {
                                             showingDelegateSheet = true
                                         }
-                                        .font(.caption.bold())
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(.blue.opacity(0.1))
-                                        .foregroundStyle(.blue)
-                                        .clipShape(Capsule())
+                                        .buttonStyle(.bordered)
+                                        .tint(.blue)
+                                        .controlSize(.small)
                                     }
                                 }
                                 
@@ -142,12 +139,9 @@ struct TaskDetailView: View {
                                         Button("Delegate") {
                                             showingDelegateSheet = true
                                         }
-                                        .font(.caption.bold())
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(.blue.opacity(0.1))
-                                        .foregroundStyle(.blue)
-                                        .clipShape(Capsule())
+                                        .buttonStyle(.bordered)
+                                        .tint(.blue)
+                                        .controlSize(.small)
                                     }
                                 }
                                 

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MessageBubble: View {
+    @Environment(AppSession.self) private var appSession
     let message: Message
     let isCurrentUser: Bool
     
@@ -16,6 +17,15 @@ struct MessageBubble: View {
                     .background(isCurrentUser ? Color.goldenBrown : Color(.systemGray5))
                     .foregroundStyle(isCurrentUser ? .white : .primary)
                     .clipShape(iMessageBubbleShape(isCurrentUser: isCurrentUser))
+                    .contextMenu {
+                        if isCurrentUser {
+                            Button(role: .destructive) {
+                                appSession.chatStore.deleteMessage(messageId: message.id, chatId: message.chatId)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                    }
                 
                 if !isCurrentUser { Spacer(minLength: 60) }
             }

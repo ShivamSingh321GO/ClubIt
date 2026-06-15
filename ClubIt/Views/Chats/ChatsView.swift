@@ -12,6 +12,7 @@ struct ChatsView: View {
     @State private var subChatDescription = ""
     @State private var activeParentId: UUID? = nil
     @State private var searchText = ""
+    @State private var navigateToChat: Chat? = nil
     
     var body: some View {
         @Bindable var chatStore = appSession.chatStore
@@ -80,13 +81,28 @@ struct ChatsView: View {
             
             // Sheets
             .sheet(isPresented: $showCreateChat) {
-                CreateChatView()
+                CreateChatView { newChat in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        navigateToChat = newChat
+                    }
+                }
             }
             .sheet(isPresented: $showCreateGroup) {
-                CreateGroupView()
+                CreateGroupView { newChat in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        navigateToChat = newChat
+                    }
+                }
             }
             .sheet(isPresented: $showCreateEventChat) {
-                CreateEventChatView()
+                CreateEventChatView { newChat in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        navigateToChat = newChat
+                    }
+                }
+            }
+            .navigationDestination(item: $navigateToChat) { chat in
+                ChatBox(chat: chat)
             }
             .sheet(isPresented: $showAddSubChat) {
                 NavigationStack {

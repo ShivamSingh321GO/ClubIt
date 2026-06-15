@@ -132,6 +132,7 @@ struct TaskRowView: View {
         .onTapGesture {
             appSession.selectedTask = task
         }
+        .background(Color(.secondarySystemBackground).opacity(0.4))
         .glassEffect(in: .rect(cornerRadius: 20))
         .contextMenu {
             if task.assignedBy == appSession.currentUser?.id || appSession.currentRole == .clubLead {

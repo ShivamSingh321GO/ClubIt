@@ -7,6 +7,7 @@ struct CreateGroupView: View {
     @State private var groupDescription = ""
     @State private var searchText = ""
     @State private var selectedUsers: Set<UUID> = []
+    var onCreated: ((Chat) -> Void)? = nil
     
     private var suggestedUsers: [User] {
         appSession.clubStore.allUsers.filter { $0.id != appSession.chatStore.userId }
@@ -103,12 +104,13 @@ struct CreateGroupView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        appSession.chatStore.createGroupChat(
+                        let chat = appSession.chatStore.createGroupChat(
                             name: groupName,
                             description: groupDescription,
                             icon: nil,
                             memberIds: Array(selectedUsers)
                         )
+                        onCreated?(chat)
                         dismiss()
                     } label: {
                         Image(systemName: "checkmark")

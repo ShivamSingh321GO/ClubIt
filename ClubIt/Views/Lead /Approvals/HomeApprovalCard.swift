@@ -91,6 +91,7 @@ struct HomeApprovalCard: View {
             }
         }
         .padding()
+        .background(Color(.secondarySystemBackground).opacity(0.4))
         .glassEffect(in: .rect(cornerRadius: 20))
     }
     

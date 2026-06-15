@@ -5,6 +5,7 @@ struct CreateChatView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
     @State private var selectedUser: User? = nil
+    var onCreated: ((Chat) -> Void)? = nil
     
     private var suggestedUsers: [User] {
         appSession.clubStore.allUsers.filter { $0.id != appSession.chatStore.userId }
@@ -75,7 +76,8 @@ struct CreateChatView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         if let user = selectedUser {
-                            appSession.chatStore.createIndividualChat(with: user)
+                            let chat = appSession.chatStore.createIndividualChat(with: user)
+                            onCreated?(chat)
                         }
                         dismiss()
                     } label: {

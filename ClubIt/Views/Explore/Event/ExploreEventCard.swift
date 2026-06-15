@@ -20,7 +20,7 @@ struct ExploreEventCard: View {
             
             VStack(alignment: .leading, spacing: 16) {
                 // Title Section
-                HStack(alignment: .top) {
+                HStack(alignment: .center, spacing: 10) {
                     Text(event.title)
                         .font(.title3)
                         .fontWeight(.bold)
@@ -28,29 +28,66 @@ struct ExploreEventCard: View {
                         .foregroundStyle(.primary)
                     
                     Spacer()
+                    
+                    // Action/Status Badge area
+                    if isMyEvent || event.status == .pending {
+                        // Show status label for my events or any pending event
+                        statusBadge
+                    } else if appSession.registeredEventIds.contains(event.id) {
+                        // Show 'Registered' label for events user has joined
+                        statusLabel(text: "Registered", color: .green)
+                    }
                 }
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    // Venue Section
-                    HStack(spacing: 10) {
-                        ZStack {
-                            Circle()
-                                .fill(.orange.opacity(0.15))
-                                .frame(width: 32, height: 32)
-                            Image(systemName: "mappin.and.ellipse")
-                                .font(.caption2.bold())
-                                .foregroundStyle(.orange)
+                    HStack(alignment: .top, spacing: 16) {
+                        // Date & Time Section
+                        HStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(.blue.opacity(0.1))
+                                    .frame(width: 32, height: 32)
+                                Image(systemName: "calendar")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.blue)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("DATE & TIME")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.secondary)
+                                Text(formattedShortDate)
+                                    .font(.footnote.bold())
+                                    .foregroundStyle(.primary)
+                                Text(formattedTimeRange)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("VENUE")
-                                .font(.caption2.bold())
-                                .foregroundStyle(.secondary)
-                            Text(event.location)
-                                .font(.footnote.bold())
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
+                        // Venue Section
+                        HStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(.orange.opacity(0.15))
+                                    .frame(width: 32, height: 32)
+                                Image(systemName: "mappin.and.ellipse")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.orange)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("VENUE")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.secondary)
+                                Text(event.location)
+                                    .font(.footnote.bold())
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(2)
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
                     // Registration & Status Row
@@ -79,15 +116,6 @@ struct ExploreEventCard: View {
                         }
                         
                         Spacer()
-                        
-                        // Action/Status Badge area
-                        if isMyEvent || event.status == .pending {
-                            // Show status label for my events or any pending event
-                            statusBadge
-                        } else if appSession.registeredEventIds.contains(event.id) {
-                            // Show 'Registered' label for events user has joined
-                            statusLabel(text: "Registered", color: .green)
-                        }
                     }
                 }
             }
@@ -136,34 +164,7 @@ struct ExploreEventCard: View {
             .frame(maxWidth: .infinity)
             .clipShape(RoundedRectangle(cornerRadius: 22))
             
-            HStack(alignment: .top) {
-                // Calendar & Time Badge
-                VStack(spacing: 0) {
-                    Text(formattedMonth)
-                        .font(.caption2)
-                        .fontWeight(.heavy)
-                        .foregroundStyle(Color(red: 0.9, green: 0.1, blue: 0.1)) // Deep vibrant red
-                    Text(formattedDay)
-                        .font(.title2)
-                        .fontWeight(.black)
-                        .foregroundStyle(.black)
-                    
-                    Text(formattedTime)
-                        .font(.system(size: 9.5, weight: .bold))
-                        .foregroundStyle(.black.opacity(0.8))
-                        .padding(.top, 2)
-                }
-                .padding(.vertical, 8)
-                .frame(width: 70)
-                .background(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .shadow(color: .black.opacity(0.15), radius: 8)
-                
-                Spacer()
-                
-                // Favorite Button removed as per request
-            }
-            .padding(12)
+            // Calendar & Time Badge removed
         }
         .padding(6)
     }
@@ -233,6 +234,12 @@ struct ExploreEventCard: View {
         return formatter.string(from: event.startDate)
     }
     
+    private var formattedShortDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: event.startDate)
+    }
+    
     private var formattedMonth: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM"
@@ -243,6 +250,16 @@ struct ExploreEventCard: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
         return formatter.string(from: event.startTime ?? event.startDate)
+    }
+    
+    private var formattedTimeRange: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h a" // "12 PM"
+        
+        let start = formatter.string(from: event.startTime ?? event.startDate).replacingOccurrences(of: ":00", with: "")
+        let end = formatter.string(from: event.endTime ?? event.endDate).replacingOccurrences(of: ":00", with: "")
+        
+        return "\(start) - \(end)"
     }
 }
 

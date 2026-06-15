@@ -29,7 +29,14 @@ enum ChatParticipantStatus: String, Codable {
 }
 
 // MARK: - Chat
-struct Chat: Identifiable, Codable {
+struct Chat: Identifiable, Codable, Equatable, Hashable {
+    static func == (lhs: Chat, rhs: Chat) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
     var id: UUID
     var type: ChatType
     var name: String?
@@ -140,7 +147,7 @@ struct InsertChat: Encodable {
     let club_id: UUID?
     let parent_chat_id: UUID?
     let created_by: UUID
-    let created_at: Date
+    let created_at: String
 }
 
 struct InsertChatParticipant: Encodable {
@@ -156,7 +163,7 @@ struct InsertMessage: Encodable {
     let sender_id: UUID
     let content: String
     let attachment_url: String?
-    let created_at: Date
+    let created_at: String
 }
 
 struct UpdateParticipantField: Encodable {

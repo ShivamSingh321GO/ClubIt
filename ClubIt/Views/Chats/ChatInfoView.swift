@@ -11,7 +11,20 @@ struct ChatInfoView: View {
     
     private var participantUsers: [User] {
         let userIds = participants.map { $0.userId }
-        return appSession.clubStore.allUsers.filter { userIds.contains($0.id) }
+        var users = appSession.clubStore.allUsers.filter { userIds.contains($0.id) }
+        users.sort { u1, u2 in
+            let isU1Admin = participants.first(where: { $0.userId == u1.id })?.role == .admin
+            let isU2Admin = participants.first(where: { $0.userId == u2.id })?.role == .admin
+            
+            if isU1Admin && !isU2Admin {
+                return true
+            } else if !isU1Admin && isU2Admin {
+                return false
+            } else {
+                return u1.name < u2.name
+            }
+        }
+        return users
     }
     
     var body: some View {
@@ -72,7 +85,7 @@ struct ChatInfoView: View {
                                     .font(.headline)
                                     .padding(.horizontal)
                                 
-                                Button(action: {}) {
+                                NavigationLink(destination: ClubDetailView(club: club)) {
                                     HStack {
                                         Text(club.name)
                                             .foregroundColor(.primary)
@@ -96,37 +109,7 @@ struct ChatInfoView: View {
                     }
                 }
                 
-                // Shared Media
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Shared Media")
-                            .font(.headline)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
-                    }
-                    .padding(.horizontal)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(0..<4) { index in
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.ultraThinMaterial)
-                                    .frame(width: 80, height: 80)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5)
-                                    )
-                                    .overlay(
-                                        Image(systemName: "photo")
-                                            .foregroundColor(.gray)
-                                    )
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-                .padding(.vertical, 8)
+
                 
                 // Participants (if Group/Event)
                 if chat.type == .group || chat.type == .event {
@@ -141,8 +124,8 @@ struct ChatInfoView: View {
                             Button {
                                 showAddMembers = true
                             } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title3)
+                                Text("Add Participants")
+                                    .font(.subheadline)
                                     .foregroundColor(.blue)
                             }
                         }

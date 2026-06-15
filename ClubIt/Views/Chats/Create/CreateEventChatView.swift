@@ -7,6 +7,7 @@ struct CreateEventChatView: View {
     @State private var eventDescription = ""
     @State private var searchText = ""
     @State private var selectedUsers: Set<UUID> = []
+    var onCreated: ((Chat) -> Void)? = nil
     
     private var suggestedUsers: [User] {
         appSession.clubStore.allUsers.filter { $0.id != appSession.chatStore.userId }
@@ -108,12 +109,13 @@ struct CreateEventChatView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        appSession.chatStore.createEventChat(
+                        let chat = appSession.chatStore.createEventChat(
                             name: eventName,
                             clubId: appSession.currentUserClubId ?? UUID(),
                             icon: nil,
                             memberIds: Array(selectedUsers)
                         )
+                        onCreated?(chat)
                         dismiss()
                     } label: {
                         Image(systemName: "checkmark")

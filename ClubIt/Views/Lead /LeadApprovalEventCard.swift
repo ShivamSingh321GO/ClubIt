@@ -8,17 +8,40 @@ struct LeadApprovalEventCard: View {
     var body: some View {
         let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })
         
+        // 1. Pending Resources
         let pendingResources = appSession.approvalStore.resources.filter { 
             $0.eventId == event.id && $0.status == .pending 
         }
-        let pendingVenues = appSession.approvalStore.approvals.filter { 
-            $0.eventId == event.id && $0.type == .venue && $0.status == .pending 
-        }
+        
+        // 2. Pending Venues
+        let realVenueApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .venue }
+        let pendingVenuesCount: Int = {
+            if realVenueApprovals.isEmpty && !event.location.isEmpty {
+                return 1 // Fake pending venue
+            }
+            return realVenueApprovals.filter { $0.status == .pending }.count
+        }()
+        
+        // 3. Pending Budgets
         let pendingBudgets = appSession.approvalStore.budgets.filter { 
             $0.eventId == event.id && $0.status == .pending 
         }
         
-        let totalPending = pendingResources.count + pendingVenues.count + pendingBudgets.count
+        // 4. Pending VP Event Approval
+        let pendingEventApprovalsCount: Int = {
+            if let vpId = club?.vicePresidentId {
+                let vpApproval = appSession.approvalStore.approvals.filter { 
+                    $0.eventId == event.id && $0.type == .event && $0.receiverId == vpId 
+                }.sorted(by: { $0.createdAt > $1.createdAt }).first
+                
+                if vpApproval?.status == .pending {
+                    return 1
+                }
+            }
+            return 0
+        }()
+        
+        let totalPending = pendingResources.count + pendingVenuesCount + pendingBudgets.count + pendingEventApprovalsCount
         
         let isRejected = approval.status == .rejected || 
                          appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .rejected } ||
@@ -29,15 +52,40 @@ struct LeadApprovalEventCard: View {
 
         
         HStack(spacing: 16) {
-            // Club Logo/Initials
+            // Event Image
             ZStack {
-                Circle()
-                    .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
-                    .frame(width: 60, height: 60)
-                
-                Text(String(club?.name.prefix(1) ?? "C"))
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    AsyncImage(url: URL(string: bannerImage)) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                        } else if phase.error != nil {
+                            Circle()
+                                .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
+                                .frame(width: 60, height: 60)
+                            
+                            Text(String(event.name.prefix(1).uppercased()))
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                        } else {
+                            Circle()
+                                .fill(Color(.systemGray5))
+                                .frame(width: 60, height: 60)
+                                .overlay(ProgressView())
+                        }
+                    }
+                } else {
+                    Circle()
+                        .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
+                        .frame(width: 60, height: 60)
+                    
+                    Text(String(event.name.prefix(1).uppercased()))
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                }
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -52,11 +100,14 @@ struct LeadApprovalEventCard: View {
                     .lineLimit(1)
                 
                 HStack(spacing: 8) {
+                    if pendingEventApprovalsCount > 0 {
+                        IndicatorTag(icon: "doc.text.fill", count: pendingEventApprovalsCount, color: .orange)
+                    }
                     if pendingResources.count > 0 {
                         IndicatorTag(icon: "cart.fill", count: pendingResources.count, color: .blue)
                     }
-                    if pendingVenues.count > 0 {
-                        IndicatorTag(icon: "mappin.and.ellipse", count: pendingVenues.count, color: .purple)
+                    if pendingVenuesCount > 0 {
+                        IndicatorTag(icon: "mappin.and.ellipse", count: pendingVenuesCount, color: .purple)
                     }
                     if pendingBudgets.count > 0 {
                         IndicatorTag(icon: "indianrupeesign.circle.fill", count: pendingBudgets.count, color: .green)

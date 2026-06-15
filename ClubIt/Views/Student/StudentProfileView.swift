@@ -85,7 +85,7 @@ struct StudentProfileView: View {
                     .font(.title3)
                     .bold()
                 
-                Text(appSession.currentRole?.rawValue ?? "Role - Student")
+                Text(displayUser?.role.rawValue ?? "Role - Student")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 

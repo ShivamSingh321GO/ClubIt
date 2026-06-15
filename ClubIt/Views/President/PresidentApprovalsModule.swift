@@ -19,8 +19,8 @@ struct PresidentApprovalsModule: View {
                 Text("No budget requests")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .padding()
                     .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
                     .glassEffect(in: .rect(cornerRadius: 20))
             } else {
                 VStack(spacing: 16) {

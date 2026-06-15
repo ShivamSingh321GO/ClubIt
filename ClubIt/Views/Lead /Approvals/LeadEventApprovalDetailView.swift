@@ -687,7 +687,7 @@ struct LeadDetailClubHeaderView: View {
                             Circle()
                                 .fill(Color.orange.gradient.opacity(0.1))
                                 .frame(width: 60, height: 60)
-                            Text(String(club.name.prefix(1)))
+                            Text(String(event.name.prefix(1).uppercased()))
                                 .font(.system(size: 24, weight: .bold))
                                 .foregroundColor(.orange)
                         @unknown default:
@@ -699,7 +699,7 @@ struct LeadDetailClubHeaderView: View {
                         .fill(Color.orange.gradient.opacity(0.1))
                         .frame(width: 60, height: 60)
                     
-                    Text(String(club.name.prefix(1)))
+                    Text(String(event.name.prefix(1).uppercased()))
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.orange)
                 }

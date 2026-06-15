@@ -59,9 +59,8 @@ final class ChatStore {
     }
     
     var pinnedChats: [Chat] {
-        chats.filter { $0.isPinned && !$0.isArchived && !$0.isRequest && $0.parentChatId == nil }
-            .sorted(by: stableChatSort)
-            .prefix(5).map { $0 }
+        let sorted = sortedChats(chats.filter { $0.isPinned && !$0.isArchived && !$0.isRequest && $0.parentChatId == nil })
+        return Array(sorted.prefix(5))
     }
     
     var filteredChats: [Chat] {
@@ -87,22 +86,28 @@ final class ChatStore {
             filtered = topLevelChats.filter { $0.isRequest && !$0.isArchived }
         }
         
-        return filtered.sorted(by: stableChatSort)
+        return sortedChats(filtered)
     }
     
-    /// A deterministic sort: most-recent-activity first, with chat ID as tiebreaker
-    /// so the list never shuffles when two chats share the same timestamp.
-    /// Sorts purely by timestamp — does NOT group by "has message" vs "no message"
-    /// because placeholder text (e.g. "Tap to start chatting") set during local
-    /// chat creation would flip to empty after a DB re-fetch, causing reorder.
-    private func stableChatSort(_ c1: Chat, _ c2: Chat) -> Bool {
-        let t1 = c1.lastMessageAt ?? c1.createdAt
-        let t2 = c2.lastMessageAt ?? c2.createdAt
-        if t1 != t2 {
-            return t1 > t2
+    /// Sorts chats by most-recent-activity first. Captures `Date()` once
+    /// so every pairwise comparison within a single sort uses the same
+    /// reference point — prevents mid-sort drift that caused list shuffling.
+    private func sortedChats(_ input: [Chat]) -> [Chat] {
+        let now = Date()
+        return input.sorted { c1, c2 in
+            var t1 = c1.lastMessageAt ?? c1.createdAt
+            var t2 = c2.lastMessageAt ?? c2.createdAt
+            
+            // Cap future timestamps so they don't get stuck at the top
+            if t1 > now { t1 = now }
+            if t2 > now { t2 = now }
+            
+            if t1 != t2 {
+                return t1 > t2
+            }
+            // Stable tiebreaker — prevents order flickering between fetches
+            return c1.id.uuidString < c2.id.uuidString
         }
-        // Stable tiebreaker — prevents order flickering between fetches
-        return c1.id.uuidString < c2.id.uuidString
     }
     
     func getSubChats(for parentId: UUID) -> [Chat] {
@@ -406,7 +411,7 @@ final class ChatStore {
             sender_id: userId,
             content: trimmed,
             attachment_url: nil,
-            created_at: newMessage.createdAt
+            created_at: istDateString(from: newMessage.createdAt)
         )
         
         Task {
@@ -432,6 +437,26 @@ final class ChatStore {
                 print("DEBUG ERROR: [ChatStore] sendMessage failed: \(error)")
                 print("DEBUG ERROR: [ChatStore] payload: chat_id=\(chatId), sender_id=\(userId), content=\(trimmed)")
                 // Keep the optimistic message visible — it will sync on next fetch if RLS is fixed
+            }
+        }
+    }
+    
+    // MARK: - Delete Message
+    
+    @MainActor
+    func deleteMessage(messageId: UUID, chatId: UUID) {
+        messages[chatId]?.removeAll { $0.id == messageId }
+        
+        Task {
+            do {
+                try await client
+                    .from("messages")
+                    .delete()
+                    .eq("id", value: messageId)
+                    .execute()
+                print("DEBUG: [ChatStore] Deleted message \(messageId)")
+            } catch {
+                print("DEBUG ERROR: [ChatStore] deleteMessage failed: \(error)")
             }
         }
     }
@@ -563,12 +588,13 @@ final class ChatStore {
     
     // MARK: - Create Individual Chat
     
+    @discardableResult
     @MainActor
-    func createIndividualChat(with user: User) {
+    func createIndividualChat(with user: User) -> Chat {
         // Prevent duplicate individual chats
-        if chats.contains(where: { chat in
+        if let existing = chats.first(where: { chat in
             chat.type == .individual && chat.participantIds.contains(user.id)
-        }) { return }
+        }) { return existing }
         
         let chatId = UUID()
         let newChat = Chat(
@@ -595,7 +621,7 @@ final class ChatStore {
                     club_id: nil,
                     parent_chat_id: nil,
                     created_by: userId,
-                    created_at: newChat.createdAt
+                    created_at: istDateString(from: newChat.createdAt)
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
@@ -612,12 +638,15 @@ final class ChatStore {
                 self.chats.removeAll { $0.id == chatId }
             }
         }
+        
+        return newChat
     }
     
     // MARK: - Create Group Chat
     
+    @discardableResult
     @MainActor
-    func createGroupChat(name: String, description: String, icon: String?, memberIds: [UUID]) {
+    func createGroupChat(name: String, description: String, icon: String?, memberIds: [UUID]) -> Chat {
         let chatId = UUID()
         let allParticipantIds = [userId] + memberIds
         
@@ -645,7 +674,7 @@ final class ChatStore {
                     club_id: nil,
                     parent_chat_id: nil,
                     created_by: userId,
-                    created_at: newChat.createdAt
+                    created_at: istDateString(from: newChat.createdAt)
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
@@ -665,12 +694,15 @@ final class ChatStore {
                 self.chats.removeAll { $0.id == chatId }
             }
         }
+        
+        return newChat
     }
     
     // MARK: - Create Event Chat
     
+    @discardableResult
     @MainActor
-    func createEventChat(name: String, clubId: UUID, icon: String?, memberIds: [UUID]) {
+    func createEventChat(name: String, clubId: UUID, icon: String?, memberIds: [UUID]) -> Chat {
         let chatId = UUID()
         let allParticipantIds = [userId] + memberIds
         
@@ -698,7 +730,7 @@ final class ChatStore {
                     club_id: clubId,
                     parent_chat_id: nil,
                     created_by: userId,
-                    created_at: newChat.createdAt
+                    created_at: istDateString(from: newChat.createdAt)
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
@@ -718,6 +750,8 @@ final class ChatStore {
                 self.chats.removeAll { $0.id == chatId }
             }
         }
+        
+        return newChat
     }
     
     // MARK: - Add Sub-Chat (under Event)
@@ -755,7 +789,7 @@ final class ChatStore {
                     club_id: parent.clubId,
                     parent_chat_id: parentId,
                     created_by: userId,
-                    created_at: newChat.createdAt
+                    created_at: istDateString(from: newChat.createdAt)
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
@@ -1176,5 +1210,12 @@ final class ChatStore {
         lastFetchDate = .distantPast
         participantDebounceTask?.cancel()
         participantDebounceTask = nil
+    }
+
+    private func istDateString(from date: Date) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Asia/Kolkata")
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.string(from: date)
     }
 }

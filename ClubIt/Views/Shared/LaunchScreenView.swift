@@ -68,16 +68,17 @@ struct LaunchScreenView: View {
                 textOpacity = 1.0
             }
             
-            // 4. Zoom effect transition
+            // 4. Premium subtle fade transition
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                withAnimation(.easeInOut(duration: 0.5)) {
-                    iconScale = 25.0
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    iconScale = 1.1
+                    iconYOffset -= 15
                     iconOpacity = 0.0
                     appNameOpacity = 0.0
                     textOpacity = 0.0
                 }
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     showLaunchScreen = false
                 }
             }
