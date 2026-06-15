@@ -54,6 +54,7 @@ struct ChatBox: View {
                         }
                         
                     }
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .contentShape(Rectangle())
                     .onTapGesture {

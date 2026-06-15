@@ -336,14 +336,17 @@ struct FacultyResourceRequestCard: View {
                     .padding(.top, 4)
                 }
                 
-                Button(action: onReply) {
-                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                        .font(.caption.bold())
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Capsule())
+                HStack {
+                    Spacer()
+                    Button(action: onReply) {
+                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
                 }
                 .padding(.top, 4)
             }
@@ -432,7 +435,7 @@ struct FacultyVenueApprovalCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
                     HStack(alignment: .top, spacing: 20) {
-                        FacultyDetailItem(icon: "calendar", label: "Event Date", value: formatDateShort(event.startDate))
+                        FacultyDetailItem(icon: "calendar", label: "Event Date", value: event.dateRangeString)
                         FacultyDetailItem(icon: "checkmark.circle.fill", label: "Availability", value: "Confirmed Available")
                     }
                     
@@ -450,14 +453,17 @@ struct FacultyVenueApprovalCard: View {
                 }
                 .padding(.top, 4)
                 
-                Button(action: onReply) {
-                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                        .font(.caption.bold())
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Capsule())
+                HStack {
+                    Spacer()
+                    Button(action: onReply) {
+                        Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
                 }
                 .padding(.top, 4)
             }

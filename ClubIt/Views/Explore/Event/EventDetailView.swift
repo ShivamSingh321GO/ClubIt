@@ -226,7 +226,7 @@ struct EventDetailView: View {
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                         .textCase(.uppercase)
-                    Text(formattedDateTime)
+                    Text(event.startDate...event.endDate)
                         .font(.footnote.bold())
                         .lineLimit(2)
                         .minimumScaleFactor(0.8)
@@ -548,6 +548,21 @@ struct EventDetailView: View {
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .tint(.red)
+                } else if appSession.currentRole == .president {
+                    Button {
+                        Task {
+                            await appSession.registerForEvent(id: event.id)
+                        }
+                    } label: {
+                        Text("Join Event")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.orange)
+                    .shadow(color: .orange.opacity(0.4), radius: 8, x: 0, y: 4)
                 } else if !isOpen {
                     Button(action: {}) {
                         Label("Registration Closed", systemImage: "lock.fill")

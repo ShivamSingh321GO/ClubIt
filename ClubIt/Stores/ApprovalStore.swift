@@ -201,6 +201,17 @@ final class ApprovalStore {
     }
     
     @MainActor
+    func deleteApproval(id: UUID) async throws {
+        try await client
+            .from("approvals")
+            .delete()
+            .eq("id", value: id)
+            .execute()
+            
+        approvals.removeAll(where: { $0.id == id })
+    }
+    
+    @MainActor
     func updateResourceStatus(id: UUID, status: ResourceStatus) async throws {
         print("DEBUG: Updating Resource Status for \(id) to \(status.rawValue)")
         do {

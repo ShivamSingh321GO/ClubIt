@@ -303,10 +303,12 @@ final class AppSession {
         guard let event = eventStore.events.first(where: { $0.id == id }) else { return }
         let currentCount = registrationStore.getRegistrations(for: id).count
         
-        // First Come First Serve: Check if full before allowing new registration
-        if !registeredEventIds.contains(id) && event.maxParticipants > 0 && event.maxParticipants < 999999 && currentCount >= event.maxParticipants {
-            print("Registration failed: Event is full")
-            return
+        // First Come First Serve: Check if full before allowing new registration (Bypass for president)
+        if currentUser?.role != .president {
+            if !registeredEventIds.contains(id) && event.maxParticipants > 0 && event.maxParticipants < 999999 && currentCount >= event.maxParticipants {
+                print("Registration failed: Event is full")
+                return
+            }
         }
         
         do {

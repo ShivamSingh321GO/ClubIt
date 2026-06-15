@@ -109,14 +109,21 @@ struct HomeApprovalsModule: View {
 
     
     var body: some View {
-        let sentApprovals = appSession.approvalStore.approvals.filter { approval in
+        let allSent = appSession.approvalStore.approvals.filter { approval in
             approval.senderId == user.id &&
             approval.type == .event &&
             appSession.eventStore.events.contains(where: { $0.id == approval.eventId })
         }.sorted(by: { $0.createdAt > $1.createdAt })
         
+        var seenEventIds = Set<UUID>()
+        let uniqueApprovals = allSent.filter { approval in
+            guard let eventId = approval.eventId, !seenEventIds.contains(eventId) else { return false }
+            seenEventIds.insert(eventId)
+            return true
+        }
+        
         VStack(alignment: .leading, spacing: 16) {
-            if sentApprovals.isEmpty {
+            if uniqueApprovals.isEmpty {
                 Text("No recent approval requests")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -125,7 +132,7 @@ struct HomeApprovalsModule: View {
                     .glassEffect(in: .rect(cornerRadius: 20))
             } else {
                 VStack(spacing: 16) {
-                    ForEach(sentApprovals.prefix(2)) { approval in
+                    ForEach(uniqueApprovals.prefix(2)) { approval in
                         if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
                             NavigationLink(destination: LeadEventApprovalDetailView(eventId: event.id)) {
                                 LeadApprovalEventCard(event: event, approval: approval)

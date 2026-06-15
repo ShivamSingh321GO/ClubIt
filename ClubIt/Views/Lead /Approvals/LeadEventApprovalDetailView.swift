@@ -558,7 +558,7 @@ struct LeadEventApprovalDetailView: View {
                     status: approval.status.rawValue,
                     details: [
                         ("Location", event?.location ?? "N/A"),
-                        ("Event Date", formatDateShort(event?.startDate ?? Date()))
+                        ("Event Date", event?.dateRangeString ?? formatDateShort(Date()))
                     ],
                     approvalId: approval.id,
                     onReply: {

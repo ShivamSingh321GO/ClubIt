@@ -231,10 +231,16 @@ struct VPApprovalsListView: View {
     }
 
     var body: some View {
-        let approvals = appSession.approvalStore.approvals.filter { approval in
+        let allApprovals = appSession.approvalStore.approvals.filter { approval in
             approval.receiverId == user.id &&
             approval.type == .event &&
             appSession.eventStore.events.contains(where: { $0.id == approval.eventId })
+        }
+        
+        let approvals = allApprovals.reduce(into: [Approval]()) { result, approval in
+            if !result.contains(where: { $0.eventId == approval.eventId }) {
+                result.append(approval)
+            }
         }.sorted(by: { a1, a2 in
             guard let e1 = appSession.eventStore.events.first(where: { $0.id == a1.eventId }),
                   let e2 = appSession.eventStore.events.first(where: { $0.id == a2.eventId }) else { return false }

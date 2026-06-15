@@ -214,40 +214,59 @@ struct Event: Identifiable, Hashable, Codable {
         try container.encode(name, forKey: .name)
         try container.encode(title, forKey: .title)
         try container.encode(description, forKey: .description)
-        try container.encode(startDate, forKey: .startDate)
-        try container.encode(endDate, forKey: .endDate)
-        try container.encodeIfPresent(startTime, forKey: .startTime)
-        try container.encodeIfPresent(endTime, forKey: .endTime)
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = TimeZone.current
+        
+        try container.encode(formatter.string(from: startDate), forKey: .startDate)
+        try container.encode(formatter.string(from: endDate), forKey: .endDate)
+        if let st = startTime { try container.encode(formatter.string(from: st), forKey: .startTime) }
+        if let et = endTime { try container.encode(formatter.string(from: et), forKey: .endTime) }
+        
         try container.encode(numberOfVolunteers, forKey: .numberOfVolunteers)
         try container.encodeIfPresent(numberOfRegistrations, forKey: .numberOfRegistrations)
         try container.encode(maxParticipants, forKey: .maxParticipants)
         try container.encodeIfPresent(registrationType, forKey: .registrationType)
         try container.encode(location, forKey: .location)
         try container.encodeIfPresent(clubId, forKey: .clubId)
-        // NOTE: clubIds is intentionally excluded — column does not exist in Supabase
         try container.encode(createdBy, forKey: .createdBy)
         try container.encode(category, forKey: .category)
         try container.encode(status, forKey: .status)
         try container.encodeIfPresent(isRegistrationOpen, forKey: .isRegistrationOpen)
-        try container.encodeIfPresent(registrationDeadline, forKey: .registrationDeadline)
+        
+        if let rd = registrationDeadline { try container.encode(formatter.string(from: rd), forKey: .registrationDeadline) }
+        
         try container.encodeIfPresent(bannerImage, forKey: .bannerImage)
-        // NOTE: imageData is intentionally excluded — column does not exist in Supabase
         try container.encodeIfPresent(agenda, forKey: .agenda)
         try container.encodeIfPresent(registrationForm, forKey: .registrationForm)
-        try container.encode(createdAt, forKey: .createdAt)
+        
+        try container.encode(formatter.string(from: createdAt), forKey: .createdAt)
     }
 
     static func parseDate(_ string: String) -> Date? {
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = isoFormatter.date(from: string) { return date }
+        
+        isoFormatter.formatOptions = [.withInternetDateTime]
+        if let date = isoFormatter.date(from: string) { return date }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        
         let formats = [
             "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ",
             "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
             "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
-            "yyyy-MM-dd",
-            "HH:mm:ss",
-            "yyyy-MM-dd HH:mm:ss"
+            "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd"
         ]
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        
         for format in formats {
             formatter.dateFormat = format
             if let date = formatter.date(from: string) {

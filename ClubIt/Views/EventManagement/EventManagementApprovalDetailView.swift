@@ -573,13 +573,14 @@ struct EventManagementApprovalDetailView: View {
         let allClubEventApprovals = appSession.approvalStore.approvals.filter { 
             $0.eventId == event.id && $0.type == .event 
         }
-        let vpApproval = allClubEventApprovals.first(where: { $0.receiverId == appSession.currentUser?.id && $0.type == .event })
+        let vpApproval = allClubEventApprovals.sorted(by: { $0.createdAt > $1.createdAt }).first(where: { $0.receiverId == appSession.currentUser?.id && $0.type == .event })
+        let isEdited = allClubEventApprovals.count > 1 && vpApproval?.status == .pending
         
         ZStack(alignment: .bottom) {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header
-                    ClubHeaderView(club: club, event: event)
+                    LeadDetailClubHeaderView(club: club, event: event, canEdit: false, isEditedAfterApproval: isEdited)
                     
                     // Event Details Section
                     VStack(alignment: .leading, spacing: 12) {
@@ -592,7 +593,7 @@ struct EventManagementApprovalDetailView: View {
                                 Label("Date & Time", systemImage: "calendar")
                                     .font(.subheadline.bold())
                                 Spacer()
-                                Text("\(event.startDate.formatted(date: .abbreviated, time: .shortened))")
+                                Text(event.startDate...event.endDate)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -834,14 +835,17 @@ struct EventApprovalRequestCard: View {
             }
             .padding(.top, 4)
             
-            Button(action: onReply) {
-                Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                    .font(.caption.bold())
-                    .foregroundColor(.blue)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
-                    .background(Color.blue.opacity(0.1))
-                    .clipShape(Capsule())
+            HStack {
+                Spacer()
+                Button(action: onReply) {
+                    Label("Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                        .font(.caption.bold())
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Capsule())
+                }
             }
             .padding(.top, 4)
             

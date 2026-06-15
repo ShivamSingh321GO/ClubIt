@@ -155,7 +155,9 @@ struct EditEventView: View {
             
             Section {
                 DatePicker("Starts", selection: $startDate)
+                    .disabled(true)
                 DatePicker("Ends", selection: $endDate)
+                    .disabled(true)
             } header: {
                 Text("Date & Time")
             }
@@ -269,13 +271,6 @@ struct EditEventView: View {
             }
             
             Section {
-                let isVenueBooked = appSession.eventStore.events.contains { e in
-                    e.id != event.id && 
-                    (e.status == .pending || e.status == .approved) &&
-                    e.location == venue &&
-                    (startDate < e.endDate) && (e.startDate < endDate)
-                }
-                
                 if isVenueBooked {
                     Text("Selected venue is unavailable for this time slot")
                         .font(.caption2)
@@ -294,13 +289,6 @@ struct EditEventView: View {
                 Button("Cancel") { dismiss() }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                let isVenueBooked = appSession.eventStore.events.contains { e in
-                    e.id != event.id && // Don't check against self
-                    (e.status == .pending || e.status == .approved) &&
-                    e.location == venue &&
-                    (startDate < e.endDate) && (e.startDate < endDate)
-                }
-
                 Button("Update") {
                     updateEvent()
                 }
@@ -329,6 +317,15 @@ struct EditEventView: View {
         }
         .sheet(isPresented: $isShowingResourceSummary) {
             ResourceSummarySheet(universityItems: universityResources, rentalItems: rentalResources)
+        }
+    }
+    
+    private var isVenueBooked: Bool {
+        appSession.eventStore.events.contains { e in
+            e.id != event.id &&
+            (e.status == .pending || e.status == .approved) &&
+            e.location == venue &&
+            (startDate < e.endDate) && (e.startDate < endDate)
         }
     }
     
@@ -422,8 +419,9 @@ struct EditEventView: View {
                             id: eventApproval!.id,
                             status: .pending
                         )
+                        updatedEvent.status = .pending
+                        try await appSession.eventStore.updateEventStatus(id: event.id, status: .pending)
                     } else if eventApproval?.status == .approved {
-                        // Create a NEW approval request for the edits
                         let newApproval = Approval(
                             id: UUID(),
                             type: .event,
@@ -432,11 +430,20 @@ struct EditEventView: View {
                             eventId: event.id,
                             approvalRelatedId: event.id,
                             status: .pending,
-                            remarks: [],
-                            createdAt: Date(),
-                            updatedAt: nil
+                            createdAt: Date()
                         )
                         try await appSession.approvalStore.submitApprovalRequest(newApproval)
+                        
+                        // Delete any President or Faculty approvals since we are starting over
+                        let otherApprovals = appSession.approvalStore.approvals.filter {
+                            $0.eventId == event.id && $0.type == .event && $0.receiverId != vicePresidentUserId
+                        }
+                        for approval in otherApprovals {
+                            try await appSession.approvalStore.deleteApproval(id: approval.id)
+                        }
+                        
+                        updatedEvent.status = .pending
+                        try await appSession.eventStore.updateEventStatus(id: event.id, status: .pending)
                     }
                 }
 

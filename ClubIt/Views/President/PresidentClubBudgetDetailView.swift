@@ -315,14 +315,17 @@ struct PresidentBudgetRequestCard: View {
                     .padding(.top, 4)
                 }
                 
-                Button(action: onReply) {
-                    Label(appSession.currentUser?.role == .clubLead ? "Reply" : "Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
-                        .font(.caption.bold())
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Capsule())
+                HStack {
+                    Spacer()
+                    Button(action: onReply) {
+                        Label(appSession.currentUser?.role == .clubLead ? "Reply" : "Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(.caption.bold())
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
                 }
                 .padding(.top, 4)
             }
