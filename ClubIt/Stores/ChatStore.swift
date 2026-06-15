@@ -405,7 +405,8 @@ final class ChatStore {
             chat_id: chatId,
             sender_id: userId,
             content: trimmed,
-            attachment_url: nil
+            attachment_url: nil,
+            created_at: newMessage.createdAt
         )
         
         Task {
@@ -593,7 +594,8 @@ final class ChatStore {
                     icon: user.profileImg,
                     club_id: nil,
                     parent_chat_id: nil,
-                    created_by: userId
+                    created_by: userId,
+                    created_at: newChat.createdAt
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
@@ -642,7 +644,8 @@ final class ChatStore {
                     icon: icon ?? "person.2.fill",
                     club_id: nil,
                     parent_chat_id: nil,
-                    created_by: userId
+                    created_by: userId,
+                    created_at: newChat.createdAt
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
@@ -694,7 +697,8 @@ final class ChatStore {
                     icon: icon ?? "calendar",
                     club_id: clubId,
                     parent_chat_id: nil,
-                    created_by: userId
+                    created_by: userId,
+                    created_at: newChat.createdAt
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
@@ -750,7 +754,8 @@ final class ChatStore {
                     icon: nil,
                     club_id: parent.clubId,
                     parent_chat_id: parentId,
-                    created_by: userId
+                    created_by: userId,
+                    created_at: newChat.createdAt
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 

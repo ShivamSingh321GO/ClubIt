@@ -140,6 +140,7 @@ struct InsertChat: Encodable {
     let club_id: UUID?
     let parent_chat_id: UUID?
     let created_by: UUID
+    let created_at: Date
 }
 
 struct InsertChatParticipant: Encodable {
@@ -155,6 +156,7 @@ struct InsertMessage: Encodable {
     let sender_id: UUID
     let content: String
     let attachment_url: String?
+    let created_at: Date
 }
 
 struct UpdateParticipantField: Encodable {

@@ -270,6 +270,7 @@ struct ChatBox: View {
     
     private func todayDateString() -> String {
         let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Asia/Kolkata")
         formatter.dateFormat = "EEEE, MMM d"
         return "Today " + formatter.string(from: Date())
     }

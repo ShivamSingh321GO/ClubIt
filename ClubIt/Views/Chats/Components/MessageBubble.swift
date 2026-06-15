@@ -31,6 +31,7 @@ struct MessageBubble: View {
     
     private func timeString(for date: Date) -> String {
         let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Asia/Kolkata")
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
