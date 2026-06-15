@@ -489,8 +489,8 @@ struct LeadEventApprovalDetailView: View {
                         iconColor: .orange,
                         status: approval.status.rawValue,
                         details: [
-                            ("Category", event?.category.rawValue ?? "N/A"),
-                            ("Reviewer", vpUser?.name ?? "N/A")
+                            (icon: nil, label: "Category", value: event?.category.rawValue ?? "N/A"),
+                            (icon: nil, label: "Reviewer", value: vpUser?.name ?? "N/A")
                         ],
                         approvalId: approval.id,
                         onReply: {
@@ -529,11 +529,11 @@ struct LeadEventApprovalDetailView: View {
                         iconColor: .orange,
                         status: resource.status.rawValue,
                         details: [
-                            ("Quantity", "\(resource.quantity)"),
-                            ("Source", resource.type == .university ? "University" : "External Rental")
+                            (icon: nil, label: "Quantity", value: "\(resource.quantity)"),
+                            (icon: nil, label: "Source", value: resource.type == .university ? "University" : "External Rental")
                         ] + (resource.type == .external ? [
-                            ("Rental Cost", "₹\(String(format: "%.0f", resource.cost ?? 0))"),
-                            ("Vendor", resource.vendorName ?? "N/A")
+                            (icon: nil, label: "Rental Cost", value: "₹\(String(format: "%.0f", resource.cost ?? 0))"),
+                            (icon: nil, label: "Vendor", value: resource.vendorName ?? "N/A")
                         ] : []),
                         approvalId: appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id,
                         onReply: {
@@ -553,12 +553,12 @@ struct LeadEventApprovalDetailView: View {
             ForEach(approvals.sorted(by: { $0.createdAt > $1.createdAt })) { approval in
                 LeadItemApprovalCard(
                     title: "Venue Booking",
+                    subtitle: event?.location,
                     icon: "mappin.and.ellipse",
                     iconColor: .purple,
                     status: approval.status.rawValue,
                     details: [
-                        ("Location", event?.location ?? "N/A"),
-                        ("Event Date", event?.dateRangeString ?? formatDateShort(Date()))
+                        (icon: "calendar", label: "Event Date", value: event != nil ? "\(event!.dashboardDateLine1)\n\(event!.dashboardDateLine2)" : formatDateShort(Date()))
                     ],
                     approvalId: approval.id,
                     onReply: {
@@ -776,10 +776,11 @@ struct SummaryCard: View {
 struct LeadItemApprovalCard: View {
     @Environment(AppSession.self) var appSession
     let title: String
+    var subtitle: String? = nil
     let icon: String
     let iconColor: Color
     let status: String
-    let details: [(String, String)]
+    let details: [(icon: String?, label: String, value: String)]
     let approvalId: UUID? // Changed from [Remark]
     let onReply: () -> Void
     
@@ -791,8 +792,16 @@ struct LeadItemApprovalCard: View {
                         .foregroundColor(iconColor)
                         .font(.title3)
                     
-                    Text(title)
-                        .font(.headline)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.headline)
+                        
+                        if let subtitle = subtitle {
+                            Text(subtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
                 
                 Spacer()
@@ -811,13 +820,33 @@ struct LeadItemApprovalCard: View {
             // Details Grid
             VStack(alignment: .leading, spacing: 12) {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(details, id: \.0) { detail in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(detail.0.uppercased())
-                                .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(.secondary)
-                            Text(detail.1)
-                                .font(.subheadline.bold())
+                    ForEach(details, id: \.label) { detail in
+                        HStack(alignment: .top, spacing: 8) {
+                            if let icon = detail.icon {
+                                Image(systemName: icon)
+                                    .foregroundColor(.orange)
+                                    .font(.system(size: 14))
+                                    .padding(.top, 2)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(detail.label.uppercased())
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundColor(.secondary)
+                                let parts = detail.value.components(separatedBy: "\n")
+                                if parts.count == 2 {
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(parts[0])
+                                            .font(.subheadline.bold())
+                                        Text(parts[1])
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                } else {
+                                    Text(detail.value)
+                                        .font(.subheadline.bold())
+                                }
+                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }

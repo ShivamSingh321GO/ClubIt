@@ -593,9 +593,13 @@ struct EventManagementApprovalDetailView: View {
                                 Label("Date & Time", systemImage: "calendar")
                                     .font(.subheadline.bold())
                                 Spacer()
-                                Text(event.startDate...event.endDate)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(event.dashboardDateLine1)
+                                        .font(.caption)
+                                    Text(event.dashboardDateLine2)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                             
                             HStack {

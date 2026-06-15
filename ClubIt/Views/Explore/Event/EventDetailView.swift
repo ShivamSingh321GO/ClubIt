@@ -226,10 +226,13 @@ struct EventDetailView: View {
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                         .textCase(.uppercase)
-                    Text(event.startDate...event.endDate)
-                        .font(.footnote.bold())
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(event.dashboardDateLine1)
+                            .font(.footnote.bold())
+                        Text(event.dashboardDateLine2)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }

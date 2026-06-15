@@ -285,6 +285,45 @@ struct Event: Identifiable, Hashable, Codable {
             return "\(startStr) - \(endStr)"
         }
     }
+
+    var dashboardDateLine1: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d"
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "h:mma"
+        timeFormatter.amSymbol = "AM"
+        timeFormatter.pmSymbol = "PM"
+        
+        let startDay = dateFormatter.string(from: startDate)
+        let endDay = dateFormatter.string(from: endDate)
+        let startTimeStr = timeFormatter.string(from: startTime ?? startDate).replacingOccurrences(of: ":00", with: "")
+        
+        if startDay == endDay {
+            return startDay
+        } else {
+            return "\(startDay) (\(startTimeStr))"
+        }
+    }
+    
+    var dashboardDateLine2: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d"
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "h:mma"
+        timeFormatter.amSymbol = "AM"
+        timeFormatter.pmSymbol = "PM"
+        
+        let startDay = dateFormatter.string(from: startDate)
+        let endDay = dateFormatter.string(from: endDate)
+        let startTimeStr = timeFormatter.string(from: startTime ?? startDate).replacingOccurrences(of: ":00", with: "")
+        let endTimeStr = timeFormatter.string(from: endTime ?? endDate).replacingOccurrences(of: ":00", with: "")
+        
+        if startDay == endDay {
+            return "\(startTimeStr) - \(endTimeStr)"
+        } else {
+            return "to \(endDay) (\(endTimeStr))"
+        }
+    }
 }
 
 

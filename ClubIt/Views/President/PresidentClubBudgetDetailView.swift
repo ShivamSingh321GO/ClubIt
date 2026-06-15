@@ -299,8 +299,6 @@ struct PresidentBudgetRequestCard: View {
                     PresidentDetailItem(icon: "sum", label: "Total Amount", value: "₹\(String(format: "%.0f", budget.totalAmount))")
                     if let approvedAt = budget.approvedAt {
                         PresidentDetailItem(icon: "checkmark.shield.fill", label: "Approved At", value: formatDate(approvedAt))
-                    } else {
-                        PresidentDetailItem(icon: "calendar", label: "Requested At", value: formatDate(budget.createdAt))
                     }
                 }
                 

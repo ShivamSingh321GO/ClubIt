@@ -380,15 +380,7 @@ struct FacultyResourceRequestCard: View {
             }
         }
         .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
-                )
-        )
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        .glassEffect(in: .rect(cornerRadius: 24))
     }
     
     func formatDate(_ date: Date) -> String {
@@ -435,12 +427,8 @@ struct FacultyVenueApprovalCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
                     HStack(alignment: .top, spacing: 20) {
-                        FacultyDetailItem(icon: "calendar", label: "Event Date", value: event.dateRangeString)
+                        FacultyDetailItem(icon: "calendar", label: "Event Date", value: "\(event.dashboardDateLine1)\n\(event.dashboardDateLine2)")
                         FacultyDetailItem(icon: "checkmark.circle.fill", label: "Availability", value: "Confirmed Available")
-                    }
-                    
-                    HStack(alignment: .top, spacing: 20) {
-                        FacultyDetailItem(icon: "clock", label: "Duration", value: "\(formatTime(event.startTime ?? event.startDate)) - \(formatTime(event.endTime ?? event.endDate))")
                     }
                 }
                 
@@ -495,15 +483,7 @@ struct FacultyVenueApprovalCard: View {
             }
         }
         .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
-                )
-        )
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        .glassEffect(in: .rect(cornerRadius: 24))
     }
     
     private func formatDateShort(_ date: Date) -> String {
@@ -695,9 +675,22 @@ struct FacultyDetailItem: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .textCase(.uppercase)
-                Text(value)
-                    .font(.subheadline.bold())
-                    .foregroundColor(.primary)
+                
+                let parts = value.components(separatedBy: "\n")
+                if parts.count == 2 {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(parts[0])
+                            .font(.subheadline.bold())
+                            .foregroundColor(.primary)
+                        Text(parts[1])
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                } else {
+                    Text(value)
+                        .font(.subheadline.bold())
+                        .foregroundColor(.primary)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
