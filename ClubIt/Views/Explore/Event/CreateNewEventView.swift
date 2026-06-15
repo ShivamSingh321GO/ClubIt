@@ -459,6 +459,15 @@ struct CreateNewEventView: View {
             } message: {
                 Text("Are you sure you want to publish this event directly? It will be visible to all users immediately.")
             }
+            .onAppear {
+                // Generate a fresh UUID every time this view appears so that
+                // repeated event creations never collide on the primary key.
+                if !showSuccessView {
+                    currentEventId = UUID()
+                    errorMessage = nil
+                    isSaving = false
+                }
+            }
         }
     }
     
