@@ -42,7 +42,7 @@ struct LaunchScreenView: View {
                     .foregroundColor(.primary)
                     .opacity(appNameOpacity)
                 
-                Text("Discover. Connect. Belong.")
+                Text("Discover and manage campus clubs effortlessly")
                     .font(.headline)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)

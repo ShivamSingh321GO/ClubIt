@@ -11,31 +11,7 @@ struct PinnedChatItem: View {
         VStack(spacing: 8) {
             ZStack(alignment: .topTrailing) {
                 // Avatar Circle
-                if icon.contains("https") {
-                    AsyncImage(url: URL(string: icon)) { image in
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    } placeholder: {
-                        Circle().fill(Color(.secondarySystemBackground))
-                    }
-                    .frame(width: 60, height: 60)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color(.separator), lineWidth: 0.5))
-                } else if UIImage(named: icon) != nil {
-                    Image(icon)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 60, height: 60)
-                        .clipShape(Circle())
-                } else {
-                    Image(systemName: icon)
-                        .font(.title)
-                        .foregroundStyle(.orange)
-                        .frame(width: 60, height: 60)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(Circle())
-                }
+                UserAvatarView(name: name, profileImg: icon, imageData: nil, size: 60)
                 
                 // Pin sign indicator
                 Image(systemName: "pin.fill")
@@ -54,7 +30,7 @@ struct PinnedChatItem: View {
                         .font(.caption2.bold())
                         .foregroundStyle(.white)
                         .frame(width: 22, height: 22)
-                        .background(Color.goldenBrown)
+                        .background(Color.blue)
                         .clipShape(Circle())
                         .overlay(Circle().stroke(.white, lineWidth: 2))
                         .offset(x: -2, y: 2)

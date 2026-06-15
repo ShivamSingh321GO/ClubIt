@@ -13,20 +13,23 @@ struct ChatBox: View {
     @FocusState private var isMessageFieldFocused: Bool
     
     var body: some View {
-        // Read messages directly inside body for proper Observation tracking
         let chatMessages = appSession.chatStore.messages[chat.id] ?? []
         
         VStack(spacing: 0) {
             headerView
             
+            Divider()
+            
             // Message List
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(spacing: 12) {
-                        
+                    LazyVStack(spacing: 2) {
+                        // Date header
                         Text(todayDateString())
-                            .font(.caption2.bold())
+                            .font(.caption)
+                            .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
+                            .padding(.top, 12)
                             .padding(.bottom, 8)
                         
                         ForEach(chatMessages) { message in
@@ -35,48 +38,73 @@ struct ChatBox: View {
                             MessageBubble(message: message, isCurrentUser: isCurrentUser)
                                 .id(message.id)
                                 .transition(.asymmetric(
-                                    insertion: .scale(scale: 0.1, anchor: isCurrentUser ? .bottomTrailing : .bottomLeading)
-                                        .combined(with: .opacity)
-                                        .combined(with: .move(edge: .bottom)),
+                                    insertion: .scale(scale: 0.8, anchor: isCurrentUser ? .bottomTrailing : .bottomLeading)
+                                        .combined(with: .opacity),
                                     removal: .opacity
                                 ))
                         }
                         
+                        // Delivered indicator
                         if let lastMessage = chatMessages.last, lastMessage.senderId == appSession.chatStore.userId {
                             HStack {
                                 Spacer()
                                 Text("Delivered")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
-                                    .padding(.trailing, 20)
+                                    .padding(.trailing, 16)
                             }
-                            .padding(.top, -8)
+                            .padding(.top, 2)
                         }
                         
+                        // Typing indicator
+                        if let typingUsers = appSession.chatStore.typingUsers[chat.id], !typingUsers.isEmpty {
+                            HStack(spacing: 6) {
+                                TypingDotsView()
+                                Text("typing")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 4)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        }
+                        
+                        Color.clear
+                            .frame(height: 1)
+                            .id("bottomAnchor")
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        isMessageFieldFocused = false
-                    }
+                    .padding(.bottom, 8)
                 }
                 .scrollDismissesKeyboard(.interactively)
+                .defaultScrollAnchor(.bottom)
                 .onChange(of: chatMessages.count) {
                     if let lastId = chatMessages.last?.id {
-                        withAnimation {
+                        withAnimation(.easeOut(duration: 0.2)) {
                             proxy.scrollTo(lastId, anchor: .bottom)
                         }
                     }
                 }
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        if let lastId = chatMessages.last?.id {
+                            proxy.scrollTo(lastId, anchor: .bottom)
+                        }
+                    }
+                }
+                .onTapGesture {
+                    isMessageFieldFocused = false
+                }
             }
+            
+            Divider()
             
             // Input Bar
             inputBar
         }
         .navigationBarHidden(true)
         .toolbar(.hidden, for: .tabBar)
-        .background(Color.chatBackground.ignoresSafeArea())
+        .background(Color(.systemBackground).ignoresSafeArea())
         .task {
             appSession.chatStore.activeChatId = chat.id
             await appSession.chatStore.fetchMessages(for: chat.id)
@@ -94,7 +122,6 @@ struct ChatBox: View {
         }
         .sheet(isPresented: $showAttachmentMenu) {
             AttachmentMenu { type in
-                // Handle attachment mock logic
                 print("Selected attachment: \(type)")
             }
             .presentationDetents([.height(300), .medium])
@@ -146,116 +173,129 @@ struct ChatBox: View {
     
     // MARK: - Header
     private var headerView: some View {
-        ZStack(alignment: .center) {
-            // Center content
+        let otherParticipantId = appSession.chatStore.chatParticipants[chat.id]?
+            .first(where: { $0.userId != appSession.chatStore.userId })?.userId
+        let isOnline = otherParticipantId.map { appSession.chatStore.onlineUserIds.contains($0) } ?? false
+        
+        return HStack(spacing: 8) {
+            // Back button - circular
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 36, height: 36)
+                    .background(.ultraThinMaterial, in: Circle())
+            }
+            
+            Spacer()
+            
+            // Center - Avatar + Name (tappable)
             Button {
                 showChatInfo = true
             } label: {
-                VStack(spacing: 4) {
-                    avatarView
+                VStack(spacing: 2) {
+                    // Avatar
+                    ZStack(alignment: .bottomTrailing) {
+                        UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 34)
+                        
+                        if chat.type == .individual && isOnline {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 10, height: 10)
+                                .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 1.5))
+                                .offset(x: 1, y: 1)
+                        }
+                    }
+                    
                     Text(chat.displayName)
-                        .font(.subheadline.bold())
+                        .font(.caption)
+                        .fontWeight(.semibold)
                         .foregroundColor(.primary)
+                        .lineLimit(1)
                 }
             }
             .buttonStyle(.plain)
             
-            // Back button
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.title3)
-                        .foregroundColor(.primary)
-                        .frame(width: 32, height: 32)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Circle())
-                }
-                .padding(.leading, 16)
-                
-                Spacer()
-            }
+            Spacer()
+            
+            // Right spacer to balance the back button width roughly
+            Spacer()
+                .frame(width: 44)
         }
-        .padding(.top, 12)
-        .padding(.bottom, 8)
-        .background(Color.chatBackground)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(.systemBackground))
     }
     
-
-    
-    private var avatarView: some View {
+    private var initialsCircle: some View {
         ZStack {
-            if let icon = chat.icon, icon.contains("https") {
-                AsyncImage(url: URL(string: icon)) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    Circle().fill(Color.gray.opacity(0.3))
-                }
-            } else {
-                Circle().fill(Color(.secondarySystemFill))
-                Image(systemName: chat.icon ?? "person.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(.secondary)
-            }
+            Circle().fill(
+                LinearGradient(
+                    colors: [Color(.systemGray3), Color(.systemGray4)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            Text(String(chat.displayName.prefix(1)).uppercased())
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
         }
-        .frame(width: 45, height: 45)
-        .clipShape(Circle())
     }
     
     // MARK: - Input Bar
     private var inputBar: some View {
-        HStack(alignment: .bottom, spacing: 12) {
+        HStack(alignment: .bottom, spacing: 8) {
+            // Plus button
             Button {
                 showAttachmentMenu = true
             } label: {
                 Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .light))
-                    .foregroundColor(.secondary)
-                    .frame(width: 34, height: 34)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundColor(.goldenBrown)
             }
             
+            // Text field in capsule
             HStack(spacing: 8) {
-                TextField("Message", text: $messageText, axis: .vertical)
+                TextField("iMessage", text: $messageText, axis: .vertical)
                     .focused($isMessageFieldFocused)
                     .textFieldStyle(.plain)
                     .lineLimit(1...5)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .foregroundColor(.primary)
                     .submitLabel(.send)
+                    .onChange(of: messageText) { _, newText in
+                        if !newText.isEmpty {
+                            appSession.chatStore.sendTypingEvent(chatId: chat.id)
+                        }
+                    }
                     .onSubmit {
                         sendCurrentMessage()
                     }
-                
-                Button {
-                    sendCurrentMessage()
-                } label: {
-                    if messageText.isEmpty {
-                        Image(systemName: "mic")
-                            .font(.system(size: 20, weight: .regular))
-                            .foregroundColor(Color.gray)
-                            .padding(.trailing, 12)
-                    } else {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(.blue)
-                            .padding(.trailing, 4)
-                    }
-                }
             }
             .background(
                 Capsule()
-                    .fill(.ultraThinMaterial)
-                    .overlay(Capsule().stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                    .fill(Color(.systemGray6))
+                    .overlay(Capsule().stroke(Color(.systemGray4), lineWidth: 0.5))
             )
+            
+            // Send button
+            if !messageText.isEmpty {
+                Button {
+                    sendCurrentMessage()
+                } label: {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundColor(.blue)
+                }
+                .transition(.scale.combined(with: .opacity))
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color.chatBackground)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color(.systemBackground))
+        .animation(.easeInOut(duration: 0.15), value: messageText.isEmpty)
     }
     
     // MARK: - Send Message
@@ -267,11 +307,41 @@ struct ChatBox: View {
         }
     }
     
-    
     private func todayDateString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMM d"
         return "Today " + formatter.string(from: Date())
+    }
+}
+
+// MARK: - Typing Dots Animation
+struct TypingDotsView: View {
+    @State private var dotOffsets: [CGFloat] = [0, 0, 0]
+    
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<3, id: \.self) { index in
+                Circle()
+                    .fill(Color(.systemGray3))
+                    .frame(width: 7, height: 7)
+                    .offset(y: dotOffsets[index])
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray5))
+        .clipShape(Capsule())
+        .onAppear {
+            for i in 0..<3 {
+                withAnimation(
+                    .easeInOut(duration: 0.4)
+                    .repeatForever(autoreverses: true)
+                    .delay(Double(i) * 0.15)
+                ) {
+                    dotOffsets[i] = -5
+                }
+            }
+        }
     }
 }
 

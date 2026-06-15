@@ -9,25 +9,32 @@ struct ChatRow: View {
     var onDelete: () -> Void
     var onAddChat: (() -> Void)? = nil
     
-    // For random gradient generation
-    private let colors: [Color] = [.blue, .purple, .pink, .orange, .teal, .indigo]
-    private var randomGradient: LinearGradient {
-        let hash = abs(chat.id.hashValue)
-        let color1 = colors[hash % colors.count]
-        let color2 = colors[(hash / 10) % colors.count]
-        return LinearGradient(colors: [color1, color2], startPoint: .topLeading, endPoint: .bottomTrailing)
-    }
-    
     var body: some View {
-        HStack(spacing: 16) {
-            // Avatar/Icon
-            chatIcon
-                .frame(width: 54, height: 54)
+        HStack(spacing: 12) {
+            // Avatar with online indicator
+            ZStack(alignment: .bottomTrailing) {
+                chatIcon
+                    .frame(width: 52, height: 52)
+                
+                if chat.type == .individual {
+                    let otherParticipantId = appSession.chatStore.chatParticipants[chat.id]?
+                        .first(where: { $0.userId != appSession.chatStore.userId })?.userId
+                    let isOnline = otherParticipantId.map { appSession.chatStore.onlineUserIds.contains($0) } ?? false
+                    
+                    if isOnline {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 14, height: 14)
+                            .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2.5))
+                            .offset(x: 2, y: 2)
+                    }
+                }
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .top) {
                     Text(chat.displayName)
-                        .font(.system(size: 16, weight: .semibold, design: .default))
+                        .font(.headline)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     
@@ -37,18 +44,17 @@ struct ChatRow: View {
                         let totalUnread = chat.unreadCount + appSession.chatStore.getSubChats(for: chat.id).reduce(0) { $0 + $1.unreadCount }
                         if totalUnread > 0 {
                             Text("\(totalUnread)")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                                 .foregroundStyle(.white)
                                 .frame(minWidth: 20, minHeight: 20)
-                                .padding(.horizontal, 6)
-                                .background(Color.chatAccent)
+                                .padding(.horizontal, 5)
+                                .background(Color.goldenBrown)
                                 .clipShape(Capsule())
                         }
                     } else {
                         Text(timeString(from: chat.lastMessageAt ?? chat.createdAt))
-                            .font(.caption)
-                            .foregroundStyle(chat.unreadCount > 0 ? Color.chatAccent : .secondary)
-                            .fontWeight(chat.unreadCount > 0 ? .semibold : .regular)
+                            .font(.subheadline)
+                            .foregroundStyle(chat.unreadCount > 0 ? Color.goldenBrown : .secondary)
                     }
                 }
                 
@@ -58,52 +64,57 @@ struct ChatRow: View {
                             .font(.subheadline)
                             .foregroundStyle(chat.unreadCount > 0 ? .primary : .secondary)
                             .fontWeight(chat.unreadCount > 0 ? .medium : .regular)
-                            .lineLimit(1)
+                            .lineLimit(2)
                     } else {
-                        Text("Tap to start chatting")
+                        Text("No messages yet")
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.tertiary)
                             .lineLimit(1)
                     }
                     
                     Spacer()
                     
                     if chat.type == .event {
-                        HStack(spacing: 16) {
-                            Button(action: {
-                                withAnimation(.spring()) {
-                                    onToggleExpansion()
-                                }
-                            }) {
-                                Image(systemName: chat.isExpanded ? "chevron.up" : "chevron.down")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.secondary)
-                                    .padding(8)
-                                    .contentShape(Rectangle())
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                onToggleExpansion()
                             }
-                            .buttonStyle(.plain)
+                        }) {
+                            Image(systemName: chat.isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.caption2.bold())
+                                .foregroundStyle(.secondary)
+                                .padding(8)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     } else if chat.unreadCount > 0 {
                         Text("\(chat.unreadCount)")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                             .frame(minWidth: 20, minHeight: 20)
-                            .padding(.horizontal, 6)
-                            .background(Color.chatAccent)
+                            .padding(.horizontal, 5)
+                            .background(Color.goldenBrown)
                             .clipShape(Capsule())
                     }
                 }
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.clear)
+        .padding(.vertical, 10)
+        .background(Color(.systemBackground))
         .contentShape(Rectangle())
     }
     
     private func timeString(from date: Date) -> String {
+        let calendar = Calendar.current
         let formatter = DateFormatter()
-        formatter.timeStyle = .short
+        if calendar.isDateInToday(date) {
+            formatter.timeStyle = .short
+        } else if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        } else {
+            formatter.dateFormat = "MM/dd/yy"
+        }
         return formatter.string(from: date)
     }
     
@@ -111,62 +122,37 @@ struct ChatRow: View {
     private var chatIcon: some View {
         if chat.type == .event {
             ZStack {
-                Color(white: 0.15)
+                Circle().fill(Color(.systemGray5))
                 Image(systemName: "person.3.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 26, height: 26)
-                    .foregroundStyle(.white)
+                    .font(.system(size: 22))
+                    .foregroundStyle(.secondary)
             }
-            .frame(width: 54, height: 54)
             .clipShape(Circle())
         } else if chat.type == .group {
             ZStack {
-                Color(white: 0.15)
+                Circle().fill(Color(.systemGray5))
                 Image(systemName: "person.2.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 26, height: 26)
-                    .foregroundStyle(.white)
+                    .font(.system(size: 22))
+                    .foregroundStyle(.secondary)
             }
-            .frame(width: 54, height: 54)
             .clipShape(Circle())
-        } else if let icon = chat.icon {
-            if icon.contains("https") {
-                AsyncImage(url: URL(string: icon)) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    Circle().fill(Color(.secondarySystemBackground))
-                }
-                .frame(width: 54, height: 54)
-                .clipShape(Circle())
-            } else if UIImage(named: icon) != nil {
-                Image(icon)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 54, height: 54)
-                    .clipShape(Circle())
-            } else {
-                ZStack {
-                    Circle().fill(Color(.secondarySystemFill))
-                    Image(systemName: icon)
-                        .font(.system(size: 24))
-                        .foregroundColor(.secondary)
-                }
-                .frame(width: 54, height: 54)
-                .clipShape(Circle())
-            }
         } else {
-            ZStack {
-                Color(white: 0.15)
-                Image(systemName: "person.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .foregroundStyle(.white)
-            }
-            .frame(width: 54, height: 54)
-            .clipShape(Circle())
+            UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 52)
+        }
+    }
+    
+    private var initialsAvatar: some View {
+        ZStack {
+            Circle().fill(
+                LinearGradient(
+                    colors: [Color(.systemGray3), Color(.systemGray4)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            Text(String(chat.displayName.prefix(1)).uppercased())
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
         }
     }
 }

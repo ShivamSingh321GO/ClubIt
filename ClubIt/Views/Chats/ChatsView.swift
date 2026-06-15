@@ -17,49 +17,40 @@ struct ChatsView: View {
         @Bindable var chatStore = appSession.chatStore
         
         NavigationStack {
-            ZStack {
-                Color.chatBackground.ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 32) {
-                            
-                            // Custom Search Bar
-                            HStack {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
-                                TextField("Search", text: $searchText)
-                                    .foregroundColor(.white)
-                                
-                                Spacer()
-                            }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 16)
-                            .background(Color.chatPillBackground.opacity(0.8))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule().stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                            )
-                            .padding(.horizontal, 16)
-                            // Filter Categories
-                            filterBar(selectedCategory: $chatStore.selectedCategory)
-                                .padding(.horizontal, 16)
-                            
-                            // Pinned Chats
-                            pinnedChatsSection
-                            
-                            // Chat List
-                            chatListSection
+            VStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        
+                        // Search Bar
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                            TextField("Search", text: $searchText)
+                                .foregroundColor(.primary)
                         }
-                        .padding(.top, 8)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(Capsule())
+                        .padding(.horizontal, 16)
+                        
+                        // Filter Categories
+                        filterBar(selectedCategory: $chatStore.selectedCategory)
+                            .padding(.horizontal, 16)
+                        
+                        // Pinned Chats
+                        pinnedChatsSection
+                        
+                        // Chat List
+                        chatListSection
                     }
-                    .refreshable {
-                        await appSession.chatStore.fetchChats()
-                    }
+                    .padding(.top, 8)
+                }
+                .refreshable {
+                    await appSession.chatStore.fetchChats()
+                }
             }
-            
- 
+            .background(Color(.systemBackground))
             .navigationTitle("Chats")
             .toolbarTitleDisplayMode(.inlineLarge)
             .toolbar {
@@ -82,7 +73,10 @@ struct ChatsView: View {
                         }
                     } label: {
                         Image(systemName: "plus")
-                            
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.ultraThinMaterial, in: Circle())
                     }
                 }
             }
@@ -126,7 +120,8 @@ struct ChatsView: View {
                                 subChatName = ""
                                 subChatDescription = ""
                             } label: {
-                                Image(systemName: "checkmark")
+                                Text("Done")
+                                    .fontWeight(.semibold)
                             }
                             .disabled(subChatName.isEmpty)
                         }
@@ -135,17 +130,12 @@ struct ChatsView: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
-                .presentationBackground(Color.chatBackground)
             }
         }
         .task {
-            // Only triggers a network call if data is stale (>30s) or never loaded.
-            // On normal tab switches this returns immediately, preventing the
-            // flash-empty / reorder issues.
             await appSession.chatStore.fetchChatsIfNeeded()
         }
     }
-}
     
     private var filteredCategories: [ChatCategory] {
         if appSession.currentRole == .clubLead {
@@ -160,7 +150,7 @@ struct ChatsView: View {
         case .all:
             return 0
         case .unread:
-            return appSession.chatStore.chats.filter { !$0.isRequest && !$0.isArchived }.reduce(0) { $0 + $1.unreadCount }
+            return appSession.chatStore.chats.filter { !$0.isRequest && !$0.isArchived && $0.unreadCount > 0 }.count
         case .groups:
             return appSession.chatStore.chats.filter { $0.type == .group && !$0.isRequest && !$0.isArchived }.count
         case .event:
@@ -175,7 +165,7 @@ struct ChatsView: View {
     // MARK: - Filter Bar
     private func filterBar(selectedCategory: Binding<ChatCategory>) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 ForEach(filteredCategories) { category in
                     let count = countForCategory(category)
                     Button {
@@ -184,17 +174,17 @@ struct ChatsView: View {
                         Text(count > 0 ? "\(category.rawValue) \(count)" : category.rawValue)
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 7)
                             .background(
                                 selectedCategory.wrappedValue == category
-                                ? Color.chatAccent
-                                : Color.chatPillBackground
+                                ? Color.goldenBrown
+                                : Color(.secondarySystemBackground)
                             )
                             .foregroundStyle(
                                 selectedCategory.wrappedValue == category
                                 ? .white
-                                : .gray
+                                : .secondary
                             )
                             .clipShape(Capsule())
                     }
@@ -347,8 +337,7 @@ struct ChatsView: View {
                     
                     if chat.id != chats.last?.id {
                         Divider()
-                            .background(Color.gray.opacity(0.3))
-                            .padding(.leading, 82)
+                            .padding(.leading, 80)
                     }
                     
                     if chat.isExpanded {
@@ -362,53 +351,53 @@ struct ChatsView: View {
                                         appSession.chatStore.deleteChat(for: subChat.id)
                                     }
                                 )
-                                .padding(.leading, 82)
+                                .padding(.leading, 80)
                             }
                             .buttonStyle(.plain)
                             
                             Divider()
-                                .padding(.leading, 82)
-                                .padding(.vertical, 8)
+                                .padding(.leading, 80)
                         }
                         
                         Button {
                             activeParentId = chat.id
                             showAddSubChat = true
                         } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "plus")
-                                    .font(.subheadline.bold())
-                                    .foregroundColor(.blue)
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.subheadline)
                                 Text("Add new chat")
                                     .font(.subheadline.bold())
-                                    .foregroundColor(.blue)
                             }
+                            .foregroundColor(.blue)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Capsule())
-                            .overlay(Capsule().stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                            .padding(.vertical, 10)
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                             .padding(.horizontal, 16)
-                            .padding(.leading, 66) // Match indent of subchats
+                            .padding(.leading, 64)
                             .padding(.vertical, 8)
                         }
                         .buttonStyle(.plain)
                         
                         Divider()
-                            .padding(.leading, 82)
-                            .padding(.bottom, 8)
+                            .padding(.leading, 80)
                     }
                 }
             }
             
             if chats.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.largeTitle)
+                VStack(spacing: 12) {
+                    Image(systemName: "bubble.left.and.bubble.right")
+                        .font(.system(size: 40))
                         .foregroundStyle(.tertiary)
-                    Text("No chats found")
-                        .font(.subheadline)
+                    Text("No Messages")
+                        .font(.title3)
+                        .fontWeight(.medium)
                         .foregroundStyle(.secondary)
+                    Text("Start a conversation")
+                        .font(.subheadline)
+                        .foregroundStyle(.tertiary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.top, 60)

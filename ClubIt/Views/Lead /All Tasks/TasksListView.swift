@@ -95,7 +95,7 @@ struct TasksListView: View {
                     }
                 }
                 
-                if appSession.isRefreshing && appSession.eventStore.events.isEmpty {
+                if appSession.isRefreshing {
                     VStack {
                         ProgressView()
                             .padding()

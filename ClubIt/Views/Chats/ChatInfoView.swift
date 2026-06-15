@@ -20,31 +20,7 @@ struct ChatInfoView: View {
                 VStack(spacing: 24) {
                 // Header Profile
                 VStack(spacing: 16) {
-                    if let icon = chat.icon, icon.contains("https") {
-                        AsyncImage(url: URL(string: icon)) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            Circle().fill(Color.gray.opacity(0.3))
-                        }
-                        .frame(width: 100, height: 100)
-                        .clipShape(Circle())
-                    } else {
-                        ZStack {
-                            Circle()
-                                .fill(Color(white: 0.15))
-                                .frame(width: 100, height: 100)
-                            
-                            if let icon = chat.icon, !icon.isEmpty, icon.count > 3 {
-                                Image(systemName: icon)
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.white)
-                            } else {
-                                Image(systemName: chat.icon ?? "person.fill")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.white)
-                            }
-                        }
-                    }
+                    UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 100)
                     
                     VStack(spacing: 4) {
                         Text(chat.displayName)

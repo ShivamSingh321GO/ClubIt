@@ -5,28 +5,28 @@ struct MessageBubble: View {
     let isCurrentUser: Bool
     
     var body: some View {
-        VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
+        VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 2) {
             HStack(alignment: .bottom, spacing: 4) {
-                if isCurrentUser { Spacer(minLength: 50) }
+                if isCurrentUser { Spacer(minLength: 60) }
                 
                 Text(message.content)
                     .font(.body)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(isCurrentUser ? Color.chatAccent : Color(UIColor.darkGray).opacity(0.8))
-                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(isCurrentUser ? Color.goldenBrown : Color(.systemGray5))
+                    .foregroundStyle(isCurrentUser ? .white : .primary)
                     .clipShape(iMessageBubbleShape(isCurrentUser: isCurrentUser))
                 
-                if !isCurrentUser { Spacer(minLength: 50) }
+                if !isCurrentUser { Spacer(minLength: 60) }
             }
             
             Text(timeString(for: message.createdAt))
-                .font(.system(size: 9))
-                .foregroundStyle(.secondary)
-                .padding(isCurrentUser ? .trailing : .leading, 8)
+                .font(.system(size: 11))
+                .foregroundStyle(Color(.systemGray))
+                .padding(isCurrentUser ? .trailing : .leading, 4)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 2)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 1)
     }
     
     private func timeString(for date: Date) -> String {

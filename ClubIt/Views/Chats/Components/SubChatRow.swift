@@ -33,7 +33,7 @@ struct SubChatRow: View {
                         .font(.caption2.bold())
                         .foregroundStyle(.white)
                         .frame(width: 18, height: 18)
-                        .background(Color.goldenBrown)
+                        .background(Color.blue)
                         .clipShape(Circle())
                 }
             }

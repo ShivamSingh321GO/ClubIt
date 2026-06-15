@@ -16,6 +16,12 @@ final class ChatStore {
     var isLoading = false
     var activeChatId: UUID? = nil
     
+    // Online Status and Typing Indicators
+    var onlineUserIds: Set<UUID> = []
+    var typingUsers: [UUID: Set<UUID>] = [:]
+    private var onlinePresences: [UUID: Set<String>] = [:]
+    private var typingClearTasks: [UUID: Task<Void, Never>] = [:]
+    
     // Set from AppSession on sign-in
     var userId: UUID = UUID()
     
@@ -33,8 +39,10 @@ final class ChatStore {
     // Realtime channels
     private var messagesChannel: RealtimeChannelV2?
     private var participantsChannel: RealtimeChannelV2?
+    private var presenceChannel: RealtimeChannelV2?
     private var messageSubscriptionTask: Task<Void, Never>?
     private var participantSubscriptionTask: Task<Void, Never>?
+    private var presenceSubscriptionTask: Task<Void, Never>?
     
     // MARK: - Computed Properties
     
@@ -870,12 +878,7 @@ final class ChatStore {
         // Clean up any stale subscription tasks first
         messageSubscriptionTask?.cancel()
         participantSubscriptionTask?.cancel()
-
-        // Connect realtime socket
-        Task {
-            await client.realtimeV2.connect()
-            print("DEBUG: [ChatStore] Realtime client connected")
-        }
+        presenceSubscriptionTask?.cancel()
 
         // Subscribe to new messages across all user's chats
         let msgChannel = client.realtimeV2.channel("chat-messages-\(userId.uuidString)")
@@ -887,10 +890,16 @@ final class ChatStore {
         )
         
         messageSubscriptionTask = Task {
-            await msgChannel.subscribe()
+            // Connect the realtime socket first, then subscribe to the channel
+            await client.realtimeV2.connect()
+            print("DEBUG: [ChatStore] Realtime client connected")
+            
+            try? await msgChannel.subscribeWithError()
+            print("DEBUG: [ChatStore] Messages channel subscribed")
             
             for await insertion in messageInsertions {
                 if Task.isCancelled { break }
+                print("DEBUG: [ChatStore] Received realtime message insertion")
                 await handleNewMessage(insertion)
             }
         }
@@ -907,7 +916,7 @@ final class ChatStore {
         )
         
         participantSubscriptionTask = Task {
-            await partChannel.subscribe()
+            try? await partChannel.subscribeWithError()
             
             for await _ in participantInsertions {
                 if Task.isCancelled { break }
@@ -924,7 +933,87 @@ final class ChatStore {
         
         self.participantsChannel = partChannel
         
+        // --- ONLINE STATUS & TYPING INDICATORS ---
+        let presChannel = client.realtimeV2.channel("online-users")
+        let presenceStream = presChannel.presenceChange()
+        let typingStream = presChannel.broadcastStream(event: "typing")
+        
+        presenceSubscriptionTask = Task {
+            try? await presChannel.subscribeWithError()
+            
+            // Track our own presence
+            try? await presChannel.track(state: ["userId": .string(self.userId.uuidString)])
+            
+            // Handle incoming presence events
+            Task {
+                for await action in presenceStream {
+                    if Task.isCancelled { break }
+                    await MainActor.run {
+                        for (_, presence) in action.joins {
+                            if let userIdStr = presence.state["userId"]?.stringValue,
+                               let id = UUID(uuidString: userIdStr) {
+                                if self.onlinePresences[id] == nil { self.onlinePresences[id] = [] }
+                                self.onlinePresences[id]?.insert(presence.ref)
+                            }
+                        }
+                        for (_, presence) in action.leaves {
+                            if let userIdStr = presence.state["userId"]?.stringValue,
+                               let id = UUID(uuidString: userIdStr) {
+                                self.onlinePresences[id]?.remove(presence.ref)
+                            }
+                        }
+                        self.onlineUserIds = Set(self.onlinePresences.filter { !$0.value.isEmpty }.keys)
+                    }
+                }
+            }
+            
+            // Handle incoming typing events
+            Task {
+                for await payload in typingStream {
+                    if Task.isCancelled { break }
+                    if let chatIdStr = payload["chatId"]?.stringValue,
+                       let typingUserIdStr = payload["userId"]?.stringValue,
+                       let chatId = UUID(uuidString: chatIdStr),
+                       let typingUserId = UUID(uuidString: typingUserIdStr),
+                       typingUserId != self.userId {
+                       
+                       await MainActor.run {
+                           if self.typingUsers[chatId] == nil {
+                               self.typingUsers[chatId] = []
+                           }
+                           self.typingUsers[chatId]?.insert(typingUserId)
+                           
+                           // Clear typing status after 3 seconds
+                           self.typingClearTasks[typingUserId]?.cancel()
+                           self.typingClearTasks[typingUserId] = Task {
+                               try? await Task.sleep(for: .seconds(3))
+                               guard !Task.isCancelled else { return }
+                               await MainActor.run {
+                                   self.typingUsers[chatId]?.remove(typingUserId)
+                               }
+                           }
+                       }
+                    }
+                }
+            }
+        }
+        self.presenceChannel = presChannel
+        
         print("DEBUG: [ChatStore] Realtime subscriptions started")
+    }
+    
+    @MainActor
+    func sendTypingEvent(chatId: UUID) {
+        guard let channel = presenceChannel else { return }
+        Task {
+            try? await channel.broadcast(
+                event: "typing",
+                message: [
+                    "chatId": .string(chatId.uuidString),
+                    "userId": .string(userId.uuidString)
+                ]
+            )
+        }
     }
     
     @MainActor
@@ -998,16 +1087,23 @@ final class ChatStore {
             }
             let newMessage = try insertion.decodeRecord(as: Message.self, decoder: decoder)
             
-            // Skip if it's our own message (already added optimistically)
-            guard newMessage.senderId != userId else { return }
+            // Skip if it's our own message that we already added optimistically on this device
+            if messages[newMessage.chatId]?.contains(where: { $0.id == newMessage.id }) == true {
+                print("DEBUG: [ChatStore] Skipping message \(newMessage.id) (already in state)")
+                return
+            }
             
-            // Add to messages if we have them loaded
-            if var chatMessages = messages[newMessage.chatId] {
-                // Avoid duplicates
-                if !chatMessages.contains(where: { $0.id == newMessage.id }) {
-                    chatMessages.append(newMessage)
-                    messages[newMessage.chatId] = chatMessages
-                }
+            print("DEBUG: [ChatStore] Processing incoming message from \(newMessage.senderId) in chat \(newMessage.chatId)")
+            
+            // Add to messages — initialize array if not yet loaded
+            if messages[newMessage.chatId] == nil {
+                messages[newMessage.chatId] = []
+            }
+            
+            // Avoid duplicates
+            if !(messages[newMessage.chatId]?.contains(where: { $0.id == newMessage.id }) ?? false) {
+                messages[newMessage.chatId]?.append(newMessage)
+                print("DEBUG: [ChatStore] Appended message \(newMessage.id) to chat \(newMessage.chatId), total messages: \(messages[newMessage.chatId]?.count ?? 0)")
             }
             
             // Update last message and unread count on the chat
@@ -1040,6 +1136,8 @@ final class ChatStore {
         messageSubscriptionTask = nil
         participantSubscriptionTask?.cancel()
         participantSubscriptionTask = nil
+        presenceSubscriptionTask?.cancel()
+        presenceSubscriptionTask = nil
 
         Task {
             if let channel = messagesChannel {
@@ -1048,9 +1146,13 @@ final class ChatStore {
             if let channel = participantsChannel {
                 await client.realtimeV2.removeChannel(channel)
             }
+            if let channel = presenceChannel {
+                await client.realtimeV2.removeChannel(channel)
+            }
         }
         messagesChannel = nil
         participantsChannel = nil
+        presenceChannel = nil
         print("DEBUG: [ChatStore] Realtime subscriptions stopped")
     }
     
@@ -1060,6 +1162,9 @@ final class ChatStore {
         chats = []
         messages = [:]
         chatParticipants = [:]
+        onlineUserIds = []
+        typingUsers = [:]
+        onlinePresences = [:]
         selectedCategory = .all
         hasFetchedInitialData = false
         isFetching = false
