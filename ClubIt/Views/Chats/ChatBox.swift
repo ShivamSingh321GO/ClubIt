@@ -6,7 +6,6 @@ struct ChatBox: View {
     @State private var messageText: String = ""
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
-    @State private var showAttachmentMenu = false
     @State private var showChatInfo = false
     @State private var showAddSubChat = false
     @State private var subChatName = ""
@@ -14,12 +13,11 @@ struct ChatBox: View {
     
     var body: some View {
         let chatMessages = appSession.chatStore.messages[chat.id] ?? []
+        let otherParticipantId = appSession.chatStore.chatParticipants[chat.id]?
+            .first(where: { $0.userId != appSession.chatStore.userId })?.userId
+        let isOnline = otherParticipantId.map { appSession.chatStore.onlineUserIds.contains($0) } ?? false
         
         VStack(spacing: 0) {
-            headerView
-            
-            Divider()
-            
             // Message List
             ScrollViewReader { proxy in
                 ScrollView {
@@ -102,8 +100,44 @@ struct ChatBox: View {
             // Input Bar
             inputBar
         }
-        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .fontWeight(.semibold)
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Button {
+                    showChatInfo = true
+                } label: {
+                    VStack(spacing: 2) {
+                        ZStack(alignment: .bottomTrailing) {
+                            UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 34)
+                            
+                            if chat.type == .individual && isOnline {
+                                Circle()
+                                    .fill(Color.green)
+                                    .frame(width: 10, height: 10)
+                                    .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 1.5))
+                                    .offset(x: 1, y: 1)
+                            }
+                        }
+                        
+                        Text(chat.displayName)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
         .background(Color(.systemBackground).ignoresSafeArea())
         .task {
             appSession.chatStore.activeChatId = chat.id
@@ -120,14 +154,7 @@ struct ChatBox: View {
                 }
             }
         }
-        .sheet(isPresented: $showAttachmentMenu) {
-            AttachmentMenu { type in
-                print("Selected attachment: \(type)")
-            }
-            .presentationDetents([.height(300), .medium])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(32)
-        }
+
         .sheet(isPresented: $showChatInfo) {
             ChatInfoView(chat: chat)
                 .presentationDetents([.large])
@@ -171,63 +198,7 @@ struct ChatBox: View {
         }
     }
     
-    // MARK: - Header
-    private var headerView: some View {
-        let otherParticipantId = appSession.chatStore.chatParticipants[chat.id]?
-            .first(where: { $0.userId != appSession.chatStore.userId })?.userId
-        let isOnline = otherParticipantId.map { appSession.chatStore.onlineUserIds.contains($0) } ?? false
-        
-        return HStack(spacing: 8) {
-            // Back button - circular
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 36, height: 36)
-                    .background(.ultraThinMaterial, in: Circle())
-            }
-            
-            Spacer()
-            
-            // Center - Avatar + Name (tappable)
-            Button {
-                showChatInfo = true
-            } label: {
-                VStack(spacing: 2) {
-                    // Avatar
-                    ZStack(alignment: .bottomTrailing) {
-                        UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 34)
-                        
-                        if chat.type == .individual && isOnline {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 10, height: 10)
-                                .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 1.5))
-                                .offset(x: 1, y: 1)
-                        }
-                    }
-                    
-                    Text(chat.displayName)
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
-                }
-            }
-            .buttonStyle(.plain)
-            
-            Spacer()
-            
-            // Right spacer to balance the back button width roughly
-            Spacer()
-                .frame(width: 44)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color(.systemBackground))
-    }
+
     
     private var initialsCircle: some View {
         ZStack {
@@ -244,18 +215,8 @@ struct ChatBox: View {
         }
     }
     
-    // MARK: - Input Bar
     private var inputBar: some View {
         HStack(alignment: .bottom, spacing: 8) {
-            // Plus button
-            Button {
-                showAttachmentMenu = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundColor(.goldenBrown)
-            }
-            
             // Text field in capsule
             HStack(spacing: 8) {
                 TextField("iMessage", text: $messageText, axis: .vertical)

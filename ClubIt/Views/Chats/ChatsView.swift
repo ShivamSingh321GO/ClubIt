@@ -73,10 +73,7 @@ struct ChatsView: View {
                         }
                     } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.white)
-                            .frame(width: 36, height: 36)
-                            .background(.ultraThinMaterial, in: Circle())
+                            
                     }
                 }
             }
@@ -178,13 +175,13 @@ struct ChatsView: View {
                             .padding(.vertical, 7)
                             .background(
                                 selectedCategory.wrappedValue == category
-                                ? Color.goldenBrown
-                                : Color(.secondarySystemBackground)
+                                ? Color.orange
+                                : Color(.tertiarySystemFill).opacity(0.5)
                             )
                             .foregroundStyle(
                                 selectedCategory.wrappedValue == category
                                 ? .white
-                                : .secondary
+                                : .primary
                             )
                             .clipShape(Capsule())
                     }

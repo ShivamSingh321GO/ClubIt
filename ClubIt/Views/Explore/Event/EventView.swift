@@ -62,11 +62,10 @@ struct EventView: View {
                                 }
                             } label: {
                                 Text(category.rawValue)
-                                    .font(.footnote)
+                                    .font(.subheadline)
                                     .fontWeight(.medium)
-                                    .padding(.horizontal, 18)
-                                    .padding(.vertical, 8)
-                                    .frame(minWidth: 65)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 7)
                                     .background(isSelected ? Color.orange : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
                                     .foregroundStyle(isSelected ? .white : .primary)
                                     .clipShape(Capsule())
