@@ -232,7 +232,7 @@ struct LeadEventApprovalDetailView: View {
     private func statusColor(for step: StepStatus) -> Color {
         switch step {
         case .locked: return .secondary
-        case .pending: return .orange
+        case .pending: return .accentColor
         case .approved: return .green
         case .rejected: return .red
         case .skipped: return .secondary
@@ -486,7 +486,7 @@ struct LeadEventApprovalDetailView: View {
                     LeadItemApprovalCard(
                         title: "VP Draft Review",
                         icon: "doc.text.fill",
-                        iconColor: .orange,
+                        iconColor: .accentColor,
                         status: approval.status.rawValue,
                         details: [
                             (icon: nil, label: "Category", value: event?.category.rawValue ?? "N/A"),
@@ -526,7 +526,7 @@ struct LeadEventApprovalDetailView: View {
                     LeadItemApprovalCard(
                         title: resource.name,
                         icon: "cart.fill",
-                        iconColor: .orange,
+                        iconColor: .accentColor,
                         status: resource.status.rawValue,
                         details: [
                             (icon: nil, label: "Quantity", value: "\(resource.quantity)"),
@@ -685,23 +685,23 @@ struct LeadDetailClubHeaderView: View {
                                 .clipShape(Circle())
                         case .failure:
                             Circle()
-                                .fill(Color.orange.gradient.opacity(0.1))
+                                .fill(Color.accentColor.gradient.opacity(0.1))
                                 .frame(width: 60, height: 60)
                             Text(String(event.name.prefix(1).uppercased()))
                                 .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         @unknown default:
                             EmptyView()
                         }
                     }
                 } else {
                     Circle()
-                        .fill(Color.orange.gradient.opacity(0.1))
+                        .fill(Color.accentColor.gradient.opacity(0.1))
                         .frame(width: 60, height: 60)
                     
                     Text(String(event.name.prefix(1).uppercased()))
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                 }
             }
             
@@ -754,7 +754,7 @@ struct SummaryCardRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            SummaryCard(title: "REQUESTED \(label)", amount: requested, icon: "clock.arrow.circlepath", color: .orange)
+            SummaryCard(title: "REQUESTED \(label)", amount: requested, icon: "clock.arrow.circlepath", color: .accentColor)
             SummaryCard(title: "APPROVED \(label)", amount: approved, icon: "checkmark.shield.fill", color: .green)
         }
         .padding(.horizontal)
@@ -851,7 +851,7 @@ struct LeadItemApprovalCard: View {
                         HStack(alignment: .top, spacing: 8) {
                             if let icon = detail.icon {
                                 Image(systemName: icon)
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.accentColor)
                                     .font(.system(size: 14))
                                     .padding(.top, 2)
                             }
@@ -911,7 +911,7 @@ struct LeadItemApprovalCard: View {
     
     var statusColor: Color {
         switch status.lowercased() {
-        case "pending": return .orange
+        case "pending": return .accentColor
         case "approved": return .green
         case "rejected": return .red
         default: return .secondary

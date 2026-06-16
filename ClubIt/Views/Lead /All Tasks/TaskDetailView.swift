@@ -92,7 +92,7 @@ struct TaskDetailView: View {
                         sectionHeader(title: "Timeline", icon: "clock.fill")
                         
                         VStack(spacing: 16) {
-                            dateRow(title: "Deadline", date: currentTask.deadline, icon: "calendar.badge.exclamationmark", color: .orange)
+                            dateRow(title: "Deadline", date: currentTask.deadline, icon: "calendar.badge.exclamationmark", color: .accentColor)
                             dateRow(title: "Created", date: currentTask.createdAt, icon: "plus.circle.fill", color: .green)
                         }
                         
@@ -212,7 +212,7 @@ struct TaskDetailView: View {
                     }
                     
                     // Mark as Complete Button
-                    if (currentTask.assignedTo == appSession.currentUser?.id || currentTask.delegatedToId == appSession.currentUser?.id) && currentTask.status != .completed {
+                    if (currentTask.assignedTo == appSession.currentUser?.id || currentTask.delegatedToId == appSession.currentUser?.id || currentTask.assignedBy == appSession.currentUser?.id) && currentTask.status != .completed {
                         Button {
                             Task {
                                 do {
@@ -351,7 +351,7 @@ struct TaskDetailView: View {
             Image(systemName: currentTask.priority == .high ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
         }
         .font(.caption)
-        .foregroundStyle(currentTask.priority == .high ? .red : .orange)
+        .foregroundStyle(currentTask.priority == .high ? .red : .accentColor)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(Color.secondary.opacity(0.1))
@@ -360,7 +360,7 @@ struct TaskDetailView: View {
     
     private var statusColor: Color {
         switch currentTask.status {
-        case .pending: return .orange
+        case .pending: return .accentColor
         case .inProgress: return .blue
         case .completed: return .green
         }

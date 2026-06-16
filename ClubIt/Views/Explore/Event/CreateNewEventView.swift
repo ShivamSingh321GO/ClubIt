@@ -62,7 +62,7 @@ struct CreateNewEventView: View {
                 
                 Image(systemName: isPresident ? "checkmark.circle.fill" : "doc.text.badge.plus")
                     .font(.system(size: 80))
-                    .foregroundStyle(isPresident ? Color.green.gradient : Color.orange.gradient)
+                    .foregroundStyle(isPresident ? Color.green.gradient : Color.accentColor.gradient)
                     .symbolEffect(.bounce, options: .nonRepeating)
                     .padding(.bottom, 8)
                 
@@ -91,7 +91,7 @@ struct CreateNewEventView: View {
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         .buttonBorderShape(.capsule)
-                        .tint(.orange)
+                        .tint(.accentColor)
                     }
                     
                     if isPresident {
@@ -105,7 +105,7 @@ struct CreateNewEventView: View {
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         .buttonBorderShape(.capsule)
-                        .tint(.orange)
+                        .tint(.accentColor)
                     } else {
                         Button {
                             dismiss()
@@ -117,7 +117,7 @@ struct CreateNewEventView: View {
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                         .buttonBorderShape(.capsule)
-                        .tint(.orange)
+                        .tint(.accentColor)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -150,7 +150,7 @@ struct CreateNewEventView: View {
                     
                     Section {
                         Toggle("Open Registration", isOn: $isRegistrationOpen)
-                            .tint(.orange)
+                            .tint(.accentColor)
                     } header: {
                         Text("Registration Status")
                     }
@@ -898,7 +898,7 @@ struct MultiClubSelectionView: View {
                         Spacer()
                         if selectedClubIds.contains(club.id) {
                             Image(systemName: "checkmark")
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         }
                     }
                 }

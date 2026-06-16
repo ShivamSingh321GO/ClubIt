@@ -55,8 +55,8 @@ struct ClubMemberListView: View {
                                     .font(.caption2.bold())
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(Color.goldenBrown.opacity(0.1))
-                                    .foregroundColor(.goldenBrown)
+                                    .background(Color.accentColor.opacity(0.1))
+                                    .foregroundColor(.accentColor)
                                     .clipShape(Capsule())
                             }
                         }

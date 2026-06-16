@@ -11,11 +11,11 @@ struct ApprovalSummaryCard: View {
             HStack(alignment: .top, spacing: 8) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.orange.opacity(0.5), lineWidth: 1.5)
+                        .stroke(Color.accentColor.opacity(0.5), lineWidth: 1.5)
                         .frame(width: 55, height: 55)
                     
                     Image(systemName: "calendar")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                         .font(.title)
                 }
                 

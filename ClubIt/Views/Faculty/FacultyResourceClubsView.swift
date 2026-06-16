@@ -90,9 +90,9 @@ struct FacultyEventResourceCard: View {
                 if pendingCount > 0 {
                     Text("!")
                         .font(.title3.bold())
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                         .frame(width: 40, height: 40)
-                        .background(Color.orange.opacity(0.1))
+                        .background(Color.accentColor.opacity(0.1))
                         .clipShape(Circle())
                 }
             }

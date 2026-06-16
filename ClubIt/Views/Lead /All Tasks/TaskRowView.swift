@@ -136,7 +136,7 @@ struct TaskRowView: View {
         .glassEffect(in: .rect(cornerRadius: 20))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .contextMenu {
-            if task.assignedBy == appSession.currentUser?.id || appSession.currentRole == .clubLead {
+            if task.assignedBy == appSession.currentUser?.id {
                 Button(role: .destructive) {
                     Task {
                         try? await appSession.taskStore.deleteTask(id: task.id)
@@ -146,7 +146,7 @@ struct TaskRowView: View {
                 }
             }
             
-            if task.status != .completed && (task.assignedTo == appSession.currentUser?.id || task.delegatedToId == appSession.currentUser?.id) {
+            if task.status != .completed && (task.assignedTo == appSession.currentUser?.id || task.delegatedToId == appSession.currentUser?.id || task.assignedBy == appSession.currentUser?.id) {
                 Button {
                     Task {
                         try? await appSession.taskStore.updateTaskStatus(id: task.id, status: .completed)
@@ -174,7 +174,7 @@ struct TaskRowView: View {
     private var priorityColor: Color {
         switch task.priority {
         case .high: return .red
-        case .low: return .orange
+        case .low: return .accentColor
         }
     }
     

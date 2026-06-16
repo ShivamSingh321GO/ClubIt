@@ -236,7 +236,7 @@ struct ChatInfoView: View {
     private func profileRow(icon: String, title: String) -> some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
-                .foregroundColor(.orange)
+                .foregroundColor(.accentColor)
                 .frame(width: 24)
             Text(title)
             Spacer()

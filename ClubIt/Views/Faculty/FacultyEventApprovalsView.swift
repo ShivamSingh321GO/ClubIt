@@ -57,7 +57,7 @@ struct FacultyEventApprovalsView: View {
                                             .font(.headline)
                                         Text("Review Request")
                                             .font(.caption)
-                                            .foregroundColor(.orange)
+                                            .foregroundColor(.accentColor)
                                     }
                                     
                                     Spacer()
@@ -109,7 +109,7 @@ struct ApprovalTypeIcon: View {
         switch type {
         case .event: return .blue
         case .budget: return .green
-        case .resource: return .orange
+        case .resource: return .accentColor
         case .venue: return .purple
         }
     }

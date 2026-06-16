@@ -10,12 +10,12 @@ struct MemberClubsOverviewView: View {
                 // MARK: - Header
                 VStack(spacing: 16) {
                     Circle()
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.accentColor.opacity(0.1))
                         .frame(width: 80, height: 80)
                         .overlay(
                             Text(String(user.name.prefix(1)))
                                 .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         )
                     
                     VStack(spacing: 4) {
@@ -101,11 +101,11 @@ struct AssociatedClubRow: View {
         HStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.accentColor.opacity(0.1))
                     .frame(width: 44, height: 44)
                 Text(String(club.name.prefix(1)))
                     .font(.headline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.accentColor)
             }
             
             VStack(alignment: .leading, spacing: 2) {
@@ -122,8 +122,8 @@ struct AssociatedClubRow: View {
                 .font(.caption2.bold())
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.orange.opacity(0.1))
-                .foregroundColor(.orange)
+                .background(Color.accentColor.opacity(0.1))
+                .foregroundColor(.accentColor)
                 .cornerRadius(4)
         }
         .padding()

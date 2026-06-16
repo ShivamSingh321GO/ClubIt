@@ -43,12 +43,12 @@ struct RemarkConversationView: View {
                         HStack {
                             if !isCurrentUser {
                                 Circle()
-                                    .fill(Color.orange.opacity(0.1))
+                                    .fill(Color.accentColor.opacity(0.1))
                                     .frame(width: 24, height: 24)
                                     .overlay(
                                         Text(authorName.isEmpty ? "U" : String(authorName.prefix(1)))
                                             .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(.orange)
+                                            .foregroundColor(.accentColor)
                                     )
                                 
                                 Text(authorName)

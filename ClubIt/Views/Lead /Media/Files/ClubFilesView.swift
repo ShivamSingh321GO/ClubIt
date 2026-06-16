@@ -143,11 +143,11 @@ struct FileCard: View {
         HStack(alignment: .center, spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.accentColor.opacity(0.1))
                     .frame(width: 50, height: 50)
                 Image(systemName: fileIcon(for: file))
                     .font(.title3)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.accentColor)
             }
             
             VStack(alignment: .leading, spacing: 4) {

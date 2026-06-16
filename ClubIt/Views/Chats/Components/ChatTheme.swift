@@ -7,5 +7,5 @@ extension Color {
     static let chatBubbleReceived = Color(.secondarySystemBackground)
     
     // Use the app's existing goldenBrown as the accent
-    static let chatAccent = Color.goldenBrown
+    static let chatAccent = Color.accentColor
 }

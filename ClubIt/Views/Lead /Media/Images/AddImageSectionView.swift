@@ -22,17 +22,17 @@ struct AddImageSectionView: View {
                     PhotosPicker(selection: $selectedItems, maxSelectionCount: 15, matching: .images) {
                         HStack {
                             Image(systemName: "photo.on.rectangle.angled")
-                                .foregroundColor(.goldenBrown)
+                                .foregroundColor(.accentColor)
                             Text("Select Images")
                                 .foregroundColor(.primary)
                             Spacer()
                             if !selectedItems.isEmpty {
                                 Text("\(selectedItems.count)")
                                     .padding(6)
-                                    .background(Color.goldenBrown.opacity(0.1))
+                                    .background(Color.accentColor.opacity(0.1))
                                     .clipShape(Circle())
                                     .font(.caption2.bold())
-                                    .foregroundColor(.goldenBrown)
+                                    .foregroundColor(.accentColor)
                             }
                         }
                     }

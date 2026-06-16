@@ -48,13 +48,13 @@ struct ChatRow: View {
                                 .foregroundStyle(.white)
                                 .frame(minWidth: 20, minHeight: 20)
                                 .padding(.horizontal, 5)
-                                .background(Color.goldenBrown)
+                                .background(Color.accentColor)
                                 .clipShape(Capsule())
                         }
                     } else {
                         Text(timeString(from: chat.lastMessageAt ?? chat.createdAt))
                             .font(.subheadline)
-                            .foregroundStyle(chat.unreadCount > 0 ? Color.goldenBrown : .secondary)
+                            .foregroundStyle(chat.unreadCount > 0 ? Color.accentColor : .secondary)
                     }
                 }
                 
@@ -93,7 +93,7 @@ struct ChatRow: View {
                             .foregroundStyle(.white)
                             .frame(minWidth: 20, minHeight: 20)
                             .padding(.horizontal, 5)
-                            .background(Color.goldenBrown)
+                            .background(Color.accentColor)
                             .clipShape(Capsule())
                     }
                 }

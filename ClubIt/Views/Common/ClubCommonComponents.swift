@@ -74,7 +74,7 @@ struct LocalAnnouncementCard: View {
                     .frame(width: 44, height: 44)
                     .overlay(
                         Image(systemName: "megaphone.fill")
-                            .foregroundStyle(.goldenBrown)
+                            .foregroundStyle(.accentColor)
                     )
 
                 VStack(alignment: .leading, spacing: 4) {

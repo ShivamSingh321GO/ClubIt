@@ -23,7 +23,7 @@ struct ContentView: View {
                             
                             Image(systemName: "chevron.right")
                                 .font(.headline.weight(.semibold))
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(.accentColor)
                         }
                     }
                     .buttonStyle(.plain)

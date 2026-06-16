@@ -83,11 +83,11 @@ struct LinkCard: View {
             HStack(alignment: .top, spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.accentColor.opacity(0.1))
                         .frame(width: 70, height: 70)
                     Image(systemName: "link")
                         .font(.title2)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {

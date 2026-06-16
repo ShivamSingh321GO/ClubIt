@@ -33,7 +33,7 @@ struct AchievementsListView: View {
                 VStack(spacing: 16) {
                     ZStack {
                         Circle()
-                            .fill(Color.goldenBrown.opacity(0.05))
+                            .fill(Color.accentColor.opacity(0.05))
                             .frame(width: 80, height: 80)
                         
                         Image(systemName: "trophy.fill")

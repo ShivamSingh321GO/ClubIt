@@ -58,11 +58,11 @@ struct PresidentClubBudgetCard: View {
                         } else if phase.error != nil {
                             ZStack {
                                 Circle()
-                                    .fill(Color.orange.gradient.opacity(0.1))
+                                    .fill(Color.accentColor.gradient.opacity(0.1))
                                     .frame(width: 60, height: 60)
                                 Text(String((event?.name ?? club.name).prefix(1).uppercased()))
                                     .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.accentColor)
                             }
                         } else {
                             Circle()
@@ -73,11 +73,11 @@ struct PresidentClubBudgetCard: View {
                     }
                 } else {
                     Circle()
-                        .fill(Color.orange.gradient.opacity(0.1))
+                        .fill(Color.accentColor.gradient.opacity(0.1))
                         .frame(width: 60, height: 60)
                     Text(String((event?.name ?? club.name).prefix(1).uppercased()))
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                 }
             }
             
@@ -107,9 +107,9 @@ struct PresidentClubBudgetCard: View {
                 if pendingCount > 0 {
                     Text("!")
                         .font(.title3.bold())
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                         .frame(width: 40, height: 40)
-                        .background(Color.orange.opacity(0.1))
+                        .background(Color.accentColor.opacity(0.1))
                         .clipShape(Circle())
                 }
             }

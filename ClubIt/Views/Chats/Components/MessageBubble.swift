@@ -14,7 +14,7 @@ struct MessageBubble: View {
                     .font(.body)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(isCurrentUser ? Color.goldenBrown : Color(.systemGray5))
+                    .background(isCurrentUser ? Color.accentColor : Color(.systemGray5))
                     .foregroundStyle(isCurrentUser ? .white : .primary)
                     .clipShape(iMessageBubbleShape(isCurrentUser: isCurrentUser))
                     .contextMenu {

@@ -77,7 +77,7 @@ struct ActivityDetailView: View {
                         
                         VStack(spacing: 16) {
                             detailRow(icon: "person.circle.fill", label: "Posted By", value: postedByName, color: .blue)
-                            detailRow(icon: "clock.fill", label: "Created At", value: formattedDate(activity.createdAt), color: .orange)
+                            detailRow(icon: "clock.fill", label: "Created At", value: formattedDate(activity.createdAt), color: .accentColor)
                         }
                     }
                     .padding(.horizontal, 20)

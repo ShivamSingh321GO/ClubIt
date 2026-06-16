@@ -132,18 +132,18 @@ struct EventDetailView: View {
                                 image.resizable()
                             case .failure:
                                 ZStack {
-                                    Color.orange.opacity(0.1)
-                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.orange.opacity(0.5))
+                                    Color.accentColor.opacity(0.1)
+                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.accentColor.opacity(0.5))
                                 }
                             case .empty:
                                 ZStack {
-                                    Color.orange.opacity(0.05)
+                                    Color.accentColor.opacity(0.05)
                                     ProgressView()
                                 }
                             @unknown default:
                                 ZStack {
-                                    Color.orange.opacity(0.1)
-                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.orange.opacity(0.5))
+                                    Color.accentColor.opacity(0.1)
+                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.accentColor.opacity(0.5))
                                 }
                             }
                         }
@@ -152,8 +152,8 @@ struct EventDetailView: View {
                     }
                 } else {
                     ZStack {
-                        Color.orange.opacity(0.1)
-                        Image(systemName: "photo").font(.largeTitle).foregroundColor(.orange.opacity(0.5))
+                        Color.accentColor.opacity(0.1)
+                        Image(systemName: "photo").font(.largeTitle).foregroundColor(.accentColor.opacity(0.5))
                     }
                 }
             }
@@ -297,12 +297,12 @@ struct EventDetailView: View {
     private var organizerContent: some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(Color.orange.gradient.opacity(0.15))
+                .fill(Color.accentColor.gradient.opacity(0.15))
                 .frame(width: 40, height: 40)
                 .overlay(
                     Text(String(organizerName.prefix(1)))
                         .font(.subheadline.bold())
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                 )
             
             VStack(alignment: .leading, spacing: 2) {
@@ -326,9 +326,9 @@ struct EventDetailView: View {
                 Button(action: {}) {
                     Image(systemName: "bubble.left.and.bubble.right.fill")
                         .font(.caption)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                         .padding(10)
-                        .background(Color.orange.opacity(0.1))
+                        .background(Color.accentColor.opacity(0.1))
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -516,8 +516,8 @@ struct EventDetailView: View {
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
-                    .tint(.orange)
-                    .shadow(color: .orange.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .tint(.accentColor)
+                    .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
                 } else {
                     if event.isRegistrationOpen ?? true {
                         NavigationLink(destination: ManageParticipantsView(event: event)) {
@@ -532,7 +532,7 @@ struct EventDetailView: View {
                         .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                 }
-            } else if appSession.currentRole == .faculty {
+            } else if appSession.currentRole == .faculty || appSession.currentRole == .admin || appSession.currentRole == .president || appSession.currentRole == .vicePresident {
                 EmptyView()
             } else {
                 let isRegistered = appSession.registeredEventIds.contains(event.id)
@@ -551,21 +551,6 @@ struct EventDetailView: View {
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .tint(.red)
-                } else if appSession.currentRole == .president {
-                    Button {
-                        Task {
-                            await appSession.registerForEvent(id: event.id)
-                        }
-                    } label: {
-                        Text("Join Event")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.orange)
-                    .shadow(color: .orange.opacity(0.4), radius: 8, x: 0, y: 4)
                 } else if !isOpen {
                     Button(action: {}) {
                         Label("Registration Closed", systemImage: "lock.fill")
@@ -603,8 +588,8 @@ struct EventDetailView: View {
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
-                    .tint(.orange)
-                    .shadow(color: .orange.opacity(0.4), radius: 8, x: 0, y: 4)
+                    .tint(.accentColor)
+                    .shadow(color: .accentColor.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
             }
         }
@@ -678,7 +663,7 @@ struct EventDetailView: View {
     
     private var buttonColor: Color {
         if isMyEvent { return .blue }
-        return appSession.registeredEventIds.contains(event.id) ? .green : .orange
+        return appSession.registeredEventIds.contains(event.id) ? .green : .accentColor
     }
 }
 

@@ -29,7 +29,7 @@ struct LaunchScreenView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 120, height: 120)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.accentColor)
                     .scaleEffect(iconScale)
                     .opacity(iconOpacity)
                     .offset(y: iconYOffset)

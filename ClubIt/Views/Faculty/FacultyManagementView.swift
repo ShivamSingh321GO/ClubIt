@@ -16,11 +16,11 @@ struct FacultyManagementView: View {
                                 HStack(spacing: 16) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 8)
-                                            .fill(Color.orange.opacity(0.1))
+                                            .fill(Color.accentColor.opacity(0.1))
                                             .frame(width: 32, height: 32)
                                         Image(systemName: "archivebox")
                                             .font(.subheadline)
-                                            .foregroundColor(.orange)
+                                            .foregroundColor(.accentColor)
                                     }
                                     
                                     Text("Approval Management")
@@ -98,12 +98,12 @@ struct FacultyExpandableClubRow: View {
             }) {
                 HStack(spacing: 16) {
                     Circle()
-                        .fill(Color.orange.opacity(0.1))
+                        .fill(Color.accentColor.opacity(0.1))
                         .frame(width: 44, height: 44)
                         .overlay(
                             Text(String(club.name.prefix(1)))
                                 .font(.headline)
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         )
                     
                     VStack(alignment: .leading, spacing: 2) {
@@ -145,7 +145,7 @@ struct FacultyExpandableClubRow: View {
                     
                     HStack(spacing: 12) {
                         FacultyStatBadge(icon: "person.2.fill", count: "\(appSession.clubStore.allUsers.filter { $0.clubId == club.id }.count)", label: "Members", color: .green)
-                        FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == club.id }.count)", label: "Achievements", color: .orange)
+                        FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == club.id }.count)", label: "Achievements", color: .accentColor)
                     }
                     .padding(.horizontal)
                     

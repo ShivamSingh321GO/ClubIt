@@ -31,7 +31,7 @@ struct AttachmentMenu: View {
             switch self {
             case .camera: return .blue
             case .photo: return .purple
-            case .document: return .orange
+            case .document: return .accentColor
             case .location: return .green
             case .contact: return .gray
             }

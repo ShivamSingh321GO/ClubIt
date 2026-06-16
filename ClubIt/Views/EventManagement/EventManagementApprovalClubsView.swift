@@ -273,11 +273,11 @@ struct EventManagementEventApprovalCard: View {
                         } else if phase.error != nil {
                             ZStack {
                                 Circle()
-                                    .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
+                                    .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.accentColor.gradient.opacity(0.1)))
                                     .frame(width: 60, height: 60)
                                 Text(String(event.name.prefix(1).uppercased()))
                                     .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                                    .foregroundColor(isApproved ? .green : (isRejected ? .red : .accentColor))
                             }
                         } else {
                             Circle()
@@ -288,11 +288,11 @@ struct EventManagementEventApprovalCard: View {
                     }
                 } else {
                     Circle()
-                        .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
+                        .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.accentColor.gradient.opacity(0.1)))
                         .frame(width: 60, height: 60)
                     Text(String(event.name.prefix(1).uppercased()))
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                        .foregroundColor(isApproved ? .green : (isRejected ? .red : .accentColor))
                 }
             }
             
@@ -318,7 +318,7 @@ struct EventManagementEventApprovalCard: View {
                         let facultyPendingVenues = pendingVenues.filter { $0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId }.count
                         
                         if facultyPendingEvents > 0 {
-                            IndicatorTag(icon: "calendar", count: facultyPendingEvents, color: .orange)
+                            IndicatorTag(icon: "calendar", count: facultyPendingEvents, color: .accentColor)
                         }
                         if pendingResources.count > 0 {
                             IndicatorTag(icon: "cart.fill", count: pendingResources.count, color: .blue)
@@ -330,7 +330,7 @@ struct EventManagementEventApprovalCard: View {
                         // VPs don't have resource/budget/venue indicators
                     } else {
                         if pendingEvents.count > 0 {
-                            IndicatorTag(icon: "calendar", count: pendingEvents.count, color: .orange)
+                            IndicatorTag(icon: "calendar", count: pendingEvents.count, color: .accentColor)
                         }
                         if pendingResources.count > 0 {
                             IndicatorTag(icon: "cart.fill", count: pendingResources.count, color: .blue)
@@ -368,9 +368,9 @@ struct EventManagementEventApprovalCard: View {
                 } else {
                     Text("!")
                         .font(.title3.bold())
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                         .frame(width: 40, height: 40)
-                        .background(Color.orange.opacity(0.1))
+                        .background(Color.accentColor.opacity(0.1))
                         .clipShape(Circle())
                 }
             }

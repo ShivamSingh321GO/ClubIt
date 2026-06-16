@@ -15,11 +15,11 @@ struct EventManagementTeamView: View {
                                 HStack(spacing: 16) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 8)
-                                            .fill(Color.orange.opacity(0.1))
+                                            .fill(Color.accentColor.opacity(0.1))
                                             .frame(width: 32, height: 32)
                                         Image(systemName: "checkmark.shield")
                                             .font(.subheadline)
-                                            .foregroundColor(.orange)
+                                            .foregroundColor(.accentColor)
                                     }
                                     
                                     Text("Approval Management")
@@ -47,7 +47,7 @@ struct EventManagementTeamView: View {
                             } else if appSession.currentRole == .president {
                                 Divider().padding(.leading, 56)
                                 NavigationLink(destination: PresidentAssignClubView()) {
-                                    QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Club", color: .orange)
+                                    QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Club", color: .accentColor)
                                 }
                                 .buttonStyle(.plain)
                                 

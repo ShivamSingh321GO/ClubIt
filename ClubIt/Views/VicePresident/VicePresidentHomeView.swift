@@ -162,11 +162,11 @@ struct VPApprovalEventCard: View {
         HStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.accentColor.opacity(0.1))
                     .frame(width: 48, height: 48)
                 Text(String(club.name.prefix(1)))
                     .font(.headline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.accentColor)
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -336,11 +336,11 @@ struct VPApprovalsListView: View {
                                                         } else if phase.error != nil {
                                                             ZStack {
                                                                 Circle()
-                                                                    .fill(Color.orange.opacity(0.1))
+                                                                    .fill(Color.accentColor.opacity(0.1))
                                                                     .frame(width: 48, height: 48)
                                                                 Text(String(event.name.prefix(1).uppercased()))
                                                                     .font(.headline)
-                                                                    .foregroundColor(.orange)
+                                                                    .foregroundColor(.accentColor)
                                                             }
                                                         } else {
                                                             Circle()
@@ -351,11 +351,11 @@ struct VPApprovalsListView: View {
                                                     }
                                                 } else {
                                                     Circle()
-                                                        .fill(Color.orange.opacity(0.1))
+                                                        .fill(Color.accentColor.opacity(0.1))
                                                         .frame(width: 48, height: 48)
                                                     Text(String(event.name.prefix(1).uppercased()))
                                                         .font(.headline)
-                                                        .foregroundColor(.orange)
+                                                        .foregroundColor(.accentColor)
                                                 }
                                             }
                                             
@@ -391,9 +391,9 @@ struct VPApprovalsListView: View {
                                                 } else {
                                                     Text("!")
                                                         .font(.title3.bold())
-                                                        .foregroundColor(.orange)
+                                                        .foregroundColor(.accentColor)
                                                         .frame(width: 40, height: 40)
-                                                        .background(Color.orange.opacity(0.1))
+                                                        .background(Color.accentColor.opacity(0.1))
                                                         .clipShape(Circle())
                                                 }
                                             }

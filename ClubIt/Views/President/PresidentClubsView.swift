@@ -11,14 +11,14 @@ struct PresidentClubsView: View {
                     // MARK: - Actions
                     VStack(spacing: 0) {
                         NavigationLink(destination: PresidentBudgetClubsView()) {
-                            QuickActionRow(icon: "indianrupeesign.circle", title: "Approval Management", color: .orange)
+                            QuickActionRow(icon: "indianrupeesign.circle", title: "Approval Management", color: .accentColor)
                         }
                         .buttonStyle(.plain)
                         
                         Divider().padding(.leading, 56)
                         
                         NavigationLink(destination: PresidentAssignClubView()) {
-                            QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Club", color: .orange)
+                            QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Club", color: .accentColor)
                         }
                         .buttonStyle(.plain)
                         

@@ -62,7 +62,7 @@ struct EditClubDetailView: View {
                             } else {
                                 Image(systemName: "flame.fill")
                                     .font(.system(size: 30))
-                                    .foregroundColor(.goldenBrown)
+                                    .foregroundColor(.accentColor)
                             }
                         }
                         .frame(width: 80, height: 80)

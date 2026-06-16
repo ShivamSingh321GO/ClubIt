@@ -177,12 +177,12 @@ struct StudentHomeView: View {
             action()
         } label: {
             Text(title)
-                .font(.footnote)
+                .font(.subheadline)
                 .fontWeight(.medium)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 8)
-                .frame(minWidth: 65)
-                .background(isSelected ? Color.orange : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+//                .frame(minWidth: 65)
+                .background(isSelected ? .accentColor.opacity(1.0) : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
                 .foregroundStyle(isSelected ? .white : .primary)
                 .clipShape(Capsule())
         }

@@ -72,7 +72,7 @@ private struct AnnouncementCard: View {
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: "megaphone.fill")
-                            .foregroundStyle(.goldenBrown)
+                            .foregroundStyle(.accentColor)
                     )
                 
                 VStack(alignment: .leading, spacing: 4) {

@@ -97,7 +97,7 @@ struct HomeApprovalCard: View {
     
     var approvalTypeColor: Color {
         switch approval.type {
-        case .event: return .orange
+        case .event: return .accentColor
         case .budget: return .green
         case .venue: return .red
         default: return .blue

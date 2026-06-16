@@ -26,3 +26,7 @@ struct ClubItApp: App {
         }
     }
 }
+
+extension ShapeStyle where Self == Color {
+    static var accentColor: Color { .accentColor }
+}

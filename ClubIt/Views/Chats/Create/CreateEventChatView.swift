@@ -30,11 +30,11 @@ struct CreateEventChatView: View {
                         Button(action: {}) {
                             ZStack {
                                 Circle()
-                                    .fill(Color.orange.opacity(0.1))
+                                    .fill(Color.accentColor.opacity(0.1))
                                     .frame(width: 80, height: 80)
                                 Image(systemName: "camera.fill")
                                     .font(.title)
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.accentColor)
                             }
                         }
                         Spacer()
@@ -120,7 +120,7 @@ struct CreateEventChatView: View {
                     } label: {
                         Image(systemName: "checkmark")
                             .font(.title3)
-                            .foregroundColor(.goldenBrown)
+                            .foregroundColor(.accentColor)
                     }
                     .disabled(eventName.isEmpty)
                 }

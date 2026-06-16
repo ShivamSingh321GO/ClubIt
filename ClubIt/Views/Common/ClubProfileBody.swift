@@ -85,7 +85,7 @@ struct ClubProfileBody: View {
                                     icon: "trophy.fill",
                                     count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == club.id }.count)",
                                     label: "Achievements",
-                                    color: .orange
+                                    color: .accentColor
                                 )
                             }
                             .buttonStyle(.plain)
@@ -132,7 +132,7 @@ struct ClubProfileBody: View {
                             .buttonStyle(.borderedProminent)
                             .buttonBorderShape(.capsule)
                             .controlSize(.large)
-                            .tint(isFollowing ? .secondary : .orange)
+                            .tint(isFollowing ? .secondary : .accentColor)
                             .padding(.top, 12)
                         }
                     }
@@ -202,7 +202,7 @@ struct ClubProfileBody: View {
                     
                     HStack(spacing: 16) {
                         NavigationLink(destination: ClubImagesView()) {
-                            MediaButton(icon: "photo.fill", label: "Images", color: .orange)
+                            MediaButton(icon: "photo.fill", label: "Images", color: .accentColor)
                         }
                         .buttonStyle(.plain)
                         

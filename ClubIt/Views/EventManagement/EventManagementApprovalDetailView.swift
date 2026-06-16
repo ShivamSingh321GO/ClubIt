@@ -247,11 +247,11 @@ struct EventManagementApprovalDetailView: View {
                     HStack {
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.orange.opacity(0.1))
+                                .fill(Color.accentColor.opacity(0.1))
                                 .frame(width: 32, height: 32)
                             Image(systemName: "clock.arrow.circlepath")
                                 .font(.caption)
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         }
                         Spacer()
                         Text("REQUESTED RENTAL")
@@ -405,11 +405,11 @@ struct EventManagementApprovalDetailView: View {
                             HStack {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.orange.opacity(0.1))
+                                        .fill(Color.accentColor.opacity(0.1))
                                         .frame(width: 32, height: 32)
                                     Image(systemName: "clock.arrow.circlepath")
                                         .font(.caption)
-                                        .foregroundColor(.orange)
+                                        .foregroundColor(.accentColor)
                                 }
                                 Spacer()
                                 Text("REQUESTED")
@@ -607,7 +607,7 @@ struct EventManagementApprovalDetailView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Event Details")
                             .font(.headline)
-                            .foregroundColor(.orange)
+                            .foregroundColor(.accentColor)
                         
                         VStack(alignment: .leading, spacing: 16) {
                             HStack(alignment: .top) {
@@ -664,7 +664,7 @@ struct EventManagementApprovalDetailView: View {
                                 Spacer()
                                 Text("Total: ₹\(String(format: "%.0f", totalBudget))")
                                     .font(.subheadline.bold())
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.accentColor)
                             }
                             
                             VStack(spacing: 8) {
@@ -768,32 +768,25 @@ struct EventManagementApprovalDetailView: View {
                         VStack(spacing: 0) {
                             if approval.status == .pending {
                                 HStack(spacing: 12) {
-                                    Button(action: {
+                                    Button(role: .destructive, action: {
                                         selectedEventApprovalForRemark = approval
                                     }) {
                                         Label("Reject", systemImage: "xmark.circle")
-                                            .font(.subheadline.bold())
-                                            .foregroundColor(.red)
                                             .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 12)
-                                            .background(Color.red.opacity(0.1))
-                                            .clipShape(RoundedRectangle(cornerRadius: 12))
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.large)
                                     
                                     Button(action: {
                                         eventToApprove = approval
                                         showingEventApprovalAlert = true
                                     }) {
                                         Label("Approve Draft", systemImage: "checkmark.circle.fill")
-                                            .font(.subheadline.bold())
-                                            .foregroundColor(.white)
                                             .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 12)
-                                            .background(Color.green)
-                                            .clipShape(RoundedRectangle(cornerRadius: 12))
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.green)
+                                    .controlSize(.large)
                                 }
                                 .padding(.top, 16)
                             } else {
@@ -882,25 +875,20 @@ struct EventApprovalRequestCard: View {
             
             if approval.status == .pending {
                 HStack(spacing: 12) {
-                    Button(action: onReject) {
+                    Button(role: .destructive, action: onReject) {
                         Text("Reject")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.red)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(Color.red.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
                     
                     Button(action: onApprove) {
                         Text("Approve")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(Color.blue)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.blue)
+                    .controlSize(.large)
                 }
                 .padding(.top, 4)
             }
@@ -925,7 +913,7 @@ struct ApprovalStatusBadge: View {
     
     var color: Color {
         switch status {
-        case .pending: return .orange
+        case .pending: return .accentColor
         case .approved: return .green
         case .rejected: return .red
         }

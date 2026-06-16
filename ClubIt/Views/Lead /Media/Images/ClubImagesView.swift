@@ -61,7 +61,7 @@ struct ClubImagesView: View {
                                         Image(systemName: "chevron.right")
                                             .font(.title2)
                                             .bold()
-                                            .foregroundColor(.goldenBrown)
+                                            .foregroundColor(.accentColor)
                                         
                                         Spacer()
                                     }

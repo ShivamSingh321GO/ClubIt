@@ -28,10 +28,10 @@ struct EventDateTag: View {
             Text("Event \(dateString)")
                 .font(.system(size: 10, weight: .bold))
         }
-        .foregroundColor(.orange)
+        .foregroundColor(.accentColor)
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
-        .background(Color.orange.opacity(0.1))
+        .background(Color.accentColor.opacity(0.1))
         .clipShape(Capsule())
     }
 }

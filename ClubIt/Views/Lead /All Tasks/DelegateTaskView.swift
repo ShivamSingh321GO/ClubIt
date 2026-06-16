@@ -6,52 +6,92 @@ struct DelegateTaskView: View {
     @Environment(AppSession.self) var appSession
     
     @State private var selectedMemberId: UUID? = nil
+    @State private var selectedOtherClubId: UUID? = nil
     
-    var clubMembers: [User] {
+    private var isPresidentOrVP: Bool {
         let role = appSession.currentRole ?? .clubMember
-        if role == .president || role == .vicePresident {
-            // President/VP delegates to Club Leads
-            return appSession.clubStore.allUsers.filter { $0.role == .clubLead }
-        } else {
-            // Club Lead delegates to Members in their club
-            guard let clubId = appSession.currentUser?.clubId else { return [] }
-            return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
-        }
+        return role == .president || role == .vicePresident
     }
     
-    var delegationTargetTitle: String {
-        let role = appSession.currentRole ?? .clubMember
-        return (role == .president || role == .vicePresident) ? "Select Lead to Delegate" : "Select Member to Delegate"
+    private var availableClubs: [Club] {
+        return appSession.clubStore.allClubs.filter { $0.id != appSession.currentUser?.clubId }
+    }
+    
+    private var availableClubLeads: [User] {
+        guard let clubId = selectedOtherClubId else { return [] }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
+    }
+    
+    var clubMembers: [User] {
+        // Club Lead delegates to Members in their club
+        guard let clubId = appSession.currentUser?.clubId else { return [] }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
     }
     
     var body: some View {
         NavigationStack {
-            List {
-                if clubMembers.isEmpty {
-                    Text("No members found in your club")
-                        .foregroundStyle(.secondary)
-                } else {
-                    Section(delegationTargetTitle) {
-                        ForEach(clubMembers) { member in
-                            Button {
-                                selectedMemberId = member.id
-                            } label: {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(member.name)
-                                            .font(.headline)
-                                        Text(member.role.rawValue)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    if selectedMemberId == member.id {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.blue)
+            Group {
+                if isPresidentOrVP {
+                    Form {
+                        Section("Delegate to Club Lead") {
+                            optionalNavigationRow(
+                                title: "Select Club",
+                                selection: $selectedOtherClubId,
+                                options: availableClubs.map { $0.id },
+                                noneLabel: "Select a club",
+                                displayValue: { id in availableClubs.first(where: { $0.id == id })?.name ?? "Unknown" }
+                            )
+                            .onChange(of: selectedOtherClubId) { _, newValue in
+                                if let clubId = newValue {
+                                    let leads = appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
+                                    if leads.count == 1 {
+                                        selectedMemberId = leads.first?.id
+                                    } else {
+                                        selectedMemberId = nil
                                     }
                                 }
                             }
-                            .foregroundColor(.primary)
+                            
+                            if selectedOtherClubId != nil {
+                                optionalNavigationRow(
+                                    title: "Select Club Lead",
+                                    selection: $selectedMemberId,
+                                    options: availableClubLeads.map { $0.id },
+                                    noneLabel: "Select a lead",
+                                    displayValue: { id in availableClubLeads.first(where: { $0.id == id })?.name ?? "Unknown" }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    List {
+                        if clubMembers.isEmpty {
+                            Text("No members found in your club")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Section("Select Member to Delegate") {
+                                ForEach(clubMembers) { member in
+                                    Button {
+                                        selectedMemberId = member.id
+                                    } label: {
+                                        HStack {
+                                            VStack(alignment: .leading) {
+                                                Text(member.name)
+                                                    .font(.headline)
+                                                Text(member.role.rawValue)
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            Spacer()
+                                            if selectedMemberId == member.id {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundColor(.blue)
+                                            }
+                                        }
+                                    }
+                                    .foregroundColor(.primary)
+                                }
+                            }
                         }
                     }
                 }
@@ -84,6 +124,18 @@ struct DelegateTaskView: View {
                     }
                     .disabled(selectedMemberId == nil)
                 }
+            }
+        }
+    }
+    
+    private func optionalNavigationRow<T: Hashable>(title: String, selection: Binding<T?>, options: [T], noneLabel: String, displayValue: @escaping (T) -> String) -> some View {
+        NavigationLink {
+            OptionalSelectionListView(title: title, selection: selection, options: options, noneLabel: noneLabel, displayValue: displayValue)
+        } label: {
+            HStack {
+                Text(title).foregroundStyle(.primary)
+                Spacer()
+                Text(selection.wrappedValue.map(displayValue) ?? noneLabel).foregroundStyle(.secondary)
             }
         }
     }

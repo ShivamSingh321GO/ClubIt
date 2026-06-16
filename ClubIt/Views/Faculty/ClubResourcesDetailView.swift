@@ -286,7 +286,7 @@ struct FacultyResourceRequestCard: View {
             HStack(alignment: .top) {
                 HStack(spacing: 10) {
                     Image(systemName: "cart.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                         .font(.title3)
                     
                     Text(resource.name)
@@ -354,27 +354,20 @@ struct FacultyResourceRequestCard: View {
             // MARK: - Action Buttons
             if resource.status == .pending && appSession.currentUser?.role == .faculty {
                 HStack(spacing: 12) {
-                    Button(action: onReject) {
+                    Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.red)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.red.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
                     
                     Button(action: onApprove) {
                         Label("Approve", systemImage: "checkmark.circle.fill")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.green)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .controlSize(.large)
                 }
                 .padding(.top, 4)
             }
@@ -458,27 +451,20 @@ struct FacultyVenueApprovalCard: View {
             
             if approval.status == .pending && appSession.currentUser?.role == .faculty {
                 HStack(spacing: 12) {
-                    Button(action: onReject) {
+                    Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.red)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.red.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
                     
                     Button(action: onApprove) {
                         Label("Approve", systemImage: "checkmark.circle.fill")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.green)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .controlSize(.large)
                 }
             }
         }
@@ -516,14 +502,14 @@ struct TabButton: View {
                         .font(.caption2.bold())
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(isSelected ? Color.orange.opacity(0.2) : Color.secondary.opacity(0.1))
+                        .background(isSelected ? Color.accentColor.opacity(0.2) : Color.secondary.opacity(0.1))
                         .clipShape(Capsule())
                 }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(isSelected ? Color.white : Color.clear)
-            .foregroundColor(isSelected ? .orange : .secondary)
+            .foregroundColor(isSelected ? .accentColor : .secondary)
             .clipShape(Capsule())
             .shadow(color: isSelected ? .black.opacity(0.05) : .clear, radius: 4, x: 0, y: 2)
         }
@@ -554,7 +540,7 @@ struct FacultyApprovalStatusBadge: View {
     
     var color: Color {
         switch status {
-        case .pending: return .orange
+        case .pending: return .accentColor
         case .approved: return .green
         case .rejected: return .red
         }
@@ -580,52 +566,41 @@ struct FacultyVenueRemarkSheet: View {
     
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Add a remark for rejection")
-                    .font(.headline)
-                
-                TextEditor(text: $remark)
-                    .frame(height: 150)
-                    .padding(8)
-                    .background(Color.secondary.opacity(0.1))
-                    .cornerRadius(12)
-                
-                Spacer()
-                
-                Button(action: {
-                    Task {
-                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected)
-                        try? await appSession.approvalStore.addRemark(
-                            approvalId: approval.id,
-                            authorId: appSession.currentUser?.id ?? UUID(),
-                            content: remark
-                        )
-                    }
-                    dismiss()
-                }) {
-                    Text("Reject with Remark")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .cornerRadius(12)
+            Form {
+                Section {
+                    TextEditor(text: $remark)
+                        .frame(minHeight: 150)
+                } header: {
+                    Text("Add a remark for rejection")
                 }
-                .disabled(remark.trimmingCharacters(in: .whitespaces).isEmpty)
+                
             }
-            .padding()
             .navigationTitle("Rejection Remark")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
+                        Image(systemName: "xmark")
                     }
-                    .buttonStyle(.plain)
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Task {
+                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected)
+                            try? await appSession.approvalStore.addRemark(
+                                approvalId: approval.id,
+                                authorId: appSession.currentUser?.id ?? UUID(),
+                                content: remark
+                            )
+                        }
+                        dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
+                    }
+                    .disabled(remark.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }
@@ -639,7 +614,7 @@ struct FacultyStatusBadge: View {
     
     var color: Color {
         switch status {
-        case .pending: return .orange
+        case .pending: return .accentColor
         case .approved: return .green
         case .rejected: return .red
         case .issued: return .blue
@@ -666,7 +641,7 @@ struct FacultyDetailItem: View {
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: icon)
-                .foregroundColor(.orange)
+                .foregroundColor(.accentColor)
                 .font(.system(size: 14))
                 .padding(.top, 2)
             
@@ -705,59 +680,46 @@ struct FacultyRemarkSheet: View {
     
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Add a remark for \(resource.name)")
-                    .font(.headline)
-                
-                TextEditor(text: $remark)
-                    .frame(height: 150)
-                    .padding(8)
-                    .background(Color.secondary.opacity(0.1))
-                    .cornerRadius(12)
-                
-                Text("Please explain why this resource request is being rejected.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Button(action: {
-                    if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id {
-                        let finalRemark = remark
-                        Task {
-                            try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected)
-                            try? await appSession.approvalStore.addRemark(
-                                approvalId: approvalId,
-                                authorId: appSession.currentUser?.id ?? UUID(),
-                                content: finalRemark
-                            )
-                        }
-                    }
-                    dismiss()
-                }) {
-                    Text("Reject with Remark")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .cornerRadius(12)
+            Form {
+                Section {
+                    TextEditor(text: $remark)
+                        .frame(minHeight: 150)
+                } header: {
+                    Text("Add a remark for \(resource.name)")
+                } footer: {
+                    Text("Please explain why this resource request is being rejected.")
                 }
-                .disabled(remark.trimmingCharacters(in: .whitespaces).isEmpty)
+                
             }
-            .padding()
             .navigationTitle("Rejection Remark")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
+                        Image(systemName: "xmark")
                     }
-                    .buttonStyle(.plain)
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id {
+                            let finalRemark = remark
+                            Task {
+                                try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected)
+                                try? await appSession.approvalStore.addRemark(
+                                    approvalId: approvalId,
+                                    authorId: appSession.currentUser?.id ?? UUID(),
+                                    content: finalRemark
+                                )
+                            }
+                        }
+                        dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
+                    }
+                    .disabled(remark.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }

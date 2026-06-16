@@ -66,7 +66,7 @@ struct EventView: View {
                                     .fontWeight(.medium)
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 7)
-                                    .background(isSelected ? Color.orange : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                                    .background(isSelected ? Color.accentColor : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
                                     .foregroundStyle(isSelected ? .white : .primary)
                                     .clipShape(Capsule())
                             }
@@ -93,7 +93,7 @@ struct EventView: View {
                             .multilineTextAlignment(.center)
                             .font(.system(size: 9, weight: .black))
                             .lineLimit(2)
-                            .foregroundStyle(scope == .followed ? .orange : .secondary)
+                            .foregroundStyle(scope == .followed ? .accentColor : .secondary)
                         
                         Toggle("", isOn: Binding(
                             get: { scope == .followed },
@@ -103,7 +103,7 @@ struct EventView: View {
                                 }
                             }
                         ))
-                        .toggleStyle(SwitchToggleStyle(tint: .orange))
+                        .toggleStyle(SwitchToggleStyle(tint: .accentColor))
                         .labelsHidden()
                         .scaleEffect(0.72)
                     }
@@ -161,7 +161,7 @@ struct EventView: View {
                 if isRefreshing {
                     VStack {
                         ProgressView()
-                            .tint(.orange)
+                            .tint(.accentColor)
                             .scaleEffect(1.2)
                         Text("Refreshing events...")
                             .font(.caption2.bold())

@@ -34,7 +34,7 @@ struct ClubItCalendarView: View {
                         } label: {
                             Image(systemName: "chevron.left")
                                 .font(.body.bold())
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         }
                         
                         Button {
@@ -44,7 +44,7 @@ struct ClubItCalendarView: View {
                         } label: {
                             Image(systemName: "chevron.right")
                                 .font(.body.bold())
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         }
                     }
                 }
@@ -162,24 +162,24 @@ struct DayCell: View {
                 
                 Text("\(value.day)")
                     .font(.subheadline.bold())
-                    .foregroundColor(isSelected ? .white : (isToday ? .orange : .primary))
+                    .foregroundColor(isSelected ? .white : (isToday ? .accentColor : .primary))
                     .frame(width: 36, height: 36)
                     .background(
                         ZStack {
                             if isSelected {
                                 Circle()
-                                    .fill(Color.orange)
-                                    .shadow(color: .orange.opacity(0.3), radius: 4, x: 0, y: 2)
+                                    .fill(Color.accentColor)
+                                    .shadow(color: .accentColor.opacity(0.3), radius: 4, x: 0, y: 2)
                             } else if isToday {
                                 Circle()
-                                    .stroke(Color.orange, lineWidth: 1.5)
+                                    .stroke(Color.accentColor, lineWidth: 1.5)
                             }
                         }
                     )
                 
                 // Event dot
                 Circle()
-                    .fill(hasEvents ? Color.orange : Color.clear)
+                    .fill(hasEvents ? Color.accentColor : Color.clear)
                     .frame(width: 4, height: 4)
             } else {
                 Text("")
@@ -205,7 +205,7 @@ struct CalendarEventMiniCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.startDate.formatted(.dateTime.hour().minute()))
                     .font(.caption.bold())
-                    .foregroundColor(.orange)
+                    .foregroundColor(.accentColor)
                 
                 Text(event.name)
                     .font(.headline)

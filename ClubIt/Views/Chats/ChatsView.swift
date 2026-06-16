@@ -191,7 +191,7 @@ struct ChatsView: View {
                             .padding(.vertical, 7)
                             .background(
                                 selectedCategory.wrappedValue == category
-                                ? Color.orange
+                                ? Color.accentColor
                                 : Color(.tertiarySystemFill).opacity(0.5)
                             )
                             .foregroundStyle(

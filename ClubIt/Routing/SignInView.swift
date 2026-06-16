@@ -50,13 +50,13 @@ struct SignInView: View {
                             viewModel.isPasswordVisible.toggle()
                         } label: {
                             Image(systemName: viewModel.isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                                .foregroundStyle(.goldenBrown)
+                                .foregroundStyle(.accentColor)
                         }
                     }
                 }
                 
                 Toggle("Remember me", isOn: $viewModel.rememberMe)
-                    .tint(.goldenBrown)
+                    .tint(.accentColor)
 
                 
 //                Button("Forgot Password?") {
@@ -91,7 +91,7 @@ struct SignInView: View {
                         }
                     }
                     .disabled(viewModel.isLoading)
-                    .listRowBackground(Color.goldenBrown)
+                    .listRowBackground(Color.accentColor)
                 }
                 
 //                Text("OR")
@@ -105,7 +105,7 @@ struct SignInView: View {
 //            } label: {
 //                Text("Continue as a Guest")
 //                    .frame(maxWidth: .infinity)
-//                    .foregroundColor(.goldenBrown)
+//                    .foregroundColor(.accentColor)
 //            }
 //            .buttonStyle(.borderless)
             

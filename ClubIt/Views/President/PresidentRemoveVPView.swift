@@ -22,10 +22,10 @@ struct PresidentRemoveVPView: View {
                                 HStack(spacing: 16) {
                                     ZStack {
                                         Circle()
-                                            .fill(Color.orange.opacity(0.1))
+                                            .fill(Color.accentColor.opacity(0.1))
                                             .frame(width: 44, height: 44)
                                         Text(String(vp.name.prefix(1))).bold()
-                                            .foregroundColor(.orange)
+                                            .foregroundColor(.accentColor)
                                     }
                                     
                                     VStack(alignment: .leading, spacing: 2) {
@@ -81,9 +81,9 @@ struct VPClubRemovalDetailView: View {
             // VP Info Header
             HStack(spacing: 16) {
                 Circle()
-                    .fill(Color.orange.opacity(0.1))
+                    .fill(Color.accentColor.opacity(0.1))
                     .frame(width: 60, height: 60)
-                    .overlay(Text(String(vp.name.prefix(1))).font(.title2.bold()).foregroundColor(.orange))
+                    .overlay(Text(String(vp.name.prefix(1))).font(.title2.bold()).foregroundColor(.accentColor))
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(vp.name)
@@ -95,7 +95,7 @@ struct VPClubRemovalDetailView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.orange.opacity(0.05))
+            .background(Color.accentColor.opacity(0.05))
             .cornerRadius(20)
             .padding(.horizontal)
             
@@ -108,7 +108,7 @@ struct VPClubRemovalDetailView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 48))
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                     Text("No clubs assigned")
                         .font(.headline)
                     Text("This Vice President currently has no club assignments.")

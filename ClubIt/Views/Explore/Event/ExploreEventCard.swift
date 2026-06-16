@@ -70,11 +70,11 @@ struct ExploreEventCard: View {
                         HStack(spacing: 10) {
                             ZStack {
                                 Circle()
-                                    .fill(.orange.opacity(0.15))
+                                    .fill(.accentColor.opacity(0.15))
                                     .frame(width: 32, height: 32)
                                 Image(systemName: "mappin.and.ellipse")
                                     .font(.caption2.bold())
-                                    .foregroundStyle(.orange)
+                                    .foregroundStyle(.accentColor)
                             }
                             
                             VStack(alignment: .leading, spacing: 1) {
@@ -149,7 +149,7 @@ struct ExploreEventCard: View {
                                     case .empty:
                                         ProgressView()
                                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                            .background(Color.orange.opacity(0.05))
+                                            .background(Color.accentColor.opacity(0.05))
                                     @unknown default:
                                         placeholderBanner
                                     }
@@ -175,10 +175,10 @@ struct ExploreEventCard: View {
     
     private var placeholderBanner: some View {
         ZStack {
-            Color.orange.opacity(0.1)
+            Color.accentColor.opacity(0.1)
             Image(systemName: "sparkles")
                 .font(.largeTitle)
-                .foregroundStyle(.orange.opacity(0.5))
+                .foregroundStyle(.accentColor.opacity(0.5))
         }
     }
     
@@ -198,7 +198,7 @@ struct ExploreEventCard: View {
         let status = event.status
         let color: Color = {
             switch status {
-            case .pending: return .orange
+            case .pending: return .accentColor
             case .approved: return .green
             default: return .blue
             }

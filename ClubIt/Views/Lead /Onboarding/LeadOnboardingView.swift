@@ -59,7 +59,7 @@
 //                Text("Skip")
 //                    .font(.subheadline)
 //                    .fontWeight(.semibold)
-//                    .foregroundStyle(.goldenBrown)
+//                    .foregroundStyle(.accentColor)
 //                    .padding(.horizontal, 14)
 //                    .padding(.vertical, 8)
 //                    .background(
@@ -109,7 +109,7 @@
 //                        .foregroundStyle(.white)
 //                        .frame(maxWidth: .infinity)
 //                        .frame(height: 58)
-//                        .background(.goldenBrown)
+//                        .background(.accentColor)
 //                        .clipShape(RoundedRectangle(cornerRadius: 16))
 //                }
 //                .buttonStyle(.plain)
@@ -126,7 +126,7 @@
 //        HStack(spacing: 8) {
 //            ForEach(0..<pages.count, id: \.self) { index in
 //                Circle()
-//                    .fill(index == currentPage ? Color.goldenBrown : Color(.systemGray4))
+//                    .fill(index == currentPage ? Color.accentColor : Color(.systemGray4))
 //                    .frame(width: 8, height: 8)
 //            }
 //        }

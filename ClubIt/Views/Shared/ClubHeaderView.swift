@@ -26,23 +26,23 @@ struct ClubHeaderView: View {
                                 .clipShape(Circle())
                         case .failure:
                             Circle()
-                                .fill(Color.orange.gradient.opacity(0.1))
+                                .fill(Color.accentColor.gradient.opacity(0.1))
                                 .frame(width: 60, height: 60)
                             Text(String(club.name.prefix(1)))
                                 .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.orange)
+                                .foregroundColor(.accentColor)
                         @unknown default:
                             EmptyView()
                         }
                     }
                 } else {
                     Circle()
-                        .fill(Color.orange.gradient.opacity(0.1))
+                        .fill(Color.accentColor.gradient.opacity(0.1))
                         .frame(width: 60, height: 60)
                     
                     Text(String(club.name.prefix(1)))
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.orange)
+                        .foregroundColor(.accentColor)
                 }
                 }
                 

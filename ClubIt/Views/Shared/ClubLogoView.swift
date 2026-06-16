@@ -9,7 +9,7 @@ struct ClubLogoView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(LinearGradient(colors: [.goldenBrown, .goldenBrown.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(LinearGradient(colors: [.accentColor, .accentColor.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: size, height: size)
             
             if let imageData, let uiImage = UIImage(data: imageData) {

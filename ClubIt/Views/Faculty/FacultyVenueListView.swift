@@ -223,7 +223,7 @@ struct VenueRow: View {
         case .classroom: return .blue
         case .auditorium: return .purple
         case .library: return .green
-        case .ground: return .orange
+        case .ground: return .accentColor
         case .lab: return .cyan
         case .cafeteria: return .red
         }
