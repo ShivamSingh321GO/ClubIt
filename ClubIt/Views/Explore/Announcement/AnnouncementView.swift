@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AnnouncementView: View {
+    @Environment(AppSession.self) private var appSession
     
     let announcements: [Announcement]
     var onEdit: ((Announcement) -> Void)? = nil
@@ -34,6 +35,9 @@ struct AnnouncementView: View {
                 }
             }
             .padding(.bottom, 16)
+        }
+        .refreshable {
+            try? await appSession.announcementStore.fetchAnnouncements()
         }
     }
 }

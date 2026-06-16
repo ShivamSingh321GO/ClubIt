@@ -9,6 +9,9 @@ final class AnnouncementStore {
     var announcements: [Announcement] = []
     var isLoading = false
     
+    private var announcementsChannel: RealtimeChannelV2?
+    private var subscriptionTask: Task<Void, Never>?
+    
     init() {}
     
     @MainActor
@@ -101,5 +104,46 @@ final class AnnouncementStore {
             
         // 2. Refresh local list
         try await fetchAnnouncements()
+    }
+    
+    @MainActor
+    func startRealtimeSubscription() {
+        guard announcementsChannel == nil else { return }
+        
+        subscriptionTask?.cancel()
+        
+        let channel = client.realtimeV2.channel("public:announcements")
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "announcements"
+        )
+        
+        subscriptionTask = Task {
+            await client.realtimeV2.connect()
+            try? await channel.subscribeWithError()
+            
+            for await _ in changes {
+                if Task.isCancelled { break }
+                try? await fetchAnnouncements()
+            }
+        }
+        
+        announcementsChannel = channel
+        print("DEBUG: [AnnouncementStore] Realtime subscription started")
+    }
+    
+    @MainActor
+    func stopRealtimeSubscription() {
+        subscriptionTask?.cancel()
+        subscriptionTask = nil
+        
+        Task {
+            if let channel = announcementsChannel {
+                await client.realtimeV2.removeChannel(channel)
+            }
+        }
+        announcementsChannel = nil
+        print("DEBUG: [AnnouncementStore] Realtime subscription stopped")
     }
 }

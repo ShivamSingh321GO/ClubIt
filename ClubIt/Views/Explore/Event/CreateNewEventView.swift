@@ -395,11 +395,18 @@ struct CreateNewEventView: View {
                             saveEvent()
                         }
                     } label: {
-                        Text(appSession.currentUser?.role == .president ? "Publish Event" : "Send Approval")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
+                        if isSaving {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        } else {
+                            Text(appSession.currentUser?.role == .president ? "Publish Event" : "Send Approval")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(isVenueBooked || isSaving || isInvalidTime)

@@ -150,6 +150,7 @@ final class AppSession {
         // Initialize chat store with the logged-in user's ID and start realtime
         chatStore.userId = user.id
         chatStore.startRealtimeSubscription()
+        announcementStore.startRealtimeSubscription()
         
         await refreshData()
     }
@@ -229,6 +230,7 @@ final class AppSession {
         studentDashboardStore.registeredEventIds = []
         chatStore.stopRealtimeSubscription()
         chatStore.clearData()
+        announcementStore.stopRealtimeSubscription()
     }
     
     @MainActor
