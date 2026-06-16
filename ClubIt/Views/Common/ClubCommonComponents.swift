@@ -106,6 +106,7 @@ struct LocalAnnouncementCard: View {
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(in: .rect(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     private func relativeTimeText(from date: Date) -> String {
