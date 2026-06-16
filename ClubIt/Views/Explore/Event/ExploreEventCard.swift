@@ -123,6 +123,7 @@ struct ExploreEventCard: View {
         }
         .background(Color(.secondarySystemBackground).opacity(0.4))
         .glassEffect(in: .rect(cornerRadius: 24))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
         .padding(.vertical, 8)
     }
     

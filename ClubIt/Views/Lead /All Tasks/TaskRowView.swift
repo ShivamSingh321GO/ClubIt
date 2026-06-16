@@ -134,6 +134,7 @@ struct TaskRowView: View {
         }
         .background(Color(.secondarySystemBackground).opacity(0.4))
         .glassEffect(in: .rect(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .contextMenu {
             if task.assignedBy == appSession.currentUser?.id || appSession.currentRole == .clubLead {
                 Button(role: .destructive) {
