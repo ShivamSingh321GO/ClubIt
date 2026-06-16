@@ -108,8 +108,6 @@ struct SignInView: View {
 //                    .foregroundColor(.accentColor)
 //            }
 //            .buttonStyle(.borderless)
-            
-            Spacer()
         }
     }
 }

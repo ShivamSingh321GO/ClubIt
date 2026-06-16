@@ -466,6 +466,13 @@ struct LeadEventApprovalDetailView: View {
                 }
                 .padding(.vertical)
             }
+            .refreshable {
+                await appSession.refreshData()
+                let relevantApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId }
+                for approval in relevantApprovals {
+                    try? await appSession.approvalStore.fetchRemarks(for: approval.id)
+                }
+            }
             .navigationTitle("Approval Management")
             .navigationBarTitleDisplayMode(.inline)
             .overlay(alignment: .bottom) {

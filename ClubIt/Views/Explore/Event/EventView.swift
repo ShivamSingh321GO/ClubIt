@@ -156,6 +156,9 @@ struct EventView: View {
                     }
                     .padding(.bottom, 12)
                 }
+                .refreshable {
+                    try? await appSession.eventStore.fetchAllEvents()
+                }
                 .opacity(isRefreshing ? 0 : 1)
                 
                 if isRefreshing {

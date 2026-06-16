@@ -584,6 +584,13 @@ struct EventManagementApprovalDetailView: View {
             }
             .padding(.vertical)
         }
+        .refreshable {
+            await appSession.refreshData()
+            let relevantApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id }
+            for approval in relevantApprovals {
+                try? await appSession.approvalStore.fetchRemarks(for: approval.id)
+            }
+        }
         .navigationTitle("Approval Management")
     }
     
@@ -803,6 +810,13 @@ struct EventManagementApprovalDetailView: View {
                     }
                 }
                 .padding(.vertical)
+            }
+            .refreshable {
+                await appSession.refreshData()
+                let relevantApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id }
+                for approval in relevantApprovals {
+                    try? await appSession.approvalStore.fetchRemarks(for: approval.id)
+                }
             }
         }
         .navigationTitle("Event Draft Review")
