@@ -36,29 +36,53 @@ struct PresidentClubBudgetCard: View {
     var body: some View {
         let clubEvents = appSession.eventStore.events.filter { $0.clubId == club.id }
         let clubEventIds = Set(clubEvents.map { $0.id })
-        let pendingCount = appSession.approvalStore.budgets.filter { 
+        let pendingBudgets = appSession.approvalStore.budgets.filter { 
             clubEventIds.contains($0.eventId ?? UUID()) && $0.status == .pending 
-        }.count
+        }
+        let pendingCount = pendingBudgets.count
+        
+        let firstPendingEventId = pendingBudgets.first?.eventId
+        let event = appSession.eventStore.events.first(where: { $0.id == firstPendingEventId })
         
         HStack(spacing: 16) {
-            // Club Logo/Initials
+            // Event/Club Logo
             ZStack {
-                Circle()
-                    .fill(Color.orange.gradient.opacity(0.1))
-                    .frame(width: 60, height: 60)
-                
-                Text(String(club.name.prefix(1)))
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.orange)
+                if let bannerImage = event?.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    AsyncImage(url: URL(string: bannerImage)) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                        } else if phase.error != nil {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.orange.gradient.opacity(0.1))
+                                    .frame(width: 60, height: 60)
+                                Text(String((event?.name ?? club.name).prefix(1).uppercased()))
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.orange)
+                            }
+                        } else {
+                            Circle()
+                                .fill(Color(.systemGray5))
+                                .frame(width: 60, height: 60)
+                                .overlay(ProgressView())
+                        }
+                    }
+                } else {
+                    Circle()
+                        .fill(Color.orange.gradient.opacity(0.1))
+                        .frame(width: 60, height: 60)
+                    Text(String((event?.name ?? club.name).prefix(1).uppercased()))
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.orange)
+                }
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                let pendingBudgets = appSession.approvalStore.budgets.filter { 
-                    clubEventIds.contains($0.eventId ?? UUID()) && $0.status == .pending 
-                }
-                
-                if let firstPendingEventId = pendingBudgets.first?.eventId,
-                   let event = appSession.eventStore.events.first(where: { $0.id == firstPendingEventId }) {
+                if let event = event {
                     Text(event.name)
                         .font(.headline)
                         .lineLimit(1)
@@ -80,21 +104,14 @@ struct PresidentClubBudgetCard: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 6) {
-                HStack(spacing: 4) {
-                    Image(systemName: "indianrupeesign.circle")
-                    Text("\(pendingCount)")
+                if pendingCount > 0 {
+                    Text("!")
+                        .font(.title3.bold())
+                        .foregroundColor(.orange)
+                        .frame(width: 40, height: 40)
+                        .background(Color.orange.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                .font(.subheadline.bold())
-                .foregroundColor(pendingCount > 0 ? .orange : .secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(pendingCount > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
-                .clipShape(Capsule())
-                
-                Text("Pending")
-                    .font(.caption2.bold())
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
             }
             
             Image(systemName: "chevron.right")

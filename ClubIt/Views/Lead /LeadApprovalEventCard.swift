@@ -63,13 +63,15 @@ struct LeadApprovalEventCard: View {
                                 .frame(width: 60, height: 60)
                                 .clipShape(Circle())
                         } else if phase.error != nil {
-                            Circle()
-                                .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
-                                .frame(width: 60, height: 60)
-                            
-                            Text(String(event.name.prefix(1).uppercased()))
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                            ZStack {
+                                Circle()
+                                    .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
+                                    .frame(width: 60, height: 60)
+                                
+                                Text(String(event.name.prefix(1).uppercased()))
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                            }
                         } else {
                             Circle()
                                 .fill(Color(.systemGray5))
@@ -136,18 +138,12 @@ struct LeadApprovalEventCard: View {
                         .foregroundColor(.red)
                         .textCase(.uppercase)
                 } else {
-                    Text("\(totalPending)")
-                        .font(.subheadline.bold())
-                        .foregroundColor(totalPending > 0 ? .orange : .secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(totalPending > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
-                        .clipShape(Capsule())
-                    
-                    Text("Pending")
-                        .font(.caption2.bold())
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
+                    Text("!")
+                        .font(.title3.bold())
+                        .foregroundColor(.orange)
+                        .frame(width: 40, height: 40)
+                        .background(Color.orange.opacity(0.1))
+                        .clipShape(Circle())
                 }
             }
             .fixedSize(horizontal: true, vertical: false)

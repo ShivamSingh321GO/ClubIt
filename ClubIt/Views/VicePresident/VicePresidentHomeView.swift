@@ -325,12 +325,38 @@ struct VPApprovalsListView: View {
                                     NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
                                         HStack(spacing: 16) {
                                             ZStack {
-                                                Circle()
-                                                    .fill(Color.orange.opacity(0.1))
-                                                    .frame(width: 48, height: 48)
-                                                Text(String(club.name.prefix(1)))
-                                                    .font(.headline)
-                                                    .foregroundColor(.orange)
+                                                if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                                    AsyncImage(url: URL(string: bannerImage)) { phase in
+                                                        if let image = phase.image {
+                                                            image
+                                                                .resizable()
+                                                                .scaledToFill()
+                                                                .frame(width: 48, height: 48)
+                                                                .clipShape(Circle())
+                                                        } else if phase.error != nil {
+                                                            ZStack {
+                                                                Circle()
+                                                                    .fill(Color.orange.opacity(0.1))
+                                                                    .frame(width: 48, height: 48)
+                                                                Text(String(event.name.prefix(1).uppercased()))
+                                                                    .font(.headline)
+                                                                    .foregroundColor(.orange)
+                                                            }
+                                                        } else {
+                                                            Circle()
+                                                                .fill(Color(.systemGray5))
+                                                                .frame(width: 48, height: 48)
+                                                                .overlay(ProgressView())
+                                                        }
+                                                    }
+                                                } else {
+                                                    Circle()
+                                                        .fill(Color.orange.opacity(0.1))
+                                                        .frame(width: 48, height: 48)
+                                                    Text(String(event.name.prefix(1).uppercased()))
+                                                        .font(.headline)
+                                                        .foregroundColor(.orange)
+                                                }
                                             }
                                             
                                             VStack(alignment: .leading, spacing: 4) {
@@ -364,17 +390,11 @@ struct VPApprovalsListView: View {
                                                         .textCase(.uppercase)
                                                 } else {
                                                     Text("!")
-                                                        .font(.subheadline.bold())
+                                                        .font(.title3.bold())
                                                         .foregroundColor(.orange)
-                                                        .padding(.horizontal, 12)
-                                                        .padding(.vertical, 6)
+                                                        .frame(width: 40, height: 40)
                                                         .background(Color.orange.opacity(0.1))
-                                                        .clipShape(Capsule())
-                                                    
-                                                    Text("Pending")
-                                                        .font(.caption2.bold())
-                                                        .foregroundColor(.secondary)
-                                                        .textCase(.uppercase)
+                                                        .clipShape(Circle())
                                                 }
                                             }
                                             .fixedSize(horizontal: true, vertical: false)

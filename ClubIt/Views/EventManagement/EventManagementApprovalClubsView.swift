@@ -260,15 +260,40 @@ struct EventManagementEventApprovalCard: View {
         let isApproved = totalPending == 0 && !isRejected
         
         HStack(spacing: 16) {
-            // Club Logo/Initials
+            // Event Image
             ZStack {
-                Circle()
-                    .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
-                    .frame(width: 60, height: 60)
-                
-                Text(String(club.name.prefix(1)))
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    AsyncImage(url: URL(string: bannerImage)) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                        } else if phase.error != nil {
+                            ZStack {
+                                Circle()
+                                    .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
+                                    .frame(width: 60, height: 60)
+                                Text(String(event.name.prefix(1).uppercased()))
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                            }
+                        } else {
+                            Circle()
+                                .fill(Color(.systemGray5))
+                                .frame(width: 60, height: 60)
+                                .overlay(ProgressView())
+                        }
+                    }
+                } else {
+                    Circle()
+                        .fill(isApproved ? Color.green.gradient.opacity(0.1) : (isRejected ? Color.red.gradient.opacity(0.1) : Color.orange.gradient.opacity(0.1)))
+                        .frame(width: 60, height: 60)
+                    Text(String(event.name.prefix(1).uppercased()))
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(isApproved ? .green : (isRejected ? .red : .orange))
+                }
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -341,28 +366,12 @@ struct EventManagementEventApprovalCard: View {
                         .foregroundColor(.red)
                         .textCase(.uppercase)
                 } else {
-                    if appSession.currentRole == .vicePresident {
-                        Text("!")
-                            .font(.subheadline.bold())
-                            .foregroundColor(.orange)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange.opacity(0.1))
-                            .clipShape(Capsule())
-                    } else {
-                        Text("\(totalPending)")
-                            .font(.subheadline.bold())
-                            .foregroundColor(totalPending > 0 ? .orange : .secondary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(totalPending > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
-                            .clipShape(Capsule())
-                    }
-                    
-                    Text("Pending")
-                        .font(.caption2.bold())
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
+                    Text("!")
+                        .font(.title3.bold())
+                        .foregroundColor(.orange)
+                        .frame(width: 40, height: 40)
+                        .background(Color.orange.opacity(0.1))
+                        .clipShape(Circle())
                 }
             }
             .fixedSize(horizontal: true, vertical: false)

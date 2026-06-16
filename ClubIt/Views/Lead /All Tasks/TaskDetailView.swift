@@ -115,9 +115,15 @@ struct TaskDetailView: View {
                                         Button("Delegate") {
                                             showingDelegateSheet = true
                                         }
-                                        .buttonStyle(.bordered)
-                                        .tint(.blue)
-                                        .controlSize(.small)
+                                        .font(.subheadline.weight(.semibold))
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .foregroundStyle(currentTask.status == .completed ? Color.secondary : Color.blue)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.secondary.opacity(0.15))
+                                        )
+                                        .disabled(currentTask.status == .completed)
                                     }
                                 }
                                 
@@ -139,9 +145,15 @@ struct TaskDetailView: View {
                                         Button("Delegate") {
                                             showingDelegateSheet = true
                                         }
-                                        .buttonStyle(.bordered)
-                                        .tint(.blue)
-                                        .controlSize(.small)
+                                        .font(.subheadline.weight(.semibold))
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .foregroundStyle(currentTask.status == .completed ? Color.secondary : Color.blue)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.secondary.opacity(0.15))
+                                        )
+                                        .disabled(currentTask.status == .completed)
                                     }
                                 }
                                 

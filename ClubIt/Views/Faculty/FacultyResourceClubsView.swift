@@ -87,21 +87,14 @@ struct FacultyEventResourceCard: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 6) {
-                HStack(spacing: 4) {
-                    Image(systemName: "clock.badge.exclamationmark")
-                    Text("\(pendingCount)")
+                if pendingCount > 0 {
+                    Text("!")
+                        .font(.title3.bold())
+                        .foregroundColor(.orange)
+                        .frame(width: 40, height: 40)
+                        .background(Color.orange.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                .font(.subheadline.bold())
-                .foregroundColor(pendingCount > 0 ? .orange : .secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(pendingCount > 0 ? Color.orange.opacity(0.1) : Color.secondary.opacity(0.1))
-                .clipShape(Capsule())
-                
-                Text("Pending")
-                    .font(.caption2.bold())
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
             }
             
             Image(systemName: "chevron.right")
