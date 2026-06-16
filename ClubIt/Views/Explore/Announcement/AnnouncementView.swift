@@ -131,6 +131,7 @@ private struct AnnouncementCard: View {
         }
         .padding()
         .glassEffect(in: .rect(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .contentShape(.rect)
         .contextMenu {
             if canManage {
