@@ -25,6 +25,7 @@ struct RootView: View {
             }
         }
         .task {
+            await appSession.restoreSession()
             if appSession.isLoggedIn {
                 await appSession.refreshData()
             }

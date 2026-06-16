@@ -129,6 +129,18 @@ final class AppSession {
     }
 
     @MainActor
+    func restoreSession() async {
+        do {
+            let session = try await SupabaseManager.shared.client.auth.session
+            let authService = SupabaseAuthService()
+            let user = try await authService.fetchUserProfile(userId: session.user.id)
+            await self.signIn(user: user, role: user.role)
+        } catch {
+            print("No active session or session restore failed: \(error.localizedDescription)")
+        }
+    }
+
+    @MainActor
     func signIn(user: User, role: AppRole) async {
         currentUser = user
         currentRole = role
