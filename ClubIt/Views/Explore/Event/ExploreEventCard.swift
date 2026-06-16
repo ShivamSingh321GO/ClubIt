@@ -129,41 +129,44 @@ struct ExploreEventCard: View {
     
     private var bannerSection: some View {
         ZStack(alignment: .top) {
-            Group {
-                if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    if bannerImage.hasPrefix("http") {
-                        AsyncImage(url: URL(string: bannerImage)) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
+            Color.clear
+                .overlay(
+                    Group {
+                        if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                        } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            if bannerImage.hasPrefix("http") {
+                                AsyncImage(url: URL(string: bannerImage)) { phase in
+                                    switch phase {
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                    case .failure:
+                                        placeholderBanner
+                                    case .empty:
+                                        ProgressView()
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                            .background(Color.orange.opacity(0.05))
+                                    @unknown default:
+                                        placeholderBanner
+                                    }
+                                }
+                            } else {
+                                Image(bannerImage)
                                     .resizable()
                                     .scaledToFill()
-                            case .failure:
-                                placeholderBanner
-                            case .empty:
-                                ProgressView()
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .background(Color.orange.opacity(0.05))
-                            @unknown default:
-                                placeholderBanner
                             }
+                        } else {
+                            placeholderBanner
                         }
-                    } else {
-                        Image(bannerImage)
-                            .resizable()
-                            .scaledToFill()
                     }
-                } else {
-                    placeholderBanner
-                }
-            }
-            .frame(height: 200)
-            .frame(maxWidth: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: 22))
+                )
+                .frame(height: 200)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 22))
             
             // Calendar & Time Badge removed
         }
