@@ -318,8 +318,8 @@ final class AppSession {
     }
     
     @MainActor
-    func registerForEvent(id: UUID, answers: [String: String]? = nil) async {
-        guard let userId = currentUser?.id else { return }
+    func registerForEvent(id: UUID, answers: [String: String]? = nil) async -> Bool {
+        guard let userId = currentUser?.id else { return false }
         
         // Find the event to check max participants
         guard let event = eventStore.events.first(where: { $0.id == id }) else { return false }
@@ -332,6 +332,8 @@ final class AppSession {
                 return false
             }
         }
+        
+        let isRegistering = !registeredEventIds.contains(id)
         
         do {
             try await registrationStore.toggleRegistration(eventId: id, userId: userId, answers: answers)
