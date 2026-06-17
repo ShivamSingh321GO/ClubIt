@@ -37,6 +37,7 @@ final class AppSession {
     var approvalStore: ApprovalStore
     var activityStore: ActivityStore
     var registrationStore: RegistrationStore
+    var attendanceStore: AttendanceStore
     
     var registeredEventIds: Set<UUID> = []
     var favouritedEventIds: Set<UUID> = []
@@ -78,6 +79,7 @@ final class AppSession {
         self.chatStore = ChatStore()
         self.activityStore = ActivityStore()
         self.registrationStore = RegistrationStore()
+        self.attendanceStore = AttendanceStore()
         
         self.chatStore.eventStore = eventStore
         

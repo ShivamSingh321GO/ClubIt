@@ -23,6 +23,8 @@ struct EventDetailView: View {
     @State private var isShowingPublishAlert = false
     @State private var isShowingRegisterConfirmAlert = false
     @State private var isShowingWithdrawConfirmAlert = false
+    @State private var isShowingAttendanceQR = false
+    @State private var isShowingScanner = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -125,6 +127,13 @@ struct EventDetailView: View {
         }
         .sheet(isPresented: $isShowingRegistrationForm) {
             DynamicRegistrationFormView(event: event)
+        }
+        .sheet(isPresented: $isShowingAttendanceQR) {
+            AttendanceQRDisplayView(event: event)
+                .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $isShowingScanner) {
+            MarkAttendanceView(expectedEventId: event.id)
         }
     }
     
@@ -543,6 +552,32 @@ struct EventDetailView: View {
                         .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     
+                    Button {
+                        isShowingAttendanceQR = true
+                    } label: {
+                        Label("Show Attendance QR", systemImage: "qrcode")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.purple)
+                    .shadow(color: .purple.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .padding(.top, 8)
+                    
+                    NavigationLink(destination: EventAttendeesListView(event: event)) {
+                        Label("View Attendees", systemImage: "person.crop.circle.badge.checkmark")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.teal)
+                    .shadow(color: .teal.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .padding(.top, 8)
+                    
                     let chatExists = appSession.chatStore.chats.contains(where: { $0.type == .event && $0.name == event.title && $0.parentChatId == nil })
                     if !chatExists && event.status == .published {
                         Button {
@@ -570,6 +605,20 @@ struct EventDetailView: View {
                 let isOpen = event.isRegistrationOpen ?? true
                 
                 if isRegistered {
+                    Button {
+                        isShowingScanner = true
+                    } label: {
+                        Label("Scan Attendance QR", systemImage: "qrcode.viewfinder")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.green)
+                    .shadow(color: .green.opacity(0.4), radius: 8, x: 0, y: 4)
+                    .padding(.bottom, 8)
+                    
                     Button {
                         isShowingWithdrawConfirmAlert = true
                     } label: {
