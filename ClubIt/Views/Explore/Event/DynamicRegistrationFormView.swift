@@ -149,16 +149,22 @@ struct DynamicRegistrationFormView: View {
     }
     
     private func submitForm() {
-        // Validate required fields
+        var finalAnswers: [String: String] = [:]
+        
+        // Validate required fields and compile answers
         if let fields = event.registrationForm {
-            for field in fields where field.isRequired ?? true {
+            for field in fields {
                 if field.type == .checkbox {
-                    if checkboxResponses[field.id]?.isEmpty ?? true {
+                    if let selections = checkboxResponses[field.id], !selections.isEmpty {
+                        finalAnswers[field.label] = selections.sorted().joined(separator: ", ")
+                    } else if field.isRequired ?? true {
                         errorMessage = "Please answer all required questions."
                         return
                     }
                 } else {
-                    if responses[field.id]?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
+                    if let resp = responses[field.id], !resp.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        finalAnswers[field.label] = resp
+                    } else if field.isRequired ?? true {
                         errorMessage = "Please answer all required questions."
                         return
                     }
@@ -168,7 +174,7 @@ struct DynamicRegistrationFormView: View {
         
         // Complete registration
         Task {
-            await appSession.registerForEvent(id: event.id)
+            await appSession.registerForEvent(id: event.id, answers: finalAnswers)
             await MainActor.run {
                 dismiss()
             }

@@ -5,6 +5,8 @@ struct ManageParticipantsView: View {
     let event: Event
     
     @State private var selectedRole: ParticipantFilterRole = .all
+    @State private var fileURLToShareExcel: URL?
+    @State private var fileURLToShareNumbers: URL?
     
     enum ParticipantFilterRole: String, CaseIterable, Identifiable {
         case all = "All"
@@ -91,6 +93,115 @@ struct ManageParticipantsView: View {
         }
         .navigationTitle("Participants")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    if let excelURL = fileURLToShareExcel {
+                        ShareLink(item: excelURL) {
+                            Label("Export as Excel File", systemImage: "tablecells")
+                        }
+                    } else {
+                        Button { } label: { Label("Export as Excel File", systemImage: "tablecells") }.disabled(true)
+                    }
+                    
+                    if let numbersURL = fileURLToShareNumbers {
+                        ShareLink(item: numbersURL) {
+                            Label("Export as Numbers File", systemImage: "chart.bar.doc.horizontal")
+                        }
+                    } else {
+                        Button { } label: { Label("Export as Numbers File", systemImage: "chart.bar.doc.horizontal") }.disabled(true)
+                    }
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.body.weight(.semibold))
+                }
+            }
+        }
+        .task(id: appSession.registrationStore.getRegistrations(for: event.id).count) {
+            generateExportFiles()
+        }
+        .onChange(of: selectedRole) { _, _ in
+            generateExportFiles()
+        }
+    }
+    
+    private func generateExportFiles() {
+        // Run in background to avoid blocking main thread
+        Task.detached {
+            let allRegistrations = await self.appSession.registrationStore.getRegistrations(for: self.event.id)
+            // filteredRegistrations accesses selectedRole, which is actor-isolated. We need to do this carefully.
+            // Actually, we can just do this synchronously on the main thread if it's fast enough,
+            // or pass the data we need. Since it's just string formatting, main thread is usually fine.
+            // But let's just use MainActor.
+            await MainActor.run {
+                self.exportCSV()
+            }
+        }
+    }
+    
+    @MainActor
+    private func exportCSV() {
+        let allRegistrations = appSession.registrationStore.getRegistrations(for: event.id)
+        let registrations = filteredRegistrations(allRegistrations)
+        let allUsers = appSession.clubStore.allUsers
+        
+        var csvString = "Name,Role,Course,Year,Email,Phone"
+        
+        // Find all unique question labels for headers
+        var uniqueQuestions: [String] = []
+        for reg in registrations {
+            if let answers = reg.answers {
+                for key in answers.keys {
+                    if !uniqueQuestions.contains(key) {
+                        uniqueQuestions.append(key)
+                    }
+                }
+            }
+        }
+        
+        // Add question headers
+        for question in uniqueQuestions {
+            csvString += ",\"\(question.replacingOccurrences(of: "\"", with: "\"\""))\""
+        }
+        csvString += "\n"
+        
+        // Add data rows
+        for reg in registrations {
+            guard let user = allUsers.first(where: { $0.id == reg.userId }) else { continue }
+            
+            let name = user.name.replacingOccurrences(of: "\"", with: "\"\"")
+            let role = user.role.rawValue.replacingOccurrences(of: "\"", with: "\"\"")
+            let course = (user.course ?? "N/A").replacingOccurrences(of: "\"", with: "\"\"")
+            let year = (user.year ?? "N/A").replacingOccurrences(of: "\"", with: "\"\"")
+            let email = user.email.replacingOccurrences(of: "\"", with: "\"\"")
+            let phone = (user.phoneNumber ?? "N/A").replacingOccurrences(of: "\"", with: "\"\"")
+            
+            var row = "\"\(name)\",\"\(role)\",\"\(course)\",\"\(year)\",\"\(email)\",\"\(phone)\""
+            
+            for question in uniqueQuestions {
+                if let answer = reg.answers?[question] {
+                    row += ",\"\(answer.replacingOccurrences(of: "\"", with: "\"\""))\""
+                } else {
+                    row += ",\"\""
+                }
+            }
+            csvString += "\(row)\n"
+        }
+        
+        // Save to temp files
+        let excelFileName = "\(event.name)_Participants_Excel.csv"
+        let numbersFileName = "\(event.name)_Participants_Numbers.csv"
+        let excelURL = FileManager.default.temporaryDirectory.appendingPathComponent(excelFileName)
+        let numbersURL = FileManager.default.temporaryDirectory.appendingPathComponent(numbersFileName)
+        
+        do {
+            try csvString.write(to: excelURL, atomically: true, encoding: .utf8)
+            try csvString.write(to: numbersURL, atomically: true, encoding: .utf8)
+            self.fileURLToShareExcel = excelURL
+            self.fileURLToShareNumbers = numbersURL
+        } catch {
+            print("Error exporting CSV: \(error)")
+        }
     }
     
     @ViewBuilder
@@ -146,47 +257,81 @@ struct SummaryStatCard: View {
 
 struct ParticipantRow: View {
     @Environment(AppSession.self) var appSession
+    
     let user: User
     let registration: IndividualRegistration
     
-    var body: some View {
-        HStack(spacing: 16) {
-            UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 44)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(user.name)
-                    .font(.subheadline.bold())
-                Text("\(user.course ?? "N/A") • \(user.year ?? "N/A")")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Spacer()
-            
-            if user.role == .clubLead {
-                // For leads, show a Host badge
-                Text("Host")
-                    .font(.system(size: 10, weight: .bold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.secondary.opacity(0.1))
-                    .foregroundColor(.secondary)
-                    .clipShape(Capsule())
-            }
-        }
-        .padding(12)
-        .glassEffect(in: .rect(cornerRadius: 18))
-    }
+    @State private var showAnswers = false
     
-    private var statusColor: Color {
-        switch registration.status {
-        case .confirmed: return .green
-        case .pending: return .accentColor
-        case .cancelled: return .red
-        case nil: return .gray
+    var body: some View {
+        VStack(spacing: 12) {
+            
+            // Top Section
+            HStack(alignment: .center, spacing: 14) {
+                
+                UserAvatarView(
+                    name: user.name,
+                    profileImg: user.profileImg,
+                    imageData: user.imageData,
+                    size: 52
+                )
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(user.name)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    
+                    Text("\(user.course ?? "N/A") • \(user.year ?? "N/A")")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                if user.role == .clubLead {
+                    Text("Host")
+                        .font(.caption2.bold())
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.secondary.opacity(0.12))
+                        .foregroundStyle(.secondary)
+                        .clipShape(Capsule())
+                }
+            }
+            
+            // Full-width divider
+            if let answers = registration.answers, !answers.isEmpty {
+                Divider()
+                    .bold()
+                
+                Button {
+                    showAnswers = true
+                } label: {
+                    HStack {
+                        Label("Registration Answers", systemImage: "doc.text")
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .sheet(isPresented: $showAnswers) {
+                    ParticipantAnswersView(
+                        user: user,
+                        registration: registration
+                    )
+                    .presentationDetents([.medium, .large])
+                }
+            }
         }
+        .padding(16)
+        .glassEffect(in: .rect(cornerRadius: 22))
     }
 }
 

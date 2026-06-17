@@ -23,7 +23,7 @@ final class RegistrationStore {
     }
     
     @MainActor
-    func toggleRegistration(eventId: UUID, userId: UUID) async throws {
+    func toggleRegistration(eventId: UUID, userId: UUID, answers: [String: String]? = nil) async throws {
         if let index = registrations.firstIndex(where: { $0.eventId == eventId && $0.userId == userId }) {
             let registrationId = registrations[index].id
             try await client
@@ -39,7 +39,7 @@ final class RegistrationStore {
                 eventId: eventId,
                 userId: userId,
                 status: .confirmed,
-                answers: [:],
+                answers: answers ?? [:],
                 createdAt: Date()
             )
             
