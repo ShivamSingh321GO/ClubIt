@@ -5,8 +5,6 @@ struct ManageParticipantsView: View {
     let event: Event
     
     @State private var selectedRole: ParticipantFilterRole = .all
-    @State private var fileURLToShareExcel: URL?
-    @State private var fileURLToShareNumbers: URL?
     
     enum ParticipantFilterRole: String, CaseIterable, Identifiable {
         case all = "All"
@@ -96,20 +94,16 @@ struct ManageParticipantsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    if let excelURL = fileURLToShareExcel {
-                        ShareLink(item: excelURL) {
-                            Label("Export as Excel File", systemImage: "tablecells")
-                        }
-                    } else {
-                        Button { } label: { Label("Export as Excel File", systemImage: "tablecells") }.disabled(true)
+                    Button {
+                        generateAndShare(forExcel: true)
+                    } label: {
+                        Label("Export as Excel File", systemImage: "tablecells")
                     }
                     
-                    if let numbersURL = fileURLToShareNumbers {
-                        ShareLink(item: numbersURL) {
-                            Label("Export as Numbers File", systemImage: "chart.bar.doc.horizontal")
-                        }
-                    } else {
-                        Button { } label: { Label("Export as Numbers File", systemImage: "chart.bar.doc.horizontal") }.disabled(true)
+                    Button {
+                        generateAndShare(forExcel: false)
+                    } label: {
+                        Label("Export as Numbers File", systemImage: "chart.bar.doc.horizontal")
                     }
                 } label: {
                     Image(systemName: "square.and.arrow.up")
@@ -117,30 +111,10 @@ struct ManageParticipantsView: View {
                 }
             }
         }
-        .task(id: appSession.registrationStore.getRegistrations(for: event.id).count) {
-            generateExportFiles()
-        }
-        .onChange(of: selectedRole) { _, _ in
-            generateExportFiles()
-        }
-    }
-    
-    private func generateExportFiles() {
-        // Run in background to avoid blocking main thread
-        Task.detached {
-            let allRegistrations = await self.appSession.registrationStore.getRegistrations(for: self.event.id)
-            // filteredRegistrations accesses selectedRole, which is actor-isolated. We need to do this carefully.
-            // Actually, we can just do this synchronously on the main thread if it's fast enough,
-            // or pass the data we need. Since it's just string formatting, main thread is usually fine.
-            // But let's just use MainActor.
-            await MainActor.run {
-                self.exportCSV()
-            }
-        }
     }
     
     @MainActor
-    private func exportCSV() {
+    private func generateAndShare(forExcel: Bool) {
         let allRegistrations = appSession.registrationStore.getRegistrations(for: event.id)
         let registrations = filteredRegistrations(allRegistrations)
         let allUsers = appSession.clubStore.allUsers
@@ -189,16 +163,39 @@ struct ManageParticipantsView: View {
         }
         
         // Save to temp files
-        let excelFileName = "\(event.name)_Participants_Excel.csv"
-        let numbersFileName = "\(event.name)_Participants_Numbers.csv"
-        let excelURL = FileManager.default.temporaryDirectory.appendingPathComponent(excelFileName)
-        let numbersURL = FileManager.default.temporaryDirectory.appendingPathComponent(numbersFileName)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM_dd_HHmmss"
+        let dateString = dateFormatter.string(from: Date())
+        
+        let safeEventName = event.name.replacingOccurrences(of: " ", with: "_")
+        let fileName = forExcel ? "\(safeEventName)_Participants_Excel_\(dateString).csv" : "\(safeEventName)_Participants_Numbers_\(dateString).csv"
+        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         
         do {
-            try csvString.write(to: excelURL, atomically: true, encoding: .utf8)
-            try csvString.write(to: numbersURL, atomically: true, encoding: .utf8)
-            self.fileURLToShareExcel = excelURL
-            self.fileURLToShareNumbers = numbersURL
+            try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
+            
+            // Present UIActivityViewController directly from the topmost UIViewController
+            let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                
+                // Handle iPad presentation
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    if let popover = activityVC.popoverPresentationController {
+                        popover.sourceView = window
+                        popover.sourceRect = CGRect(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2, width: 0, height: 0)
+                        popover.permittedArrowDirections = []
+                    }
+                }
+                
+                var topController = rootVC
+                while let presented = topController.presentedViewController {
+                    topController = presented
+                }
+                topController.present(activityVC, animated: true)
+            }
         } catch {
             print("Error exporting CSV: \(error)")
         }
