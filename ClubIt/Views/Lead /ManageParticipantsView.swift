@@ -97,13 +97,13 @@ struct ManageParticipantsView: View {
                     Button {
                         generateAndShare(forExcel: true)
                     } label: {
-                        Label("Export as Excel File", systemImage: "tablecells")
+                        Label("Export as Excel Sheet", systemImage: "tablecells")
                     }
                     
                     Button {
                         generateAndShare(forExcel: false)
                     } label: {
-                        Label("Export as Numbers File", systemImage: "chart.bar.doc.horizontal")
+                        Label("Export as Numbers Sheet", systemImage: "chart.bar.doc.horizontal")
                     }
                 } label: {
                     Image(systemName: "square.and.arrow.up")

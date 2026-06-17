@@ -179,7 +179,7 @@ struct FileCard: View {
                             .tint(.primary)
                             .padding(8)
                     } else {
-                        Image(systemName: "square.and.arrow.down")
+                        Image(systemName: "icloud.and.arrow.down")
                             .font(.title3)
                             .foregroundColor(.primary)
                             .padding(8)
