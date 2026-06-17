@@ -30,16 +30,28 @@ struct ChatBox: View {
                             .padding(.top, 12)
                             .padding(.bottom, 8)
                         
-                        ForEach(chatMessages) { message in
+                        ForEach(Array(chatMessages.enumerated()), id: \.element.id) { index, message in
                             let isCurrentUser = message.senderId == appSession.chatStore.userId
+                            let isGroup = chat.type == .group || chat.type == .event
+                            let isConsecutive: Bool = {
+                                guard index > 0 else { return false }
+                                return chatMessages[index - 1].senderId == message.senderId
+                            }()
+                            let isOrganizer = message.senderId == chat.createdBy
                             
-                            MessageBubble(message: message, isCurrentUser: isCurrentUser)
-                                .id(message.id)
-                                .transition(.asymmetric(
-                                    insertion: .scale(scale: 0.8, anchor: isCurrentUser ? .bottomTrailing : .bottomLeading)
-                                        .combined(with: .opacity),
-                                    removal: .opacity
-                                ))
+                            MessageBubble(
+                                message: message,
+                                isCurrentUser: isCurrentUser,
+                                isGroupChat: isGroup,
+                                isConsecutive: isConsecutive,
+                                isOrganizer: isOrganizer
+                            )
+                            .id(message.id)
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 0.8, anchor: isCurrentUser ? .bottomTrailing : .bottomLeading)
+                                    .combined(with: .opacity),
+                                removal: .opacity
+                            ))
                         }
                         
                         // Delivered indicator

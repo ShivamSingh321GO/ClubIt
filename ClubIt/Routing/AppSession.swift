@@ -18,6 +18,8 @@ final class AppSession {
     var isRefreshing: Bool = false
     private var lastRefreshDate: Date = .distantPast
     
+    var unreadMessageCount: Int = 0
+    var showWithdrawSuccessAlert: Bool = false
     var activeDashboardTab: Int = 0
     var activeExploreTab: Int = 0
     
@@ -310,41 +312,60 @@ final class AppSession {
     }
     
     @MainActor
-    func registerForEvent(id: UUID) async {
-        guard let userId = currentUser?.id else { return }
+    @discardableResult
+    func registerForEvent(id: UUID) async -> Bool {
+        guard let userId = currentUser?.id else { return false }
         
         // Find the event to check max participants
-        guard let event = eventStore.events.first(where: { $0.id == id }) else { return }
+        guard let event = eventStore.events.first(where: { $0.id == id }) else { return false }
         let currentCount = registrationStore.getRegistrations(for: id).count
         
         // First Come First Serve: Check if full before allowing new registration (Bypass for president)
         if currentUser?.role != .president {
             if !registeredEventIds.contains(id) && event.maxParticipants > 0 && event.maxParticipants < 999999 && currentCount >= event.maxParticipants {
                 print("Registration failed: Event is full")
-                return
+                return false
             }
         }
         
         do {
+            // Determine direction BEFORE toggling
+            let isRegistering = !registeredEventIds.contains(id)
+            
             try await registrationStore.toggleRegistration(eventId: id, userId: userId)
             
             // Update registration count locally for immediate UI feedback
             if let index = eventStore.events.firstIndex(where: { $0.id == id }) {
-                let isRegistering = !registeredEventIds.contains(id)
                 let currentRegistrations = eventStore.events[index].numberOfRegistrations ?? 0
                 
                 if isRegistering {
                     eventStore.events[index].numberOfRegistrations = currentRegistrations + 1
                     registeredEventIds.insert(id)
+                    
+                    // Add user to the event's General chat globally
+                    print("DEBUG: [AppSession] Registering user \(userId) for event '\(event.title)' clubId=\(event.clubId?.uuidString ?? "nil")")
+                    if let clubId = event.clubId {
+                        await chatStore.addUserToEventChatsGlobally(userId: userId, eventTitle: event.title, clubId: clubId)
+                    } else {
+                        print("DEBUG: [AppSession] WARNING: event.clubId is nil, cannot add to chat")
+                    }
                 } else {
                     eventStore.events[index].numberOfRegistrations = max(0, currentRegistrations - 1)
                     registeredEventIds.remove(id)
+                    
+                    // Remove user from the event's General chat globally
+                    print("DEBUG: [AppSession] Withdrawing user \(userId) from event '\(event.title)' clubId=\(event.clubId?.uuidString ?? "nil")")
+                    if let clubId = event.clubId {
+                        await chatStore.removeUserFromEventChatsGlobally(userId: userId, eventTitle: event.title, clubId: clubId)
+                    }
                 }
             }
             
             studentDashboardStore.registeredEventIds = registeredEventIds
+            return true
         } catch {
             print("Registration toggle failed: \(error)")
+            return false
         }
     }
     

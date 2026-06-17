@@ -139,6 +139,10 @@ struct EventManagementApprovalDetailView: View {
                             try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
                             // Sync event status
                             try? await appSession.eventStore.updateEventStatus(id: approval.eventId ?? UUID(), status: .approved)
+                            
+                            if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
+                                await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
+                            }
                         }
                     }
                 }

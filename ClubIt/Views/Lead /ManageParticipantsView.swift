@@ -88,9 +88,16 @@ struct ManageParticipantsView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
+            .refreshable {
+                try? await appSession.registrationStore.fetchRegistrations()
+            }
         }
         .navigationTitle("Participants")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // Fetch fresh registrations when the view opens so withdrawals are reflected
+            try? await appSession.registrationStore.fetchRegistrations()
+        }
     }
     
     @ViewBuilder

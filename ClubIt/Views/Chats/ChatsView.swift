@@ -159,19 +159,25 @@ struct ChatsView: View {
     }
     
     private func countForCategory(_ category: ChatCategory) -> Int {
+        let topLevelChats = appSession.chatStore.chats.filter { $0.parentChatId == nil }
+        
         switch category {
         case .all:
             return 0
         case .unread:
-            return appSession.chatStore.chats.filter { !$0.isRequest && !$0.isArchived && $0.unreadCount > 0 }.count
+            return topLevelChats.filter { chat in
+                if chat.isArchived || chat.isRequest { return false }
+                if chat.unreadCount > 0 { return true }
+                return appSession.chatStore.getSubChats(for: chat.id).contains { $0.unreadCount > 0 }
+            }.count
         case .groups:
-            return appSession.chatStore.chats.filter { $0.type == .group && !$0.isRequest && !$0.isArchived }.count
+            return topLevelChats.filter { $0.type == .group && !$0.isRequest && !$0.isArchived }.count
         case .event:
-            return appSession.chatStore.chats.filter { $0.type == .event && !$0.isRequest && !$0.isArchived }.count
+            return topLevelChats.filter { $0.type == .event && !$0.isRequest && !$0.isArchived }.count
         case .archived:
-            return appSession.chatStore.chats.filter { $0.isArchived && !$0.isRequest }.count
+            return topLevelChats.filter { $0.isArchived && !$0.isRequest }.count
         case .requests:
-            return appSession.chatStore.chats.filter { $0.isRequest && !$0.isArchived }.count
+            return topLevelChats.filter { $0.isRequest && !$0.isArchived }.count
         }
     }
     
@@ -364,37 +370,44 @@ struct ChatsView: View {
                                         appSession.chatStore.deleteChat(for: subChat.id)
                                     }
                                 )
-                                .padding(.leading, 80)
                             }
                             .buttonStyle(.plain)
                             
                             Divider()
-                                .padding(.leading, 80)
+                                .padding(.leading, 72)
                         }
                         
-                        Button {
-                            activeParentId = chat.id
-                            showAddSubChat = true
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.subheadline)
-                                Text("Add new chat")
-                                    .font(.subheadline.bold())
+                        // Only show "Add new chat" to the person who created this event chat
+                        if chat.createdBy == appSession.currentUser?.id {
+                            Button {
+                                activeParentId = chat.id
+                                showAddSubChat = true
+                            } label: {
+                                HStack(spacing: 12) {
+                                    ZStack {
+                                        Circle().fill(Color(.systemGray6))
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 16, weight: .bold))
+                                            .foregroundColor(.blue)
+                                    }
+                                    .frame(width: 36, height: 36)
+                                    
+                                    Text("Add new chat")
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundColor(.blue)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.trailing, 16)
+                                .padding(.leading, 72)
+                                .contentShape(Rectangle())
                             }
-                            .foregroundColor(.blue)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .padding(.horizontal, 16)
-                            .padding(.leading, 64)
-                            .padding(.vertical, 8)
+                            .buttonStyle(.plain)
+                            
+                            Divider()
+                                .padding(.leading, 72)
                         }
-                        .buttonStyle(.plain)
-                        
-                        Divider()
-                            .padding(.leading, 80)
                     }
                 }
             }

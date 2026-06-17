@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ChatInfoView: View {
     let chat: Chat
@@ -8,6 +9,28 @@ struct ChatInfoView: View {
     @State private var participants: [ChatParticipant] = []
     @State private var showAddMembers = false
     @State private var showAllParticipants = false
+    
+    @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var uploadImageData: Data? = nil
+    
+    @State private var isEditingDescription = false
+    @State private var editedDescription = ""
+    
+    private var isOrganizer: Bool {
+        chat.createdBy == appSession.chatStore.userId
+    }
+    
+    private var canManageParticipants: Bool {
+        if let parentId = chat.parentChatId {
+            let parentChat = appSession.chatStore.chats.first(where: { $0.id == parentId })
+            let isParentOrganizer = parentChat?.createdBy == appSession.chatStore.userId
+            let isSubChatAdmin = participants.first(where: { $0.userId == appSession.chatStore.userId })?.role == .admin
+            return isParentOrganizer || isSubChatAdmin
+        } else {
+            let isChatAdmin = participants.first(where: { $0.userId == appSession.chatStore.userId })?.role == .admin
+            return isOrganizer || isChatAdmin
+        }
+    }
     
     private var participantUsers: [User] {
         let userIds = participants.map { $0.userId }
@@ -33,7 +56,41 @@ struct ChatInfoView: View {
                 VStack(spacing: 24) {
                 // Header Profile
                 VStack(spacing: 16) {
-                    UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 100)
+                    if (chat.type == .group || chat.type == .event) && chat.createdBy == appSession.chatStore.userId {
+                        Menu {
+                            PhotosPicker(selection: $selectedItem, matching: .images) {
+                                Label("Choose Photo", systemImage: "photo")
+                            }
+                            
+                            if chat.icon != nil && chat.icon != "calendar" && chat.icon != "person.3.fill" && chat.icon != "person.2.fill" {
+                                Button(role: .destructive) {
+                                    Task {
+                                        do {
+                                            try await appSession.chatStore.removeChatIcon(chatId: chat.id)
+                                            uploadImageData = nil
+                                        } catch {
+                                            print("ERROR: Failed to remove chat icon: \(error.localizedDescription)")
+                                        }
+                                    }
+                                } label: {
+                                    Label("Remove Photo", systemImage: "trash")
+                                }
+                            }
+                        } label: {
+                            ZStack(alignment: .bottomTrailing) {
+                                UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: uploadImageData, size: 100)
+                                
+                                Image(systemName: "camera.circle.fill")
+                                    .symbolRenderingMode(.multicolor)
+                                    .font(.system(size: 28))
+                                    .background(Circle().fill(.white))
+                                    .offset(x: 2, y: 2)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 100)
+                    }
                     
                     VStack(spacing: 4) {
                         Text(chat.displayName)
@@ -51,6 +108,64 @@ struct ChatInfoView: View {
                     }
                 }
                 .padding(.top, 24)
+                
+                // Description Section (For Groups and Events)
+                if chat.type == .group || chat.type == .event {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Description")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            if isOrganizer {
+                                if isEditingDescription {
+                                    HStack {
+                                        TextField("Add description...", text: $editedDescription, axis: .vertical)
+                                            .textFieldStyle(.plain)
+                                            .lineLimit(1...4)
+                                        
+                                        Button {
+                                            Task {
+                                                try? await appSession.chatStore.updateChatDescription(chatId: chat.id, description: editedDescription)
+                                                isEditingDescription = false
+                                            }
+                                        } label: {
+                                            Text("Save")
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                } else {
+                                    HStack {
+                                        Text(chat.description?.isEmpty == false ? chat.description! : "Add description...")
+                                            .foregroundColor(chat.description?.isEmpty == false ? .primary : .secondary)
+                                            .font(.body)
+                                        
+                                        Spacer()
+                                        
+                                        Button {
+                                            editedDescription = chat.description ?? ""
+                                            isEditingDescription = true
+                                        } label: {
+                                            Image(systemName: "pencil")
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                }
+                            } else {
+                                Text(chat.description?.isEmpty == false ? chat.description! : "No description")
+                                    .foregroundColor(chat.description?.isEmpty == false ? .primary : .secondary)
+                                    .font(.body)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                        .padding(.horizontal)
+                    }
+                }
                 
 
                 
@@ -121,12 +236,14 @@ struct ChatInfoView: View {
                             Spacer()
                             
                             // + button to add members (rule #2 for groups, rule #3 for events)
-                            Button {
-                                showAddMembers = true
-                            } label: {
-                                Text("Add Participants")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
+                            if canManageParticipants {
+                                Button {
+                                    showAddMembers = true
+                                } label: {
+                                    Text("Add Participants")
+                                        .font(.subheadline)
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -230,6 +347,18 @@ struct ChatInfoView: View {
         }
         .sheet(isPresented: $showAddMembers) {
             AddMembersView(chatId: chat.id, existingParticipantIds: Set(participants.map { $0.userId }))
+        }
+        .onChange(of: selectedItem) { _, newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                    uploadImageData = data
+                    do {
+                        try await appSession.chatStore.uploadChatIcon(chatId: chat.id, imageData: data)
+                    } catch {
+                        print("ERROR: Failed to upload chat icon: \(error.localizedDescription)")
+                    }
+                }
+            }
         }
     } 
 
