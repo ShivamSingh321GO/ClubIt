@@ -29,7 +29,8 @@ final class RegistrationStore {
             try await client
                 .from("registrations")
                 .delete()
-                .eq("id", value: registrationId)
+                .eq("event_id", value: eventId)
+                .eq("user_id", value: userId)
                 .execute()
             
             registrations.remove(at: index)
