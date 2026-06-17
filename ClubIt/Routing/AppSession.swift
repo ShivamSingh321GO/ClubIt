@@ -79,6 +79,8 @@ final class AppSession {
         self.activityStore = ActivityStore()
         self.registrationStore = RegistrationStore()
         
+        self.chatStore.eventStore = eventStore
+        
         startBackgroundPolling()
     }
     
@@ -126,6 +128,8 @@ final class AppSession {
         await clubsTask
         await usersTask
         await clubDetailsTask
+        
+        await chatStore.autoArchiveExpiredEventChats(events: eventStore.events)
         
         print("DEBUG: Silent background sync complete")
     }
@@ -213,6 +217,8 @@ final class AppSession {
         await announcementsTask
         await venuesTask
         await chatsTask
+        
+        await chatStore.autoArchiveExpiredEventChats(events: eventStore.events)
         
         // 3. Sync registrations
         let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
@@ -345,7 +351,7 @@ final class AppSession {
                     // Add user to the event's General chat globally
                     print("DEBUG: [AppSession] Registering user \(userId) for event '\(event.title)' clubId=\(event.clubId?.uuidString ?? "nil")")
                     if let clubId = event.clubId {
-                        await chatStore.addUserToEventChatsGlobally(userId: userId, eventTitle: event.title, clubId: clubId)
+                        await chatStore.addUserToEventChatsGlobally(userId: userId, eventId: id, eventTitle: event.title, clubId: clubId)
                     } else {
                         print("DEBUG: [AppSession] WARNING: event.clubId is nil, cannot add to chat")
                     }
@@ -356,7 +362,7 @@ final class AppSession {
                     // Remove user from the event's General chat globally
                     print("DEBUG: [AppSession] Withdrawing user \(userId) from event '\(event.title)' clubId=\(event.clubId?.uuidString ?? "nil")")
                     if let clubId = event.clubId {
-                        await chatStore.removeUserFromEventChatsGlobally(userId: userId, eventTitle: event.title, clubId: clubId)
+                        await chatStore.removeUserFromEventChatsGlobally(userId: userId, eventId: id, eventTitle: event.title, clubId: clubId)
                     }
                 }
             }

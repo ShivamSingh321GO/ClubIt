@@ -127,6 +127,9 @@ struct EventManagementApprovalDetailView: View {
                         
                         if appSession.currentRole == .vicePresident {
                             try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                            if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
+                                await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
+                            }
                             if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
                                let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
                                 try? await appSession.forwardToPresidentBudgetApproval(

@@ -14,6 +14,16 @@ struct ChatsView: View {
     @State private var searchText = ""
     @State private var navigateToChat: Chat? = nil
     
+    @State private var subChatSearchText = ""
+    @State private var selectedSubChatUsers: Set<UUID> = []
+    
+    private var subChatCandidateUsers: [User] {
+        guard let parentId = activeParentId,
+              let parentChat = appSession.chatStore.chats.first(where: { $0.id == parentId }) else { return [] }
+        let parentParticipantIds = parentChat.participantIds
+        return appSession.clubStore.allUsers.filter { parentParticipantIds.contains($0.id) && $0.id != appSession.chatStore.userId }
+    }
+    
     var body: some View {
         @Bindable var chatStore = appSession.chatStore
         
@@ -111,6 +121,57 @@ struct ChatsView: View {
                             TextField("Chat Name", text: $subChatName)
                             TextField("Description (Optional)", text: $subChatDescription)
                         }
+                        
+                        let candidates = subChatCandidateUsers
+                        if !candidates.isEmpty {
+                            Section {
+                                HStack {
+                                    Image(systemName: "magnifyingglass")
+                                        .foregroundColor(.secondary)
+                                    TextField("Search participants", text: $subChatSearchText)
+                                }
+                                
+                                if !selectedSubChatUsers.isEmpty {
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 12) {
+                                            ForEach(candidates.filter { selectedSubChatUsers.contains($0.id) }) { user in
+                                                SelectedUserBadge(user: user) {
+                                                    selectedSubChatUsers.remove(user.id)
+                                                }
+                                            }
+                                        }
+                                        .padding(.vertical, 4)
+                                    }
+                                }
+                                
+                                let filteredCandidates = subChatSearchText.isEmpty ? candidates : candidates.filter { $0.name.localizedCaseInsensitiveContains(subChatSearchText) }
+                                
+                                ForEach(filteredCandidates) { user in
+                                    HStack {
+                                        UserAvatarView(name: user.name, profileImg: user.profileImg, imageData: user.imageData, size: 36)
+                                        Text(user.name)
+                                        Spacer()
+                                        if selectedSubChatUsers.contains(user.id) {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundColor(.accentColor)
+                                        } else {
+                                            Image(systemName: "circle")
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        if selectedSubChatUsers.contains(user.id) {
+                                            selectedSubChatUsers.remove(user.id)
+                                        } else {
+                                            selectedSubChatUsers.insert(user.id)
+                                        }
+                                    }
+                                }
+                            } header: {
+                                Text("Add Participants")
+                            }
+                        }
                     }
                     .navigationTitle("New Chat")
                     .navigationBarTitleDisplayMode(.inline)
@@ -120,6 +181,8 @@ struct ChatsView: View {
                                 showAddSubChat = false
                                 subChatName = ""
                                 subChatDescription = ""
+                                selectedSubChatUsers = []
+                                subChatSearchText = ""
                             } label: {
                                 Image(systemName: "xmark")
                             }
@@ -127,11 +190,18 @@ struct ChatsView: View {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button {
                                 if let parentId = activeParentId {
-                                    appSession.chatStore.addSubChat(name: subChatName, description: subChatDescription.isEmpty ? nil : subChatDescription, for: parentId)
+                                    appSession.chatStore.addSubChat(
+                                        name: subChatName,
+                                        description: subChatDescription.isEmpty ? nil : subChatDescription,
+                                        memberIds: Array(selectedSubChatUsers),
+                                        for: parentId
+                                    )
                                 }
                                 showAddSubChat = false
                                 subChatName = ""
                                 subChatDescription = ""
+                                selectedSubChatUsers = []
+                                subChatSearchText = ""
                             } label: {
                                 Text("Done")
                                     .fontWeight(.semibold)
@@ -140,7 +210,7 @@ struct ChatsView: View {
                         }
                     }
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
             }

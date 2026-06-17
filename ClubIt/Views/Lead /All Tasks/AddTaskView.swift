@@ -43,12 +43,19 @@ struct AddTaskView: View {
     }
     
     private var filteredEvents: [Event] {
+        let isVPApproved: (Event) -> Bool = { event in
+            appSession.approvalStore.approvals.contains { 
+                $0.eventId == event.id && $0.type == .event && $0.status == .approved 
+            }
+        }
         if appSession.currentUser?.role == .president {
-            return appSession.eventStore.events.filter { $0.status == .approved || $0.status == .published }
+            return appSession.eventStore.events.filter { 
+                $0.status == .approved || $0.status == .published || isVPApproved($0)
+            }
         }
         guard let clubId = appSession.currentUserClubId else { return [] }
         return appSession.eventStore.events.filter { 
-            $0.clubId == clubId && ($0.status == .approved || $0.status == .published)
+            $0.clubId == clubId && ($0.status == .approved || $0.status == .published || isVPApproved($0))
         }
     }
     
