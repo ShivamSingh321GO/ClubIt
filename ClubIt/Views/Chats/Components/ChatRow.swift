@@ -122,25 +122,19 @@ struct ChatRow: View {
     
     @ViewBuilder
     private var chatIcon: some View {
-        if chat.type == .event {
-            ZStack {
-                Circle().fill(Color(.systemGray5))
-                Image(systemName: "person.3.fill")
-                    .font(.system(size: 22))
-                    .foregroundStyle(.secondary)
+        let iconName: String? = {
+            if let icon = chat.icon, !icon.isEmpty {
+                return icon
             }
-            .clipShape(Circle())
-        } else if chat.type == .group {
-            ZStack {
-                Circle().fill(Color(.systemGray5))
-                Image(systemName: "person.2.fill")
-                    .font(.system(size: 22))
-                    .foregroundStyle(.secondary)
+            if chat.type == .event {
+                return "person.3.fill"
             }
-            .clipShape(Circle())
-        } else {
-            UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 52)
-        }
+            if chat.type == .group {
+                return "person.2.fill"
+            }
+            return nil
+        }()
+        UserAvatarView(name: chat.displayName, profileImg: iconName, imageData: nil, size: 52)
     }
     
     private var initialsAvatar: some View {

@@ -6,40 +6,50 @@ struct SubChatRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            Spacer()
-                .frame(width: 1)
+            // Icon
+            UserAvatarView(
+                name: chat.displayName,
+                profileImg: chat.icon,
+                imageData: nil,
+                size: 36
+            )
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(chat.displayName)
-                    .font(.subheadline.bold())
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 
-                Text(chat.lastMessage)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                if !chat.lastMessage.isEmpty {
+                    Text(chat.lastMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
             
             Spacer()
             
             VStack(alignment: .trailing, spacing: 4) {
-                Text(timeString(from: chat.createdAt))
+                Text(timeString(from: chat.lastMessageAt ?? chat.createdAt))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 
                 if chat.unreadCount > 0 {
                     Text("\(chat.unreadCount)")
-                        .font(.caption2.bold())
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(.white)
-                        .frame(width: 18, height: 18)
-                        .background(Color.blue)
-                        .clipShape(Circle())
+                        .frame(minWidth: 16, minHeight: 16)
+                        .padding(.horizontal, 4)
+                        .background(Color.accentColor)
+                        .clipShape(Capsule())
                 }
             }
         }
         .padding(.vertical, 8)
         .padding(.trailing, 16)
+        .padding(.leading, 72)
+        .background(Color(.systemBackground))
         .contentShape(Rectangle())
         .contextMenu {
             Button(role: .destructive) {

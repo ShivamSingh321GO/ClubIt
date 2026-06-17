@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ChatInfoView: View {
     let chat: Chat
@@ -8,6 +9,39 @@ struct ChatInfoView: View {
     @State private var participants: [ChatParticipant] = []
     @State private var showAddMembers = false
     @State private var showAllParticipants = false
+    
+    @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var uploadImageData: Data? = nil
+    @State private var showPhotosPicker = false
+    @State private var showPhotoActionSheet = false
+    
+    @State private var isEditingDescription = false
+    @State private var editedDescription = ""
+    
+    private var currentChat: Chat {
+        appSession.chatStore.chats.first(where: { $0.id == chat.id }) ?? chat
+    }
+    
+    private var hasCustomPhoto: Bool {
+        guard let icon = currentChat.icon else { return false }
+        return icon != "calendar" && icon != "person.3.fill" && icon != "person.2.fill" && !icon.isEmpty
+    }
+    
+    private var isOrganizer: Bool {
+        currentChat.createdBy == appSession.chatStore.userId
+    }
+    
+    private var canManageParticipants: Bool {
+        if let parentId = currentChat.parentChatId {
+            let parentChat = appSession.chatStore.chats.first(where: { $0.id == parentId })
+            let isParentOrganizer = parentChat?.createdBy == appSession.chatStore.userId
+            let isSubChatAdmin = participants.first(where: { $0.userId == appSession.chatStore.userId })?.role == .admin
+            return isParentOrganizer || isSubChatAdmin
+        } else {
+            let isChatAdmin = participants.first(where: { $0.userId == appSession.chatStore.userId })?.role == .admin
+            return isOrganizer || isChatAdmin
+        }
+    }
     
     private var participantUsers: [User] {
         let userIds = participants.map { $0.userId }
@@ -33,13 +67,34 @@ struct ChatInfoView: View {
                 VStack(spacing: 24) {
                 // Header Profile
                 VStack(spacing: 16) {
-                    UserAvatarView(name: chat.displayName, profileImg: chat.icon, imageData: nil, size: 100)
+                    if (currentChat.type == .group || currentChat.type == .event) && currentChat.createdBy == appSession.chatStore.userId {
+                        Button {
+                            if hasCustomPhoto {
+                                showPhotoActionSheet = true
+                            } else {
+                                showPhotosPicker = true
+                            }
+                        } label: {
+                            ZStack(alignment: .bottomTrailing) {
+                                UserAvatarView(name: currentChat.displayName, profileImg: currentChat.icon, imageData: uploadImageData, size: 100)
+                                
+                                Image(systemName: "camera.circle.fill")
+                                    .symbolRenderingMode(.multicolor)
+                                    .font(.system(size: 28))
+                                    .background(Circle().fill(.white))
+                                    .offset(x: 2, y: 2)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        UserAvatarView(name: currentChat.displayName, profileImg: currentChat.icon, imageData: nil, size: 100)
+                    }
                     
                     VStack(spacing: 4) {
-                        Text(chat.displayName)
+                        Text(currentChat.displayName)
                             .font(.title2.bold())
                         
-                        if chat.type == .group || chat.type == .event {
+                        if currentChat.type == .group || currentChat.type == .event {
                             Text("\(participantUsers.count) Participants")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
@@ -52,10 +107,68 @@ struct ChatInfoView: View {
                 }
                 .padding(.top, 24)
                 
+                // Description Section (For Groups and Events)
+                if currentChat.type == .group || currentChat.type == .event {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Description")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            if isOrganizer {
+                                if isEditingDescription {
+                                    HStack {
+                                        TextField("Add description...", text: $editedDescription, axis: .vertical)
+                                            .textFieldStyle(.plain)
+                                            .lineLimit(1...4)
+                                        
+                                        Button {
+                                            Task {
+                                                try? await appSession.chatStore.updateChatDescription(chatId: currentChat.id, description: editedDescription)
+                                                isEditingDescription = false
+                                            }
+                                        } label: {
+                                            Text("Save")
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                } else {
+                                    HStack {
+                                        Text(currentChat.description?.isEmpty == false ? currentChat.description! : "Add description...")
+                                            .foregroundColor(currentChat.description?.isEmpty == false ? .primary : .secondary)
+                                            .font(.body)
+                                        
+                                        Spacer()
+                                        
+                                        Button {
+                                            editedDescription = currentChat.description ?? ""
+                                            isEditingDescription = true
+                                        } label: {
+                                            Image(systemName: "pencil")
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                }
+                            } else {
+                                Text(currentChat.description?.isEmpty == false ? currentChat.description! : "No description")
+                                    .foregroundColor(currentChat.description?.isEmpty == false ? .primary : .secondary)
+                                    .font(.body)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.15), lineWidth: 0.5))
+                        .padding(.horizontal)
+                    }
+                }
+                
 
                 
                 // Profile Information (For Individuals)
-                if chat.type == .individual, let otherUser = participantUsers.first(where: { $0.id != appSession.chatStore.userId }) {
+                if currentChat.type == .individual, let otherUser = participantUsers.first(where: { $0.id != appSession.chatStore.userId }) {
                     VStack(alignment: .leading, spacing: 20) {
 
                         // Contact
@@ -109,10 +222,8 @@ struct ChatInfoView: View {
                     }
                 }
                 
-
-                
                 // Participants (if Group/Event)
-                if chat.type == .group || chat.type == .event {
+                if currentChat.type == .group || currentChat.type == .event {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text("Participants")
@@ -121,12 +232,14 @@ struct ChatInfoView: View {
                             Spacer()
                             
                             // + button to add members (rule #2 for groups, rule #3 for events)
-                            Button {
-                                showAddMembers = true
-                            } label: {
-                                Text("Add Participants")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
+                            if canManageParticipants {
+                                Button {
+                                    showAddMembers = true
+                                } label: {
+                                    Text("Add Participants")
+                                        .font(.subheadline)
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -198,7 +311,7 @@ struct ChatInfoView: View {
                 VStack(spacing: 0) {
                     Button(action: {}) {
                         HStack {
-                            Text(chat.type == .individual ? "Block User" : "Leave Chat")
+                            Text(currentChat.type == .individual ? "Block User" : "Leave Chat")
                                 .foregroundColor(.red)
                             Spacer()
                         }
@@ -226,10 +339,39 @@ struct ChatInfoView: View {
         }
         .background(Color.clear)
         .task {
-            participants = await appSession.chatStore.fetchParticipants(for: chat.id)
+            participants = await appSession.chatStore.fetchParticipants(for: currentChat.id)
         }
         .sheet(isPresented: $showAddMembers) {
-            AddMembersView(chatId: chat.id, existingParticipantIds: Set(participants.map { $0.userId }))
+            AddMembersView(chatId: currentChat.id, existingParticipantIds: Set(participants.map { $0.userId }))
+        }
+        .photosPicker(isPresented: $showPhotosPicker, selection: $selectedItem, matching: .images)
+        .confirmationDialog("Change Chat Photo", isPresented: $showPhotoActionSheet, titleVisibility: .visible) {
+            Button("Choose Photo") {
+                showPhotosPicker = true
+            }
+            Button("Remove Photo", role: .destructive) {
+                Task {
+                    do {
+                        try await appSession.chatStore.removeChatIcon(chatId: currentChat.id)
+                        uploadImageData = nil
+                    } catch {
+                        print("ERROR: Failed to remove chat icon: \(error.localizedDescription)")
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .onChange(of: selectedItem) { _, newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                    uploadImageData = data
+                    do {
+                        try await appSession.chatStore.uploadChatIcon(chatId: currentChat.id, imageData: data)
+                    } catch {
+                        print("ERROR: Failed to upload chat icon: \(error.localizedDescription)")
+                    }
+                }
+            }
         }
     } 
 

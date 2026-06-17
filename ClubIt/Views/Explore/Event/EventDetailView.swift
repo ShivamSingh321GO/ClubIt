@@ -82,6 +82,7 @@ struct EventDetailView: View {
                 Task {
                     do {
                         try await appSession.eventStore.updateEventStatus(id: event.id, status: .published)
+                        await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
                         print("DEBUG: Event \(event.id) published successfully")
                     } catch {
                         print("ERROR: Failed to publish event: \(error)")
@@ -105,12 +106,22 @@ struct EventDetailView: View {
         .alert("Withdraw Registration", isPresented: $isShowingWithdrawConfirmAlert) {
             Button("Withdraw", role: .destructive) {
                 Task {
-                    await appSession.registerForEvent(id: event.id)
+                    let success = await appSession.registerForEvent(id: event.id)
+                    if success {
+                        // Using a small delay to prevent alert stacking issues
+                        try? await Task.sleep(nanoseconds: 500_000_000)
+                        appSession.showWithdrawSuccessAlert = true
+                    }
                 }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Are you sure you want to withdraw your registration? This will free up your slot.")
+        }
+        .alert("Withdrawal Successful", isPresented: Bindable(appSession).showWithdrawSuccessAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("You have successfully withdrawn from this event. You have been removed from the event's chats.")
         }
         .sheet(isPresented: $isShowingRegistrationForm) {
             DynamicRegistrationFormView(event: event)
@@ -530,6 +541,25 @@ struct EventDetailView: View {
                         .controlSize(.large)
                         .tint(.blue)
                         .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                    }
+                    
+                    let chatExists = appSession.chatStore.chats.contains(where: { $0.type == .event && $0.name == event.title && $0.parentChatId == nil })
+                    if !chatExists && event.status == .published {
+                        Button {
+                            Task {
+                                await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
+                            }
+                        } label: {
+                            Label("Create Event Chat", systemImage: "bubble.left.and.bubble.right.fill")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
+                        .tint(.indigo)
+                        .shadow(color: .indigo.opacity(0.3), radius: 8, x: 0, y: 4)
+                        .padding(.top, 8)
                     }
                 }
             } else if appSession.currentRole == .faculty || appSession.currentRole == .admin || appSession.currentRole == .president || appSession.currentRole == .vicePresident {

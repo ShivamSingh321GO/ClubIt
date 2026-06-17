@@ -597,6 +597,12 @@ struct CreateNewEventView: View {
                 // 1. Save the main event (pass isCouncil if isPresident)
                 try await appSession.eventStore.createEvent(eventToSave, isCouncil: isPresident)
                 
+                // If president created the event, auto-create event chat immediately
+                // (President events skip the approval flow and are published directly)
+                if isPresident {
+                    await appSession.chatStore.createEventChatsForPublishedEvent(event: eventToSave)
+                }
+                
                 if !isPresident {
                     let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
                     let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!

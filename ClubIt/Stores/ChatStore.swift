@@ -25,6 +25,8 @@ final class ChatStore {
     // Set from AppSession on sign-in
     var userId: UUID = UUID()
     
+    weak var eventStore: EventStore?
+    
     // ── Fetch lifecycle guards ──
     // Tracks whether the very first fetch has completed, so views
     // know whether the empty state is "loading" vs "truly empty".
@@ -51,7 +53,7 @@ final class ChatStore {
             .reduce(0) { total, chat in
                 if chat.type == .event {
                     // Sum unread from sub-chats
-                    let subUnread = chats.filter { $0.parentChatId == chat.id }.reduce(0) { $0 + $1.unreadCount }
+                    let subUnread = getSubChats(for: chat.id).reduce(0) { $0 + $1.unreadCount }
                     return total + chat.unreadCount + subUnread
                 }
                 return total + chat.unreadCount
@@ -74,7 +76,7 @@ final class ChatStore {
             filtered = topLevelChats.filter { chat in
                 if chat.isArchived || chat.isRequest { return false }
                 if chat.unreadCount > 0 { return true }
-                return chats.filter { $0.parentChatId == chat.id }.contains { $0.unreadCount > 0 }
+                return getSubChats(for: chat.id).contains { $0.unreadCount > 0 }
             }
         case .groups:
             filtered = topLevelChats.filter { $0.type == .group && !$0.isArchived && !$0.isRequest }
@@ -93,8 +95,36 @@ final class ChatStore {
     /// so every pairwise comparison within a single sort uses the same
     /// reference point — prevents mid-sort drift that caused list shuffling.
     private func sortedChats(_ input: [Chat]) -> [Chat] {
+        var processed = input
+        for idx in processed.indices {
+            let chat = processed[idx]
+            if chat.type == .event && chat.parentChatId == nil {
+                // Find all visible sub-chats for this parent
+                let subChats = chats.filter { sub in
+                    sub.parentChatId == chat.id &&
+                    (sub.name?.lowercased() == "general" || sub.participantIds.contains(userId))
+                }
+                
+                // Find the latest message among the parent and its sub-chats
+                let allChats = [chat] + subChats
+                let latestChatWithMsg = allChats
+                    .filter { !$0.lastMessage.isEmpty }
+                    .max(by: { ($0.lastMessageAt ?? .distantPast) < ($1.lastMessageAt ?? .distantPast) })
+                
+                if let latest = latestChatWithMsg {
+                    processed[idx].lastMessageAt = latest.lastMessageAt
+                    if latest.id == chat.id {
+                        processed[idx].lastMessage = latest.lastMessage
+                    } else {
+                        // Display: [Sub-chat Name] ▸ [Message]
+                        processed[idx].lastMessage = "\(latest.displayName) ▸ \(latest.lastMessage)"
+                    }
+                }
+            }
+        }
+        
         let now = Date()
-        return input.sorted { c1, c2 in
+        return processed.sorted { c1, c2 in
             var t1 = c1.lastMessageAt ?? c1.createdAt
             var t2 = c2.lastMessageAt ?? c2.createdAt
             
@@ -111,7 +141,10 @@ final class ChatStore {
     }
     
     func getSubChats(for parentId: UUID) -> [Chat] {
-        return chats.filter { $0.parentChatId == parentId }
+        return chats.filter { subChat in
+            subChat.parentChatId == parentId &&
+            (subChat.name?.lowercased() == "general" || subChat.participantIds.contains(userId))
+        }
     }
     
     // MARK: - Fetch Chats
@@ -234,18 +267,19 @@ final class ChatStore {
                     let p = participantMap[chatId]
                     
                     group.addTask {
-                        // Fetch last message for this chat
+                        // Fetch last message for this chat (ignoring system messages for preview)
                         let lastMessages: [Message] = (try? await self.client
                             .from("messages")
                             .select()
                             .eq("chat_id", value: chatId)
                             .order("created_at", ascending: false)
-                            .limit(1)
+                            .limit(10)
                             .execute()
                             .value) ?? []
                         
-                        let lastMsgText = lastMessages.first?.content ?? ""
-                        let lastMsgAt = lastMessages.first?.createdAt
+                        let firstNonSystem = lastMessages.first(where: { !$0.content.hasPrefix("[System]: ") })
+                        let lastMsgText = firstNonSystem?.content ?? ""
+                        let lastMsgAt = firstNonSystem?.createdAt
                         
                         // Calculate unread count
                         var unreadCount = 0
@@ -345,6 +379,10 @@ final class ChatStore {
             }
             
             print("DEBUG: [ChatStore] Merged \(fetchedChats.count) chats (updated \(oldIds.intersection(newIds).count), added \(addedIds.count), removed \(removedIds.count))")
+            
+            if let eventStore = self.eventStore {
+                await self.autoArchiveExpiredEventChats(events: eventStore.events)
+            }
         } catch {
             print("DEBUG ERROR: [ChatStore] fetchChats failed: \(error)")
             // On failure, keep existing chats — never wipe the list
@@ -437,6 +475,27 @@ final class ChatStore {
                 print("DEBUG ERROR: [ChatStore] sendMessage failed: \(error)")
                 print("DEBUG ERROR: [ChatStore] payload: chat_id=\(chatId), sender_id=\(userId), content=\(trimmed)")
                 // Keep the optimistic message visible — it will sync on next fetch if RLS is fixed
+            }
+        }
+    }
+    
+    func sendSystemMessage(_ content: String, to chatId: UUID, senderId: UUID? = nil) {
+        let systemContent = "[System]: " + content
+        let actualSenderId = senderId ?? userId
+        let payload = InsertMessage(
+            id: UUID(),
+            chat_id: chatId,
+            sender_id: actualSenderId,
+            content: systemContent,
+            attachment_url: nil,
+            created_at: istDateString(from: Date())
+        )
+        Task {
+            do {
+                try await client.from("messages").insert(payload).execute()
+                print("DEBUG: [ChatStore] System message sent successfully: \(content)")
+            } catch {
+                print("DEBUG ERROR: [ChatStore] Failed to send system message: \(error)")
             }
         }
     }
@@ -554,6 +613,61 @@ final class ChatStore {
             }
         } else {
             chats[index].unreadCount = 1
+        }
+    }
+    
+    @MainActor
+    func autoArchiveExpiredEventChats(events: [Event]) async {
+        let now = Date()
+        let thirtyDaysAgo = now.addingTimeInterval(-30 * 24 * 60 * 60)
+        
+        // Create a set of expired event IDs
+        let expiredEventIds = Set(events.filter { $0.endDate < thirtyDaysAgo }.map { $0.id })
+        
+        guard !expiredEventIds.isEmpty else { return }
+        
+        var chatsToArchive: [Chat] = []
+        
+        for chat in chats {
+            guard chat.type == .event && !chat.isArchived else { continue }
+            
+            // For parent event chat, targetId is chat.id. For sub-chats, targetId is parentChatId.
+            let targetEventId = chat.parentChatId ?? chat.id
+            if expiredEventIds.contains(targetEventId) {
+                chatsToArchive.append(chat)
+            }
+        }
+        
+        guard !chatsToArchive.isEmpty else { return }
+        
+        print("DEBUG: [ChatStore] Auto-archiving \(chatsToArchive.count) expired event chats")
+        
+        // Update local state first
+        for chat in chatsToArchive {
+            if let index = chats.firstIndex(where: { $0.id == chat.id }) {
+                chats[index].isArchived = true
+                chats[index].isPinned = false
+            }
+        }
+        
+        // Update database in parallel
+        await withTaskGroup(of: Void.self) { group in
+            for chat in chatsToArchive {
+                group.addTask {
+                    do {
+                        let payload = UpdateParticipantField(is_pinned: false, is_archived: true)
+                        try await self.client
+                            .from("chat_participants")
+                            .update(payload)
+                            .eq("chat_id", value: chat.id)
+                            .eq("user_id", value: self.userId)
+                            .execute()
+                        print("DEBUG: [ChatStore] Successfully auto-archived chat \(chat.id) in DB")
+                    } catch {
+                        print("DEBUG ERROR: [ChatStore] Failed to auto-archive chat \(chat.id) in DB: \(error)")
+                    }
+                }
+            }
         }
     }
     
@@ -697,6 +811,176 @@ final class ChatStore {
         
         return newChat
     }
+    // MARK: - Auto-Create Event Chats
+    
+    @MainActor
+    func createEventChatsForPublishedEvent(event: Event) async {
+        // 1. Check local memory
+        if chats.contains(where: { $0.id == event.id }) {
+            print("DEBUG: [ChatStore] Event chat for event ID '\(event.id)' already exists in memory. Skipping.")
+            return
+        }
+        
+        // 2. Check Supabase database
+        do {
+            let existingChats: [Chat] = try await client
+                .from("chats")
+                .select()
+                .eq("id", value: event.id)
+                .execute()
+                .value
+            if !existingChats.isEmpty {
+                print("DEBUG: [ChatStore] Event chat for event ID '\(event.id)' already exists in Supabase. Skipping.")
+                return
+            }
+        } catch {
+            print("DEBUG ERROR: [ChatStore] Failed to check for existing event chat: \(error)")
+        }
+        
+        let parentChatId = event.id
+        let generalChatId = UUID()
+        let leadId = event.createdBy
+        guard let clubId = event.clubId else { return }
+        
+        // Fetch club members to populate initial participant list
+        var memberIdsToAdd: [UUID] = []
+        do {
+            let clubMembers: [User] = try await client
+                .from("users")
+                .select()
+                .eq("club_id", value: clubId)
+                .execute()
+                .value
+            memberIdsToAdd = clubMembers.map { $0.id }.filter { $0 != leadId }
+        } catch {
+            print("DEBUG ERROR: [ChatStore] Failed to fetch club members: \(error)")
+        }
+        
+        let allParticipantIds = [leadId] + memberIdsToAdd
+        
+        let parentChat = Chat(
+            id: parentChatId,
+            type: .event,
+            name: event.title,
+            icon: "calendar",
+            clubId: clubId,
+            createdBy: leadId,
+            createdAt: Date(),
+            participantIds: allParticipantIds
+        )
+        
+        var generalChat = Chat(
+            id: generalChatId,
+            type: .event,
+            name: "General",
+            icon: nil,
+            clubId: clubId,
+            parentChatId: parentChatId,
+            createdBy: leadId,
+            createdAt: Date(),
+            participantIds: allParticipantIds
+        )
+        generalChat.parentChatId = parentChatId
+        
+        chats.insert(parentChat, at: 0)
+        chats.append(generalChat)
+        if let index = chats.firstIndex(where: { $0.id == parentChatId }) {
+            chats[index].isExpanded = true
+        }
+        
+        do {
+            let parentPayload = InsertChat(
+                id: parentChatId,
+                type: "event",
+                name: event.title,
+                description: nil,
+                icon: "calendar",
+                club_id: clubId,
+                parent_chat_id: nil,
+                created_by: leadId,
+                created_at: istDateString(from: parentChat.createdAt)
+            )
+            try await client.from("chats").insert(parentPayload).execute()
+            
+            let parentParticipant = InsertChatParticipant(
+                chat_id: parentChatId,
+                user_id: leadId,
+                role: "admin",
+                status: "accepted"
+            )
+            try await client.from("chat_participants").insert(parentParticipant).execute()
+            
+            let generalPayload = InsertChat(
+                id: generalChatId,
+                type: "event",
+                name: "General",
+                description: nil,
+                icon: nil,
+                club_id: clubId,
+                parent_chat_id: parentChatId,
+                created_by: leadId,
+                created_at: istDateString(from: generalChat.createdAt)
+            )
+            try await client.from("chats").insert(generalPayload).execute()
+            
+            let generalParticipant = InsertChatParticipant(
+                chat_id: generalChatId,
+                user_id: leadId,
+                role: "admin",
+                status: "accepted"
+            )
+            try await client.from("chat_participants").insert(generalParticipant).execute()
+            
+            // Add all club members as participants to both parent & general chats in Supabase
+            let parentParticipants = memberIdsToAdd.map { userId in
+                InsertChatParticipant(
+                    chat_id: parentChatId,
+                    user_id: userId,
+                    role: "member",
+                    status: "accepted"
+                )
+            }
+            let generalParticipants = memberIdsToAdd.map { userId in
+                InsertChatParticipant(
+                    chat_id: generalChatId,
+                    user_id: userId,
+                    role: "member",
+                    status: "accepted"
+                )
+            }
+            
+            if !parentParticipants.isEmpty {
+                try? await client.from("chat_participants").insert(parentParticipants).execute()
+            }
+            if !generalParticipants.isEmpty {
+                try? await client.from("chat_participants").insert(generalParticipants).execute()
+            }
+            
+            sendSystemMessage("All club members were added by the organizer", to: parentChatId, senderId: leadId)
+            sendSystemMessage("All club members were added by the organizer", to: generalChatId, senderId: leadId)
+            
+            // Retroactively add any already-registered users (in case they registered before the chat was created)
+            let existingRegistrations: [IndividualRegistration] = try await client
+                .from("registrations")
+                .select()
+                .eq("event_id", value: event.id)
+                .execute()
+                .value
+            
+            for reg in existingRegistrations {
+                guard let rUserId = reg.userId, rUserId != leadId && !memberIdsToAdd.contains(rUserId) else { continue }
+                let pParticipant = InsertChatParticipant(chat_id: parentChatId, user_id: rUserId, role: "member", status: "accepted")
+                let gParticipant = InsertChatParticipant(chat_id: generalChatId, user_id: rUserId, role: "member", status: "accepted")
+                try? await client.from("chat_participants").insert(pParticipant).execute()
+                try? await client.from("chat_participants").insert(gParticipant).execute()
+            }
+            
+            print("DEBUG: [ChatStore] Auto-created Event Chat for '\(event.title)' and 'General' sub-chat. Added \(memberIdsToAdd.count) club members and \(existingRegistrations.count) existing participants.")
+        } catch {
+            print("DEBUG ERROR: [ChatStore] createEventChatsForPublishedEvent failed: \(error)")
+            self.chats.removeAll { $0.id == parentChatId || $0.id == generalChatId }
+        }
+    }
     
     // MARK: - Create Event Chat
     
@@ -757,7 +1041,7 @@ final class ChatStore {
     // MARK: - Add Sub-Chat (under Event)
     
     @MainActor
-    func addSubChat(name: String, description: String? = nil, for parentId: UUID) {
+    func addSubChat(name: String, description: String? = nil, memberIds: [UUID] = [], for parentId: UUID) {
         guard let parentIndex = chats.firstIndex(where: { $0.id == parentId }) else { return }
         let parent = chats[parentIndex]
         let subChatId = UUID()
@@ -774,6 +1058,7 @@ final class ChatStore {
             lastMessage: ""
         )
         newChat.parentChatId = parentId
+        newChat.participantIds = [userId] + memberIds
         
         chats.append(newChat)
         chats[parentIndex].isExpanded = true
@@ -793,16 +1078,34 @@ final class ChatStore {
                 )
                 try await client.from("chats").insert(chatPayload).execute()
                 
-                // Add creator as participant
-                let participant = InsertChatParticipant(
-                    chat_id: subChatId,
-                    user_id: userId,
-                    role: "admin",
-                    status: "accepted"
-                )
-                try await client.from("chat_participants").insert(participant).execute()
+                // Add participants (creator as admin, others as members)
+                var participants = [
+                    InsertChatParticipant(chat_id: subChatId, user_id: userId, role: "admin", status: "accepted")
+                ]
+                for memberId in memberIds {
+                    participants.append(
+                        InsertChatParticipant(chat_id: subChatId, user_id: memberId, role: "member", status: "accepted")
+                    )
+                }
+                try await client.from("chat_participants").insert(participants).execute()
                 
-                print("DEBUG: [ChatStore] Created sub-chat '\(name)' under parent \(parentId)")
+                print("DEBUG: [ChatStore] Created sub-chat '\(name)' under parent \(parentId) with \(memberIds.count) extra participants")
+                
+                // Send system message for each member added
+                for memberId in memberIds {
+                    do {
+                        let addedUser: User = try await client
+                            .from("users")
+                            .select()
+                            .eq("id", value: memberId)
+                            .single()
+                            .execute()
+                            .value
+                        sendSystemMessage("\(addedUser.name) was added by the organizer", to: subChatId, senderId: userId)
+                    } catch {
+                        print("DEBUG ERROR: [ChatStore] Failed to send participant add system message in addSubChat: \(error)")
+                    }
+                }
             } catch {
                 print("DEBUG ERROR: [ChatStore] addSubChat failed: \(error)")
                 self.chats.removeAll { $0.id == subChatId }
@@ -826,6 +1129,53 @@ final class ChatStore {
             // Update local participants list
             if let index = chats.firstIndex(where: { $0.id == chatId }) {
                 chats[index].participantIds.append(participantUserId)
+            }
+            
+            // If this is a sub-chat, also add the user to the parent chat so it shows up in their list
+            var addedToParent = false
+            if let index = chats.firstIndex(where: { $0.id == chatId }),
+               let parentId = chats[index].parentChatId {
+                 
+                // Add to parent chat participants in Supabase (ignore error if already participant)
+                let parentPayload = InsertChatParticipant(
+                    chat_id: parentId,
+                    user_id: participantUserId,
+                    role: "member",
+                    status: "accepted"
+                )
+                
+                if let parentIndex = chats.firstIndex(where: { $0.id == parentId }) {
+                    if !chats[parentIndex].participantIds.contains(participantUserId) {
+                        try? await client.from("chat_participants").insert(parentPayload).execute()
+                        chats[parentIndex].participantIds.append(participantUserId)
+                        addedToParent = true
+                    }
+                } else {
+                    try? await client.from("chat_participants").insert(parentPayload).execute()
+                    addedToParent = true
+                }
+            }
+            
+            // Send system message: "[Name] was added by the organizer"
+            Task {
+                do {
+                    let addedUser: User = try await client
+                        .from("users")
+                        .select()
+                        .eq("id", value: participantUserId)
+                        .single()
+                        .execute()
+                        .value
+                    sendSystemMessage("\(addedUser.name) was added by the organizer", to: chatId, senderId: userId)
+                    
+                    if let index = chats.firstIndex(where: { $0.id == chatId }),
+                       let parentId = chats[index].parentChatId,
+                       addedToParent {
+                        sendSystemMessage("\(addedUser.name) was added by the organizer", to: parentId, senderId: userId)
+                    }
+                } catch {
+                    print("DEBUG ERROR: [ChatStore] Failed to send participant add system message: \(error)")
+                }
             }
             
             print("DEBUG: [ChatStore] Added participant \(participantUserId) to chat \(chatId)")
@@ -853,6 +1203,146 @@ final class ChatStore {
             print("DEBUG: [ChatStore] Removed participant \(participantUserId) from chat \(chatId)")
         } catch {
             print("DEBUG ERROR: [ChatStore] removeParticipant failed: \(error)")
+        }
+    }
+    
+    // MARK: - Global Event Chat Registration
+    
+    @MainActor
+    func addUserToEventChatsGlobally(userId: UUID, eventId: UUID, eventTitle: String, clubId: UUID) async {
+        do {
+            var parentChat: Chat? = nil
+            let chatsById: [Chat] = try await client
+                .from("chats")
+                .select()
+                .eq("id", value: eventId)
+                .execute()
+                .value
+            
+            parentChat = chatsById.first
+            
+            if parentChat == nil {
+                let allChats: [Chat] = try await client
+                    .from("chats")
+                    .select()
+                    .eq("type", value: "event")
+                    .eq("name", value: eventTitle)
+                    .eq("club_id", value: clubId)
+                    .execute()
+                    .value
+                parentChat = allChats.first(where: { $0.parentChatId == nil })
+            }
+            
+            guard let resolvedParent = parentChat else {
+                print("DEBUG: [ChatStore] Parent event chat not found for event ID \(eventId) or '\(eventTitle)'. Cannot auto-add participant.")
+                return
+            }
+            
+            let generalChats: [Chat] = try await client
+                .from("chats")
+                .select()
+                .eq("type", value: "event")
+                .eq("name", value: "General")
+                .eq("parent_chat_id", value: resolvedParent.id)
+                .execute()
+                .value
+                
+            guard let generalChat = generalChats.first else { return }
+            
+            let parentParticipant = InsertChatParticipant(chat_id: resolvedParent.id, user_id: userId, role: "member", status: "accepted")
+            let generalParticipant = InsertChatParticipant(chat_id: generalChat.id, user_id: userId, role: "member", status: "accepted")
+            
+            do {
+                try await client.from("chat_participants").insert(parentParticipant).execute()
+            } catch {
+                print("DEBUG: [ChatStore] User already in parent chat or error: \(error)")
+            }
+            
+            do {
+                try await client.from("chat_participants").insert(generalParticipant).execute()
+            } catch {
+                print("DEBUG: [ChatStore] User already in general chat or error: \(error)")
+            }
+            
+            print("DEBUG: [ChatStore] Globally added user to Event Chat and General sub-chat for event ID \(eventId)")
+            
+            // Send system message
+            Task {
+                do {
+                    let registeringUser: User = try await client
+                        .from("users")
+                        .select()
+                        .eq("id", value: userId)
+                        .single()
+                        .execute()
+                        .value
+                    sendSystemMessage("\(registeringUser.name) was added", to: resolvedParent.id, senderId: userId)
+                    sendSystemMessage("\(registeringUser.name) was added", to: generalChat.id, senderId: userId)
+                } catch {
+                    print("DEBUG ERROR: [ChatStore] Failed to send register system message: \(error)")
+                }
+            }
+            
+            if userId == self.userId {
+                await fetchChats()
+            }
+        } catch {
+            print("DEBUG ERROR: [ChatStore] addUserToEventChatsGlobally failed: \(error)")
+        }
+    }
+    
+    @MainActor
+    func removeUserFromEventChatsGlobally(userId: UUID, eventId: UUID, eventTitle: String, clubId: UUID) async {
+        do {
+            var parentChat: Chat? = nil
+            let chatsById: [Chat] = try await client
+                .from("chats")
+                .select()
+                .eq("id", value: eventId)
+                .execute()
+                .value
+            
+            parentChat = chatsById.first
+            
+            if parentChat == nil {
+                let allChats: [Chat] = try await client
+                    .from("chats")
+                    .select()
+                    .eq("type", value: "event")
+                    .eq("name", value: eventTitle)
+                    .eq("club_id", value: clubId)
+                    .execute()
+                    .value
+                parentChat = allChats.first(where: { $0.parentChatId == nil })
+            }
+            
+            guard let resolvedParent = parentChat else { return }
+            
+            let generalChats: [Chat] = try await client
+                .from("chats")
+                .select()
+                .eq("type", value: "event")
+                .eq("name", value: "General")
+                .eq("parent_chat_id", value: resolvedParent.id)
+                .execute()
+                .value
+                
+            guard let generalChat = generalChats.first else { return }
+            
+            try await client
+                .from("chat_participants")
+                .delete()
+                .in("chat_id", value: [resolvedParent.id, generalChat.id])
+                .eq("user_id", value: userId)
+                .execute()
+                
+            print("DEBUG: [ChatStore] Globally removed user from Event Chat and General sub-chat for event ID \(eventId)")
+            
+            if userId == self.userId {
+                await fetchChats()
+            }
+        } catch {
+            print("DEBUG ERROR: [ChatStore] removeUserFromEventChatsGlobally failed: \(error)")
         }
     }
     
@@ -1145,10 +1635,13 @@ final class ChatStore {
                 print("DEBUG: [ChatStore] Appended message \(newMessage.id) to chat \(newMessage.chatId), total messages: \(messages[newMessage.chatId]?.count ?? 0)")
             }
             
-            // Update last message and unread count on the chat
+            // Update last message and unread count on the chat (ignoring system messages for preview & badge count)
             if let index = chats.firstIndex(where: { $0.id == newMessage.chatId }) {
-                chats[index].lastMessage = newMessage.content
-                chats[index].lastMessageAt = newMessage.createdAt
+                let isSystem = newMessage.content.hasPrefix("[System]: ")
+                if !isSystem {
+                    chats[index].lastMessage = newMessage.content
+                    chats[index].lastMessageAt = newMessage.createdAt
+                }
                 
                 let isAppActive: Bool = {
                     #if canImport(UIKit)
@@ -1160,7 +1653,7 @@ final class ChatStore {
                 
                 if newMessage.chatId == activeChatId && isAppActive {
                     await markAsRead(for: newMessage.chatId)
-                } else {
+                } else if !isSystem {
                     chats[index].unreadCount += 1
                 }
             }
@@ -1210,6 +1703,89 @@ final class ChatStore {
         lastFetchDate = .distantPast
         participantDebounceTask?.cancel()
         participantDebounceTask = nil
+    }
+
+    // MARK: - Update Chat Icon
+    
+    @MainActor
+    func uploadChatIcon(chatId: UUID, imageData: Data) async throws {
+        let storagePath = "chats/\(chatId.uuidString)/avatar_\(Int(Date().timeIntervalSince1970)).jpg"
+        
+        // Remove older chat avatar files in this chat's folder if any
+        if let files = try? await client.storage.from("userProfile-images").list(path: "chats/\(chatId.uuidString)") {
+            let pathsToDelete = files.map { "chats/\(chatId.uuidString)/\($0.name)" }
+            if !pathsToDelete.isEmpty {
+                _ = try? await client.storage.from("userProfile-images").remove(paths: pathsToDelete)
+            }
+        }
+        
+        // Upload new image data
+        try await client.storage
+            .from("userProfile-images")
+            .upload(
+                storagePath,
+                data: imageData,
+                options: FileOptions(
+                    contentType: "image/jpeg",
+                    upsert: true
+                )
+            )
+        
+        let publicURL = try client.storage
+            .from("userProfile-images")
+            .getPublicURL(path: storagePath)
+        
+        // Update database and local state
+        try await updateChatIcon(chatId: chatId, iconURL: publicURL.absoluteString)
+    }
+
+    @MainActor
+    func updateChatIcon(chatId: UUID, iconURL: String) async throws {
+        try await client
+            .from("chats")
+            .update(["icon": AnyJSON.string(iconURL)])
+            .eq("id", value: chatId)
+            .execute()
+        
+        if let index = chats.firstIndex(where: { $0.id == chatId }) {
+            chats[index].icon = iconURL
+        }
+    }
+
+    @MainActor
+    func removeChatIcon(chatId: UUID) async throws {
+        try await client
+            .from("chats")
+            .update(["icon": AnyJSON.null])
+            .eq("id", value: chatId)
+            .execute()
+        
+        if let files = try? await client.storage.from("userProfile-images").list(path: "chats/\(chatId.uuidString)") {
+            let pathsToDelete = files.map { "chats/\(chatId.uuidString)/\($0.name)" }
+            if !pathsToDelete.isEmpty {
+                _ = try? await client.storage.from("userProfile-images").remove(paths: pathsToDelete)
+            }
+        }
+        
+        if let index = chats.firstIndex(where: { $0.id == chatId }) {
+            chats[index].icon = nil
+        }
+    }
+
+    @MainActor
+    func updateChatDescription(chatId: UUID, description: String?) async throws {
+        let cleanDescription = description?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let dbValue: AnyJSON = (cleanDescription == nil || cleanDescription!.isEmpty) ? .null : .string(cleanDescription!)
+        
+        try await client
+            .from("chats")
+            .update(["description": dbValue])
+            .eq("id", value: chatId)
+            .execute()
+        
+        if let index = chats.firstIndex(where: { $0.id == chatId }) {
+            chats[index].description = (cleanDescription == nil || cleanDescription!.isEmpty) ? nil : cleanDescription
+        }
     }
 
     private func istDateString(from date: Date) -> String {

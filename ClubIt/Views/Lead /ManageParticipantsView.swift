@@ -88,6 +88,9 @@ struct ManageParticipantsView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
+            .refreshable {
+                try? await appSession.registrationStore.fetchRegistrations()
+            }
         }
         .navigationTitle("Participants")
         .navigationBarTitleDisplayMode(.inline)
