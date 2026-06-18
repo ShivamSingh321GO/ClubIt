@@ -510,7 +510,7 @@ struct EventDetailView: View {
     // MARK: - Native Premium Action Button
     
     private var nativePremiumButton: some View {
-        Group {
+        VStack(spacing: 12) {
             if event.status == .pending {
                 if let role = appSession.currentUser?.role, role != .vicePresident && role != .president && role != .faculty {
                     Button(action: {}) {
@@ -564,7 +564,6 @@ struct EventDetailView: View {
                     .controlSize(.large)
                     .tint(.purple)
                     .shadow(color: .purple.opacity(0.3), radius: 8, x: 0, y: 4)
-                    .padding(.top, 8)
                     
                     NavigationLink(destination: EventAttendeesListView(event: event)) {
                         Label("View Attendees", systemImage: "person.crop.circle.badge.checkmark")
@@ -576,7 +575,6 @@ struct EventDetailView: View {
                     .controlSize(.large)
                     .tint(.teal)
                     .shadow(color: .teal.opacity(0.3), radius: 8, x: 0, y: 4)
-                    .padding(.top, 8)
                     
                     let chatExists = appSession.chatStore.chats.contains(where: { $0.type == .event && $0.name == event.title && $0.parentChatId == nil })
                     if !chatExists && event.status == .published {
@@ -594,7 +592,6 @@ struct EventDetailView: View {
                         .controlSize(.large)
                         .tint(.indigo)
                         .shadow(color: .indigo.opacity(0.3), radius: 8, x: 0, y: 4)
-                        .padding(.top, 8)
                     }
                 }
             } else if appSession.currentRole == .faculty || appSession.currentRole == .admin || appSession.currentRole == .president || appSession.currentRole == .vicePresident {
@@ -617,7 +614,6 @@ struct EventDetailView: View {
                     .controlSize(.large)
                     .tint(.green)
                     .shadow(color: .green.opacity(0.4), radius: 8, x: 0, y: 4)
-                    .padding(.bottom, 8)
                     
                     Button {
                         isShowingWithdrawConfirmAlert = true
