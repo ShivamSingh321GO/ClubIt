@@ -539,18 +539,16 @@ struct EventDetailView: View {
                     .tint(.accentColor)
                     .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
                 } else {
-                    if event.isRegistrationOpen ?? true {
-                        NavigationLink(destination: ManageParticipantsView(event: event)) {
-                            Label("View Participants", systemImage: "person.2.fill")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .buttonBorderShape(.capsule)
-                        .controlSize(.large)
-                        .tint(.blue)
-                        .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                    NavigationLink(destination: ManageParticipantsView(event: event)) {
+                        Label("View Participants", systemImage: "person.2.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .tint(.blue)
+                    .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     
                     Button {
                         isShowingAttendanceQR = true
@@ -601,7 +599,7 @@ struct EventDetailView: View {
                 let isFull = event.maxParticipants > 0 && event.maxParticipants < 999999 && appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants
                 let isOpen = event.isRegistrationOpen ?? true
                 
-                if isRegistered {
+                if canScanAttendance {
                     Button {
                         isShowingScanner = true
                     } label: {
@@ -614,7 +612,9 @@ struct EventDetailView: View {
                     .controlSize(.large)
                     .tint(.green)
                     .shadow(color: .green.opacity(0.4), radius: 8, x: 0, y: 4)
-                    
+                }
+                
+                if isRegistered {
                     Button {
                         isShowingWithdrawConfirmAlert = true
                     } label: {
@@ -739,6 +739,16 @@ struct EventDetailView: View {
     private var buttonColor: Color {
         if isMyEvent { return .blue }
         return appSession.registeredEventIds.contains(event.id) ? .green : .accentColor
+    }
+    
+    private var canScanAttendance: Bool {
+        let calendar = Calendar.current
+        var finalEndDate = event.endDate
+        if let endTime = event.endTime {
+            let timeComponents = calendar.dateComponents([.hour, .minute], from: endTime)
+            finalEndDate = calendar.date(bySettingHour: timeComponents.hour ?? 0, minute: timeComponents.minute ?? 0, second: 0, of: event.endDate) ?? event.endDate
+        }
+        return Date() <= finalEndDate.addingTimeInterval(2 * 3600)
     }
 }
 
