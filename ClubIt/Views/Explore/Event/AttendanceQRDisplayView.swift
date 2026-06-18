@@ -3,6 +3,7 @@ import SwiftUI
 struct AttendanceQRDisplayView: View {
     let event: Event
     @State private var qrImage: UIImage?
+    let timer = Timer.publish(every: 15, on: .main, in: .common).autoconnect()
     
     var body: some View {
         VStack(spacing: 30) {
@@ -28,7 +29,7 @@ struct AttendanceQRDisplayView: View {
                     .frame(width: 250, height: 250)
             }
             
-            Text("Ask attendees to scan this QR code using the ClubIt app to mark their attendance.")
+            Text("Ask attendees to scan this QR code using the ClubIt app to mark their attendance. The QR code changes every 15 seconds for security.")
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
                 .foregroundColor(.secondary)
@@ -40,13 +41,17 @@ struct AttendanceQRDisplayView: View {
         .onAppear {
             generateQR()
         }
+        .onReceive(timer) { _ in
+            generateQR()
+        }
     }
     
     private func generateQR() {
         // Create JSON string
         let dict: [String: String] = [
             "action": "attendance",
-            "eventId": event.id.uuidString
+            "eventId": event.id.uuidString,
+            "timestamp": String(Date().timeIntervalSince1970)
         ]
         
         if let data = try? JSONEncoder().encode(dict),

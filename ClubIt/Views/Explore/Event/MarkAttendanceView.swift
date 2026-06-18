@@ -89,6 +89,16 @@ struct MarkAttendanceView: View {
             return
         }
         
+        if let timestampStr = dict["timestamp"], let timestamp = TimeInterval(timestampStr) {
+            let qrDate = Date(timeIntervalSince1970: timestamp)
+            if Date().timeIntervalSince(qrDate) > 30 {
+                alertMessage = "This QR code has expired. Please scan the current one shown by the organizer."
+                isSuccess = false
+                showAlert = true
+                return
+            }
+        }
+        
         guard let userId = appSession.currentUser?.id else {
             alertMessage = "You must be logged in to mark attendance."
             isSuccess = false
