@@ -1,5 +1,5 @@
 import SwiftUI
-
+import Combine
 struct AttendanceQRDisplayView: View {
     let event: Event
     @State private var qrImage: UIImage?

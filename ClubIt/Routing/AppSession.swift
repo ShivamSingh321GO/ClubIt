@@ -244,7 +244,7 @@ final class AppSession {
     }
     
     @MainActor
-    func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, imageData: Data?) async throws {
+    func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, admissionNumber: String, imageData: Data?) async throws {
         guard var user = currentUser else { return }
         var profileImgUrl = user.profileImg ?? ""
         
@@ -293,6 +293,7 @@ final class AppSession {
             "phone_number": .string(phoneNumber),
             "course": .string(course),
             "year": .string(year),
+            "admission_number": .string(admissionNumber),
             "profile_img": .string(profileImgUrl)
         ]
         
@@ -308,6 +309,7 @@ final class AppSession {
         user.phoneNumber = phoneNumber
         user.course = course
         user.year = year
+        user.admissionNumber = admissionNumber
         user.profileImg = profileImgUrl
         user.imageData = nil // Clear local imageData so the view uses the remote URL
         currentUser = user

@@ -122,7 +122,7 @@ struct ManageParticipantsView: View {
         let registrations = filteredRegistrations(allRegistrations)
         let allUsers = appSession.clubStore.allUsers
         
-        var csvString = "Name,Role,Course,Year,Email,Phone"
+        var csvString = "Name,Admission Number,Role,Course,Year,Email,Phone"
         
         // Find all unique question labels for headers
         var uniqueQuestions: [String] = []
@@ -148,12 +148,13 @@ struct ManageParticipantsView: View {
             
             let name = user.name.replacingOccurrences(of: "\"", with: "\"\"")
             let role = user.role.rawValue.replacingOccurrences(of: "\"", with: "\"\"")
+            let admission = (user.admissionNumber ?? "N/A").replacingOccurrences(of: "\"", with: "\"\"")
             let course = (user.course ?? "N/A").replacingOccurrences(of: "\"", with: "\"\"")
             let year = (user.year ?? "N/A").replacingOccurrences(of: "\"", with: "\"\"")
             let email = user.email.replacingOccurrences(of: "\"", with: "\"\"")
             let phone = (user.phoneNumber ?? "N/A").replacingOccurrences(of: "\"", with: "\"\"")
             
-            var row = "\"\(name)\",\"\(role)\",\"\(course)\",\"\(year)\",\"\(email)\",\"\(phone)\""
+            var row = "\"\(name)\",\"\(admission)\",\"\(role)\",\"\(course)\",\"\(year)\",\"\(email)\",\"\(phone)\""
             
             for question in uniqueQuestions {
                 if let answer = reg.answers?[question] {

@@ -7,6 +7,15 @@ struct EventAttendeesListView: View {
     @State private var isExporting = false
     @State private var exportFileURL: URL?
     
+    private var groupedAttendances: [(Date, [EventAttendance])] {
+        let attendances = appSession.attendanceStore.eventAttendances
+        let grouped = Dictionary(grouping: attendances) { attendance in
+            let date = attendance.entryTime ?? attendance.createdAt
+            return Calendar.current.startOfDay(for: date)
+        }
+        return grouped.sorted { $0.key > $1.key }
+    }
+    
     var body: some View {
         List {
             if appSession.attendanceStore.isFetching {
@@ -20,15 +29,24 @@ struct EventAttendeesListView: View {
                 Text("No attendees have scanned yet.")
                     .foregroundColor(.secondary)
             } else {
-                ForEach(appSession.attendanceStore.eventAttendances) { attendance in
-                    let user = appSession.clubStore.allUsers.first(where: { $0.id == attendance.userId })
-                    
-                    if let validUser = user {
-                        NavigationLink(destination: destinationProfile(for: validUser)) {
-                            attendanceRow(user: validUser, attendance: attendance)
+                ForEach(groupedAttendances, id: \.0) { date, attendances in
+                    Section {
+                        ForEach(attendances) { attendance in
+                            let user = appSession.clubStore.allUsers.first(where: { $0.id == attendance.userId })
+                            
+                            if let validUser = user {
+                                NavigationLink(destination: destinationProfile(for: validUser)) {
+                                    attendanceRow(user: validUser, attendance: attendance)
+                                }
+                            } else {
+                                attendanceRow(user: nil, attendance: attendance)
+                            }
                         }
-                    } else {
-                        attendanceRow(user: nil, attendance: attendance)
+                    } header: {
+                        Text(date.formatted(date: .abbreviated, time: .omitted))
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                            .textCase(nil)
                     }
                 }
             }
@@ -43,11 +61,6 @@ struct EventAttendeesListView: View {
                 .disabled(appSession.attendanceStore.eventAttendances.isEmpty)
             }
         }
-        .sheet(isPresented: $isExporting) {
-            if let url = exportFileURL {
-                ShareSheet(items: [url])
-            }
-        }
         .onAppear {
             Task {
                 await appSession.attendanceStore.fetchAttendance(for: event.id)
@@ -59,7 +72,7 @@ struct EventAttendeesListView: View {
     }
     
     private func exportToCSV() {
-        var csvString = "Name,Entry Time,Exit Time\n"
+        var csvString = "Name,Admission Number,Entry Time,Exit Time\n"
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         formatter.dateStyle = .short
@@ -67,12 +80,14 @@ struct EventAttendeesListView: View {
         for attendance in appSession.attendanceStore.eventAttendances {
             let user = appSession.clubStore.allUsers.first(where: { $0.id == attendance.userId })
             let name = user?.name ?? "Unknown User"
+            let admission = user?.admissionNumber ?? "N/A"
             let entry = attendance.entryTime.map { formatter.string(from: $0) } ?? "-"
             let exit = attendance.exitTime.map { formatter.string(from: $0) } ?? "-"
             
-            // Escape commas in name
+            // Escape commas
             let escapedName = name.contains(",") ? "\"\(name)\"" : name
-            csvString += "\(escapedName),\(entry),\(exit)\n"
+            let escapedAdmission = admission.contains(",") ? "\"\(admission)\"" : admission
+            csvString += "\(escapedName),\(escapedAdmission),\(entry),\(exit)\n"
         }
         
         let tempDir = FileManager.default.temporaryDirectory
@@ -81,8 +96,29 @@ struct EventAttendeesListView: View {
         
         do {
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
-            exportFileURL = fileURL
-            isExporting = true
+            
+            // Present UIActivityViewController directly from the topmost UIViewController
+            let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                
+                // Handle iPad presentation
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    if let popover = activityVC.popoverPresentationController {
+                        popover.sourceView = window
+                        popover.sourceRect = CGRect(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2, width: 0, height: 0)
+                        popover.permittedArrowDirections = []
+                    }
+                }
+                
+                var topController = rootVC
+                while let presented = topController.presentedViewController {
+                    topController = presented
+                }
+                topController.present(activityVC, animated: true)
+            }
         } catch {
             print("Error generating CSV: \(error)")
         }

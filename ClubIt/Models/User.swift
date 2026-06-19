@@ -25,6 +25,7 @@ struct User: Identifiable, Codable {
     var course: String?
     var year: String?
     var bio: String?
+    var admissionNumber: String?
     var createdAt: Date
     var status: UserStatus
     var imageData: Data? = nil
@@ -41,6 +42,7 @@ struct User: Identifiable, Codable {
         case course
         case year
         case bio
+        case admissionNumber = "admission_number"
         case createdAt = "created_at"
         case status
     }

@@ -10,6 +10,7 @@ struct EditProfileView: View {
     @State private var phoneNumber: String
     @State private var course: String
     @State private var year: String
+    @State private var admissionNumber: String
     @State private var imageData: Data?
     @State private var profileImg: String
     @State private var selectedItem: PhotosPickerItem?
@@ -20,6 +21,7 @@ struct EditProfileView: View {
         _phoneNumber = State(initialValue: user.phoneNumber ?? "")
         _course = State(initialValue: user.course ?? "")
         _year = State(initialValue: user.year ?? "")
+        _admissionNumber = State(initialValue: user.admissionNumber ?? "")
         _imageData = State(initialValue: user.imageData)
         _profileImg = State(initialValue: user.profileImg ?? "")
     }
@@ -81,6 +83,7 @@ struct EditProfileView: View {
                     .keyboardType(.phonePad)
                 TextField("Course", text: $course)
                 TextField("Year", text: $year)
+                TextField("Admission Number", text: $admissionNumber)
             }
             
             Section("Bio") {
@@ -102,6 +105,7 @@ struct EditProfileView: View {
                                 phoneNumber: phoneNumber,
                                 course: course,
                                 year: year,
+                                admissionNumber: admissionNumber,
                                 imageData: imageData
                             )
                             await MainActor.run {

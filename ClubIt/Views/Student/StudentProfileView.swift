@@ -89,7 +89,7 @@ struct StudentProfileView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
-                Text("Admission no : \("23SCSE0000000")")
+                Text("Admission no : \(displayUser?.admissionNumber ?? "N/A")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
