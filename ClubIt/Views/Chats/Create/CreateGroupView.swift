@@ -114,8 +114,7 @@ struct CreateGroupView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "checkmark")
-                            .font(.title3)
-                            .foregroundColor(.blue)
+                            
                     }
                     .disabled(groupName.isEmpty)
                 }
