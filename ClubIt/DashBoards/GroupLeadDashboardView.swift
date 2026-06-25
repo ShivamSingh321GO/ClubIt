@@ -1,5 +1,5 @@
 //
-//  VicePresidentDashboardView.swift
+//  GroupLeadDashboardView.swift
 //  ConnexusRe
 //
 //  Created by Ansh Srivastava on 3/19/26.
@@ -8,13 +8,13 @@
 import SwiftUI
 import ClubItShared
 
-struct VicePresidentDashboardView: View {
+struct GroupLeadDashboardView: View {
     @Environment(AppSession.self) var appSession
-   
+    
     var body: some View {
         TabView {
             Tab("Home", systemImage: "house") {
-                VicePresidentHomeView()
+                PresidentHomeView()
             }
             
             Tab("Explore", systemImage: "globe") {
@@ -30,6 +30,6 @@ struct VicePresidentDashboardView: View {
 }
 
 #Preview {
-    VicePresidentDashboardView()
-        .environment(MockData.session(for: .vicePresident))
+    GroupLeadDashboardView()
+        .environment(MockData.session(for: .groupLead))
 }

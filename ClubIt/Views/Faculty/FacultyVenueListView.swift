@@ -254,6 +254,6 @@ struct StatusBadge: View {
 #Preview {
     NavigationStack {
         FacultyVenueListView()
-            .environment(MockData.session(for: .faculty))
+            .environment(MockData.session(for: .groupSubLead))
     }
 }

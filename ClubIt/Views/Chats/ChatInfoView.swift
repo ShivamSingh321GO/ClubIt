@@ -389,13 +389,13 @@ struct ChatInfoView: View {
     
     private func roleName(for user: User) -> String {
         switch user.role {
-        case .clubLead: return "Club Lead"
-        case .clubMember: return "Club Member"
-        case .president: return "President"
-        case .vicePresident: return "Vice President"
-        case .faculty: return "Faculty"
+        case .superAdmin: return "SuperAdmin"
         case .admin: return "Admin"
-        case .student: return "Student"
+        case .groupLead: return "Group Lead"
+        case .groupSubLead: return "Group SubLead"
+        case .subGroupLead: return "SubGroup Lead"
+        case .subGroupMember: return "SubGroup Member"
+        case .guest: return "Guest"
         }
     }
 }

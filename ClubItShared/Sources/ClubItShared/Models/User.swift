@@ -28,6 +28,7 @@ public struct User: Identifiable, Codable {
     public var admissionNumber: String?
     public var createdAt: Date
     public var status: UserStatus
+    public var organizationId: UUID?
     public var imageData: Data? = nil
 
     public enum CodingKeys: String, CodingKey {
@@ -45,6 +46,7 @@ public struct User: Identifiable, Codable {
         case admissionNumber = "admission_number"
         case createdAt = "created_at"
         case status
+        case organizationId = "organization_id"
     }
 
     public init(
@@ -62,6 +64,7 @@ public struct User: Identifiable, Codable {
         admissionNumber: String? = nil,
         createdAt: Date,
         status: UserStatus,
+        organizationId: UUID? = nil,
         imageData: Data? = nil
     ) {
         self.id = id
@@ -78,7 +81,27 @@ public struct User: Identifiable, Codable {
         self.admissionNumber = admissionNumber
         self.createdAt = createdAt
         self.status = status
+        self.organizationId = organizationId
         self.imageData = imageData
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        email = try container.decode(String.self, forKey: .email)
+        name = try container.decode(String.self, forKey: .name)
+        instituteId = try? container.decode(UUID.self, forKey: .instituteId)
+        role = (try? container.decode(AppRole.self, forKey: .role)) ?? .guest
+        clubId = try? container.decode(UUID.self, forKey: .clubId)
+        profileImg = try? container.decode(String.self, forKey: .profileImg)
+        phoneNumber = try? container.decode(String.self, forKey: .phoneNumber)
+        course = try? container.decode(String.self, forKey: .course)
+        year = try? container.decode(String.self, forKey: .year)
+        bio = try? container.decode(String.self, forKey: .bio)
+        admissionNumber = try? container.decode(String.self, forKey: .admissionNumber)
+        createdAt = (try? container.decode(Date.self, forKey: .createdAt)) ?? Date()
+        status = (try? container.decode(UserStatus.self, forKey: .status)) ?? .active
+        organizationId = try? container.decode(UUID.self, forKey: .organizationId)
+        imageData = nil
+    }
 }

@@ -353,7 +353,7 @@ struct FacultyResourceRequestCard: View {
             }
             
             // MARK: - Action Buttons
-            if resource.status == .pending && appSession.currentUser?.role == .faculty {
+            if resource.status == .pending && appSession.currentUser?.role == .groupSubLead {
                 HStack(spacing: 12) {
                     Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
@@ -450,7 +450,7 @@ struct FacultyVenueApprovalCard: View {
                 .padding(.top, 4)
             }
             
-            if approval.status == .pending && appSession.currentUser?.role == .faculty {
+            if approval.status == .pending && appSession.currentUser?.role == .groupSubLead {
                 HStack(spacing: 12) {
                     Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
@@ -730,6 +730,6 @@ struct FacultyRemarkSheet: View {
 #Preview {
     NavigationStack {
         ClubResourcesDetailView(club: MockData.technoJamClub, event: MockData.sampleEvents[0])
-            .environment(MockData.session(for: .faculty))
+            .environment(MockData.session(for: .groupSubLead))
     }
 }

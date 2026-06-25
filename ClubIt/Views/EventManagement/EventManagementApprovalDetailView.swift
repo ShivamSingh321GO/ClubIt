@@ -36,7 +36,7 @@ struct EventManagementApprovalDetailView: View {
     
     var body: some View {
         Group {
-            if appSession.currentRole == .vicePresident {
+            if appSession.currentRole == .groupSubLead {
                 vpDraftReviewView()
             } else {
                 standardApprovalView()
@@ -126,7 +126,7 @@ struct EventManagementApprovalDetailView: View {
                         isProcessingApproval = true
                         defer { isProcessingApproval = false }
                         
-                        if appSession.currentRole == .vicePresident {
+                        if appSession.currentRole == .groupSubLead {
                             try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
                             if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
                                 await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
@@ -154,7 +154,7 @@ struct EventManagementApprovalDetailView: View {
         } message: {
             if let approval = eventToApprove,
                let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
-                Text(appSession.currentRole == .vicePresident ? "Are you sure you want to approve and forward event '\(event.name)'?" : "Are you sure you want to approve the creation of event '\(event.name)'?")
+                Text(appSession.currentRole == .groupSubLead ? "Are you sure you want to approve and forward event '\(event.name)'?" : "Are you sure you want to approve the creation of event '\(event.name)'?")
             }
         }
         .overlay(alignment: .bottom) {
@@ -181,7 +181,7 @@ struct EventManagementApprovalDetailView: View {
             }
         }
         .onAppear {
-            if appSession.currentRole == .president {
+            if appSession.currentRole == .groupLead {
                 selectedTab = "Budget"
             }
         }
@@ -371,7 +371,7 @@ struct EventManagementApprovalDetailView: View {
             .frame(maxWidth: .infinity)
             .padding(.top, 60)
         } else {
-            if appSession.currentRole == .faculty {
+            if appSession.currentRole == .groupSubLead {
                 VStack(spacing: 20) {
                     let totalRequested = budgets.reduce(0) { $0 + $1.totalAmount }
                     let anyRejected = budgets.contains { $0.status == .rejected }
@@ -548,7 +548,7 @@ struct EventManagementApprovalDetailView: View {
                 ClubHeaderView(club: club, event: event)
                 
                 // MARK: - Segmented Filter (3 Segments)
-                if appSession.currentRole != .president {
+                if appSession.currentRole != .groupLead {
                     Picker("Select Category", selection: $selectedTab) {
                         Text("Venue (\(venueApprovalsToDisplay.count))").tag("Venue")
                         Text("Resource (\(allClubResources.count))").tag("Resource")
@@ -834,7 +834,7 @@ struct EventManagementApprovalDetailView: View {
 #Preview {
     NavigationStack {
         EventManagementApprovalDetailView(club: MockData.technoJamClub, event: MockData.sampleEvents[0])
-            .environment(MockData.session(for: .faculty))
+            .environment(MockData.session(for: .groupSubLead))
     }
 }
 

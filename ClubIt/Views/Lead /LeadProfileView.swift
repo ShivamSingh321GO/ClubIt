@@ -59,7 +59,7 @@ struct LeadProfileView: View {
                 
                 // MARK: - Club
                 Section("Club") {
-                    if user.role == .vicePresident {
+                    if user.role == .groupSubLead {
                         let assignedClubs = appSession.clubStore.allClubs.filter { $0.vicePresidentId == user.id }
                         if !assignedClubs.isEmpty {
                             ForEach(assignedClubs) { club in
@@ -194,6 +194,6 @@ struct SettingsRow: View {
 #Preview {
     NavigationStack {
         LeadProfileView()
-            .environment(MockData.session(for: .clubLead))
+            .environment(MockData.session(for: .subGroupLead))
     }
 }

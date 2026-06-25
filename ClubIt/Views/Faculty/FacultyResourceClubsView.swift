@@ -142,6 +142,6 @@ struct FacultyEmptyStateView: View {
 #Preview {
     NavigationStack {
         FacultyResourceClubsView()
-            .environment(MockData.session(for: .faculty))
+            .environment(MockData.session(for: .groupSubLead))
     }
 }

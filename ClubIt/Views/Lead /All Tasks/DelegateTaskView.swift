@@ -10,8 +10,8 @@ struct DelegateTaskView: View {
     @State private var selectedOtherClubId: UUID? = nil
     
     private var isPresidentOrVP: Bool {
-        let role = appSession.currentRole ?? .clubMember
-        return role == .president || role == .vicePresident
+        let role = appSession.currentRole ?? .subGroupMember
+        return role == .groupLead || role == .groupSubLead
     }
     
     private var availableClubs: [Club] {
@@ -20,13 +20,13 @@ struct DelegateTaskView: View {
     
     private var availableClubLeads: [User] {
         guard let clubId = selectedOtherClubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupLead }
     }
     
     var clubMembers: [User] {
         // Club Lead delegates to Members in their club
         guard let clubId = appSession.currentUser?.clubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubMember }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupMember }
     }
     
     var body: some View {
@@ -44,7 +44,7 @@ struct DelegateTaskView: View {
                             )
                             .onChange(of: selectedOtherClubId) { _, newValue in
                                 if let clubId = newValue {
-                                    let leads = appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
+                                    let leads = appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupLead }
                                     if leads.count == 1 {
                                         selectedMemberId = leads.first?.id
                                     } else {
@@ -152,9 +152,9 @@ struct DelegateTaskView: View {
         title: "Test Task",
         description: "Test Description",
         assignedBy: UUID(),
-        assignedByRole: AppRole.clubLead,
+        assignedByRole: AppRole.subGroupLead,
         assignedTo: MockData.clubLeadUser.id,
-        assignedToRole: AppRole.clubLead,
+        assignedToRole: AppRole.subGroupLead,
         deadline: Date(),
         priority: .high,
         status: .pending,

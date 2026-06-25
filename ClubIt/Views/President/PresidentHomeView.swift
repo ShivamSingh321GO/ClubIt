@@ -105,7 +105,7 @@ struct PresidentHomeView: View {
 }
 
 #Preview {
-    let session = MockData.session(for: .president)
+    let session = MockData.session(for: .groupLead)
     PresidentHomeView()
         .environment(session)
 }

@@ -43,7 +43,7 @@ struct FacultyApprovalsModule: View {
 
 
 #Preview {
-    let session = MockData.session(for: .faculty)
+    let session = MockData.session(for: .groupSubLead)
     FacultyApprovalsModule(user: session.currentUser ?? MockData.studentUser)
         .environment(session)
         .padding()

@@ -78,7 +78,7 @@ struct FullScreenGalleryView: View {
                         .disabled(isDownloading)
                         
                         // Delete button (Club Lead only)
-                        if appSession.currentRole == .clubLead {
+                        if appSession.currentRole == .subGroupLead {
                             Button {
                                 showDeleteAlert = true
                             } label: {
@@ -239,7 +239,7 @@ private struct CachedFullScreenImage: View {
         )
     }
     let session = AppSession()
-    session.currentRole = .clubLead
+    session.currentRole = .subGroupLead
     
     return FullScreenGalleryView(images: images, selectedIndex: .constant(0))
         .environment(session)

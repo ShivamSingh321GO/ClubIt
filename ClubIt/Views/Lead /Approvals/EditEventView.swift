@@ -511,7 +511,7 @@ struct EditEventView: View {
                         
                         if shouldCreateApprovalsForNewItems {
                             // Create matching Approval entry
-                            let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
+                            let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
 
                             let budgetApproval = Approval(
                                 id: UUID(),

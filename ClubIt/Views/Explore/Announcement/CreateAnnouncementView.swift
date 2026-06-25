@@ -110,5 +110,5 @@ struct CreateAnnouncementView: View {
 
 #Preview {
     CreateAnnouncementView { _, _, _, _, _ in }
-        .environment(MockData.session(for: .clubLead))
+        .environment(MockData.session(for: .subGroupLead))
 }

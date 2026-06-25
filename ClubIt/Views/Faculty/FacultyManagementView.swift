@@ -245,5 +245,5 @@ struct FacultySocialCircle: View {
 
 #Preview {
     FacultyManagementView()
-        .environment(MockData.session(for: .faculty))
+        .environment(MockData.session(for: .groupSubLead))
 }

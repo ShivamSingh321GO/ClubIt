@@ -49,7 +49,7 @@ public final class AppSession {
         if let clubId = currentUser?.clubId {
             return clubId
         }
-        if currentUser?.role == .vicePresident {
+        if currentUser?.role == .groupSubLead {
             return clubStore.allClubs.first(where: { $0.vicePresidentId == currentUser?.id })?.id
         }
         return nil
@@ -331,7 +331,7 @@ public final class AppSession {
         let currentCount = registrationStore.getRegistrations(for: id).count
         
         // First Come First Serve: Check if full before allowing new registration (Bypass for president)
-        if currentUser?.role != .president {
+        if currentUser?.role != .groupLead {
             if !registeredEventIds.contains(id) && event.maxParticipants > 0 && event.maxParticipants < 999999 && currentCount >= event.maxParticipants {
                 print("Registration failed: Event is full")
                 return false
@@ -406,7 +406,7 @@ public final class AppSession {
     
     @MainActor
     public func forwardToPresidentBudgetApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
-        let presidentUserId = clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
+        let presidentUserId = clubStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
         let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
         
         if eventBudgets.isEmpty {

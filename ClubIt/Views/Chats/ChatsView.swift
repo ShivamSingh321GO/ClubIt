@@ -72,13 +72,13 @@ struct ChatsView: View {
                             Label("Create a new chat", systemImage: "message")
                         }
                         
-                        if appSession.currentRole != .student {
+                        if appSession.currentRole != .guest {
                             Button(action: { showCreateGroup = true }) {
                                 Label("Create a new group", systemImage: "person.3")
                             }
                         }
                         
-                        if appSession.currentRole == .clubLead || appSession.currentRole == .president || appSession.currentRole == .admin {
+                        if appSession.currentRole == .subGroupLead || appSession.currentRole == .groupLead || appSession.currentRole == .admin {
                             Button(action: { showCreateEventChat = true }) {
                                 Label("Create a new event chat", systemImage: "calendar")
                             }
@@ -222,7 +222,7 @@ struct ChatsView: View {
     }
     
     private var filteredCategories: [ChatCategory] {
-        if appSession.currentRole == .clubLead {
+        if appSession.currentRole == .subGroupLead {
             return ChatCategory.allCases
         } else {
             return ChatCategory.allCases.filter { $0 != .requests }

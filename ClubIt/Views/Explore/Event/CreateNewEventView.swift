@@ -57,7 +57,7 @@ struct CreateNewEventView: View {
     
     var body: some View {
         if showSuccessView {
-            let isPresident = appSession.currentUser?.role == .president
+            let isPresident = appSession.currentUser?.role == .groupLead
             VStack(spacing: 32) {
                 Spacer()
                 
@@ -128,7 +128,7 @@ struct CreateNewEventView: View {
             .navigationBarBackButtonHidden(true)
         } else {
             Form {
-                if appSession.currentUser?.role == .president {
+                if appSession.currentUser?.role == .groupLead {
                     Section {
                         NavigationLink {
                             MultiClubSelectionView(selectedClubIds: $selectedClubIds)
@@ -295,7 +295,7 @@ struct CreateNewEventView: View {
                     Text("Venue")
                 }
                 
-                if appSession.currentUser?.role != .president {
+                if appSession.currentUser?.role != .groupLead {
                     Section {
                         Button {
                             isShowingAddResourcesItems = true
@@ -389,7 +389,7 @@ struct CreateNewEventView: View {
                     let isInvalidTime = startDate >= endDate
                     
                     Button {
-                        if appSession.currentUser?.role == .president {
+                        if appSession.currentUser?.role == .groupLead {
                             isShowingPublishConfirmation = true
                         } else {
                             isSaving = true
@@ -402,7 +402,7 @@ struct CreateNewEventView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 8)
                         } else {
-                            Text(appSession.currentUser?.role == .president ? "Publish Event" : "Send Approval")
+                            Text(appSession.currentUser?.role == .groupLead ? "Publish Event" : "Send Approval")
                                 .font(.headline)
                                 .fontWeight(.bold)
                                 .frame(maxWidth: .infinity)
@@ -509,7 +509,7 @@ struct CreateNewEventView: View {
         
         let resolvedClubId: UUID?
         var resolvedClubIds: [UUID] = []
-        if currentUser.role == .president {
+        if currentUser.role == .groupLead {
             resolvedClubId = nil
             resolvedClubIds = Array(selectedClubIds)
         } else {
@@ -522,7 +522,7 @@ struct CreateNewEventView: View {
             resolvedClubIds = [userClubId]
         }
         
-        let isPresident = currentUser.role == .president
+        let isPresident = currentUser.role == .groupLead
         let maxParticipantsVal: Int
         if participants.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             maxParticipantsVal = 999999
@@ -570,7 +570,7 @@ struct CreateNewEventView: View {
         print("  - CreatedBy: \(newEvent.createdBy)")
         print("  - Status: \(newEvent.status.rawValue)")
         
-        if currentUser.role != .president && currentUser.clubId == nil {
+        if currentUser.role != .groupLead && currentUser.clubId == nil {
             print("WARNING: currentUser.clubId is NIL! RLS will likely fail.")
             errorMessage = "Error: Your user account is not linked to any club. Please contact your administrator."
             isSaving = false
@@ -608,7 +608,7 @@ struct CreateNewEventView: View {
                     let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
                     let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
                     let facultyId = club?.facultyId ?? eventManagementTeamID
-                    let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .president })?.id ?? MockData.presidentId
+                    let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
                     
                     var budgetsToSave: [Budget] = []
                     var resourcesToSave: [Resource] = []
@@ -889,7 +889,7 @@ struct ResourceSummarySheet: View {
 
 #Preview {
     CreateNewEventView { _ in }
-        .environment(MockData.session(for: .clubLead))
+        .environment(MockData.session(for: .subGroupLead))
 }
 
 struct MultiClubSelectionView: View {

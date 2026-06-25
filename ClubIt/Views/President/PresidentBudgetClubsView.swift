@@ -151,6 +151,6 @@ struct PresidentEmptyStateView: View {
 #Preview {
     NavigationStack {
         PresidentBudgetClubsView()
-            .environment(MockData.session(for: .president))
+            .environment(MockData.session(for: .groupLead))
     }
 }

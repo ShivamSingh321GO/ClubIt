@@ -257,7 +257,7 @@ extension Date {
     NavigationStack {
         ScrollView {
             ClubItCalendarView()
-                .environment(MockData.session(for: .clubLead))
+                .environment(MockData.session(for: .subGroupLead))
         }
     }
 }

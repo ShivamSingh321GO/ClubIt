@@ -1,7 +1,7 @@
 import SwiftUI
 import ClubItShared
 
-struct EventManagementDashboardView: View {
+struct OrgAdminDashboardView: View {
     @Environment(AppSession.self) var appSession
     
     var body: some View {
@@ -23,6 +23,6 @@ struct EventManagementDashboardView: View {
 }
 
 //#Preview {
-//    EventManagementDashboardView()
-//        .environment(MockData.session(for: .faculty))
+//    OrgAdminDashboardView()
+//        .environment(MockData.session(for: .groupSubLead))
 //}

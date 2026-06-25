@@ -181,7 +181,7 @@ struct InfoRow: View {
 }
 
 #Preview {
-    let session = MockData.session(for: .faculty)
+    let session = MockData.session(for: .groupSubLead)
     let approval = session.approvalStore.approvals.first
     NavigationStack {
         if let approval = approval {

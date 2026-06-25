@@ -35,13 +35,13 @@ struct MockAuthService {
 
     private func mockName(for role: AppRole) -> String {
         switch role {
+        case .superAdmin: return "SuperAdmin User"
         case .admin: return "Admin User"
-        case .faculty: return "Faculty Advisor"
-        case .president: return "President"
-        case .vicePresident: return "Vice President"
-        case .clubLead: return "Club Lead"
-        case .clubMember: return "Club Member"
-        case .student: return "Student"
+        case .groupLead: return "Group Lead"
+        case .groupSubLead: return "Group SubLead"
+        case .subGroupLead: return "SubGroup Lead"
+        case .subGroupMember: return "SubGroup Member"
+        case .guest: return "Guest"
         }
     }
 }

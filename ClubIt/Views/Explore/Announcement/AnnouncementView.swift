@@ -53,15 +53,15 @@ private struct AnnouncementCard: View {
         guard let currentUser = appSession.currentUser else { return false }
         let isCreator = announcement.postedBy == currentUser.id
         let role = currentUser.role
-        let hasManageRole = role == .clubLead || role == .vicePresident || role == .president || role == .faculty
+        let hasManageRole = role == .subGroupLead || role == .groupSubLead || role == .groupLead || role == .groupSubLead
         return isCreator && hasManageRole
     }
     
     private var posterName: String {
         let posterRole = appSession.clubStore.allUsers.first(where: { $0.id == announcement.postedBy })?.role
-        if posterRole == .president {
+        if posterRole == .groupLead {
             return "President"
-        } else if posterRole == .vicePresident {
+        } else if posterRole == .groupSubLead {
             return "Vice President"
         } else {
             return "Event Management Team"
@@ -197,5 +197,5 @@ private struct AnnouncementCard: View {
         ]
     )
     .padding()
-    .environment(MockData.session(for: .clubLead))
+    .environment(MockData.session(for: .subGroupLead))
 }

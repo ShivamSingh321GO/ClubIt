@@ -35,13 +35,26 @@ public struct SupabaseAuthService {
     }
     
     public func fetchUserProfile(userId: UUID) async throws -> User {
-        let user: User = try await client
+        var user: User = try await client
             .from("users")
             .select()
             .eq("id", value: userId)
             .single()
             .execute()
             .value
+        
+        // Live RBAC Lookup in user_roles table
+        struct RoleRow: Decodable { let role_name: String }
+        if let roleRows: [RoleRow] = try? await client
+            .from("user_roles")
+            .select("role_name")
+            .eq("user_id", value: userId)
+            .execute()
+            .value,
+           let firstRoleStr = roleRows.first?.role_name,
+           let mappedRole = AppRole(rawValue: firstRoleStr) {
+            user.role = mappedRole
+        }
         
         return user
     }

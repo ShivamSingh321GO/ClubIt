@@ -1,5 +1,5 @@
 //
-//  ClubMemberDashboardView.swift
+//  SubGroupMemberView.swift
 //  ConnexusRe
 //
 //  Created by Ansh Srivastava on 3/19/26.
@@ -8,7 +8,7 @@
 import SwiftUI
 import ClubItShared
 
-struct ClubMemberDashboardView: View {
+struct SubGroupMemberView: View {
     @Environment(AppSession.self) var appSession
     
     var body: some View {
@@ -36,6 +36,6 @@ struct ClubMemberDashboardView: View {
 }
 
 #Preview {
-    ClubMemberDashboardView()
-        .environment(MockData.session(for: .clubMember))
+    SubGroupMemberView()
+        .environment(MockData.session(for: .subGroupMember))
 }

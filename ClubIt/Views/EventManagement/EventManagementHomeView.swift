@@ -23,7 +23,7 @@ struct EventManagementHomeView: View {
                             .font(.title2)
                             .bold()
                             
-                            if user.role == .faculty {
+                            if user.role == .groupSubLead {
                                 if user.email == "emt" {
                                     EMTApprovalsModule(user: user)
                                 } else {
@@ -110,7 +110,7 @@ struct EventManagementHomeView: View {
 
 #Preview {
     EventManagementHomeView()
-        .environment(MockData.session(for: .faculty))
+        .environment(MockData.session(for: .groupSubLead))
 }
 
 struct EMTApprovalsModule: View {

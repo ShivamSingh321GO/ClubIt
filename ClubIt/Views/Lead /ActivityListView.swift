@@ -23,7 +23,7 @@ struct ActivityListView: View {
                         }
                         .padding(.horizontal, 16)
                         .contextMenu {
-                                if appSession.currentRole == .clubLead {
+                                if appSession.currentRole == .subGroupLead {
                                     Button(role: .destructive) {
                                         Task {
                                             do {
@@ -46,7 +46,7 @@ struct ActivityListView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                if appSession.currentRole == .clubLead {
+                if appSession.currentRole == .subGroupLead {
                     Button {
                         showingAddActivity = true
                     } label: {
@@ -64,6 +64,6 @@ struct ActivityListView: View {
 #Preview {
     NavigationStack {
         ActivityListView()
-            .environment(MockData.session(for: .clubLead))
+            .environment(MockData.session(for: .subGroupLead))
     }
 }

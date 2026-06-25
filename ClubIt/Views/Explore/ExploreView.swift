@@ -150,7 +150,7 @@ struct ExploreView: View {
         }
         
         switch role {
-        case .clubLead, .president, .vicePresident, .faculty:
+        case .subGroupLead, .groupLead, .groupSubLead:
             return true
         default:
             return false
@@ -163,7 +163,7 @@ struct ExploreView: View {
         }
         
         switch role {
-        case .clubLead, .president:
+        case .subGroupLead, .groupLead:
             return true
         default:
             return false
@@ -173,5 +173,5 @@ struct ExploreView: View {
 
 #Preview {
     ExploreView()
-        .environment(MockData.session(for: .clubLead))
+        .environment(MockData.session(for: .subGroupLead))
 }

@@ -31,7 +31,7 @@ struct ClubLinksView: View {
                             LinkCard(link: link)
                                 .contentShape(Rectangle())
                                 .contextMenu {
-                                    if appSession.currentRole == .clubLead {
+                                    if appSession.currentRole == .subGroupLead {
                                         Button(role: .destructive) {
                                             Task {
                                                 try? await appSession.clubLinkStore.deleteLink(link)
@@ -50,7 +50,7 @@ struct ClubLinksView: View {
         .navigationTitle("Links")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if appSession.currentRole == .clubLead {
+            if appSession.currentRole == .subGroupLead {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         showingAddSheet = true

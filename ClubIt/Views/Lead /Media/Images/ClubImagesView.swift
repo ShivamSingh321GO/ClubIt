@@ -122,7 +122,7 @@ struct ClubImagesView: View {
             AddImageSectionView()
         }
         .toolbar {
-            if appSession.currentRole == .clubLead {
+            if appSession.currentRole == .subGroupLead {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isAddSectionPresented = true

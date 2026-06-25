@@ -131,6 +131,6 @@ struct MemberProfileView: View {
 #Preview {
     NavigationStack {
         MemberProfileView()
-            .environment(MockData.session(for: .clubMember))
+            .environment(MockData.session(for: .subGroupMember))
     }
 }

@@ -37,10 +37,10 @@ struct EventManagementApprovalClubsView: View {
         let totalPending: Int
         let isRejected: Bool
         
-        if appSession.currentRole == .president {
+        if appSession.currentRole == .groupLead {
             totalPending = pendingBudgets.count
             isRejected = appSession.approvalStore.budgets.contains { $0.eventId == eventId && $0.status == .rejected }
-        } else if appSession.currentRole == .faculty {
+        } else if appSession.currentRole == .groupSubLead {
             totalPending = pendingResources.count + pendingVenues.count + pendingEvents.count
             isRejected = appSession.approvalStore.approvals.contains { $0.eventId == eventId && $0.status == .rejected && ($0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId) } ||
                          appSession.approvalStore.resources.contains { $0.eventId == eventId && $0.status == .rejected }
@@ -81,14 +81,14 @@ struct EventManagementApprovalClubsView: View {
             let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })
             
             // Sequential role-based filtering: only show events that have approvals assigned to the current user/role
-            if appSession.currentRole == .president {
+            if appSession.currentRole == .groupLead {
                 // President should only see the event if budget approvals exist for them
                 return appSession.approvalStore.approvals.contains { 
                     $0.eventId == event.id && 
                     $0.type == .budget && 
                     $0.receiverId == appSession.currentUser?.id 
                 }
-            } else if appSession.currentRole == .faculty {
+            } else if appSession.currentRole == .groupSubLead {
                 // Faculty (EMT) should only see the event if event/resource/venue approvals exist for them
                 let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
                 let facultyId = club?.facultyId ?? eventManagementTeamID
@@ -97,7 +97,7 @@ struct EventManagementApprovalClubsView: View {
                     ($0.type == .event || $0.type == .resource || $0.type == .venue) && 
                     ($0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId)
                 }
-            } else if appSession.currentRole == .vicePresident {
+            } else if appSession.currentRole == .groupSubLead {
                 // VP should only see the event if event draft approvals exist for them
                 return appSession.approvalStore.approvals.contains { 
                     $0.eventId == event.id && 
@@ -228,14 +228,14 @@ struct EventManagementEventApprovalCard: View {
         
 
         let totalPending: Int = {
-            if appSession.currentRole == .president {
+            if appSession.currentRole == .groupLead {
                 return pendingBudgets.count
-            } else if appSession.currentRole == .faculty {
+            } else if appSession.currentRole == .groupSubLead {
                 let facultyId = club.facultyId
                 let facultyPendingEvents = pendingEvents.filter { $0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId }.count
                 let facultyPendingVenues = pendingVenues.filter { $0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId }.count
                 return pendingResources.count + facultyPendingVenues + facultyPendingEvents
-            } else if appSession.currentRole == .vicePresident {
+            } else if appSession.currentRole == .groupSubLead {
                 return pendingEvents.filter { $0.receiverId == appSession.currentUser?.id }.count
             } else {
                 return pendingResources.count + pendingVenues.count + pendingBudgets.count + pendingEvents.count
@@ -243,13 +243,13 @@ struct EventManagementEventApprovalCard: View {
         }()
         
         let isRejected: Bool = {
-            if appSession.currentRole == .president {
+            if appSession.currentRole == .groupLead {
                 return appSession.approvalStore.budgets.contains { $0.eventId == event.id && $0.status == .rejected }
-            } else if appSession.currentRole == .faculty {
+            } else if appSession.currentRole == .groupSubLead {
                 let facultyId = club.facultyId
                 return appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .rejected && ($0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId) } ||
                        appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .rejected }
-            } else if appSession.currentRole == .vicePresident {
+            } else if appSession.currentRole == .groupSubLead {
                 return appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .event && $0.receiverId == appSession.currentUser?.id && $0.status == .rejected }
             } else {
                 return appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.status == .rejected } ||
@@ -309,11 +309,11 @@ struct EventManagementEventApprovalCard: View {
                     .lineLimit(1)
                 
                 HStack(spacing: 8) {
-                    if appSession.currentRole == .president {
+                    if appSession.currentRole == .groupLead {
                         if pendingBudgets.count > 0 {
                             IndicatorTag(icon: "indianrupeesign.circle.fill", count: pendingBudgets.count, color: .green)
                         }
-                    } else if appSession.currentRole == .faculty {
+                    } else if appSession.currentRole == .groupSubLead {
                         let facultyId = club.facultyId
                         let facultyPendingEvents = pendingEvents.filter { $0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId }.count
                         let facultyPendingVenues = pendingVenues.filter { $0.receiverId == appSession.currentUser?.id || $0.receiverId == facultyId }.count
@@ -327,7 +327,7 @@ struct EventManagementEventApprovalCard: View {
                         if facultyPendingVenues > 0 {
                             IndicatorTag(icon: "mappin.and.ellipse", count: facultyPendingVenues, color: .purple)
                         }
-                    } else if appSession.currentRole == .vicePresident {
+                    } else if appSession.currentRole == .groupSubLead {
                         // VPs don't have resource/budget/venue indicators
                     } else {
                         if pendingEvents.count > 0 {
@@ -392,6 +392,6 @@ struct EventManagementEventApprovalCard: View {
 #Preview {
     NavigationStack {
         EventManagementApprovalClubsView()
-            .environment(MockData.session(for: .faculty))
+            .environment(MockData.session(for: .groupSubLead))
     }
 }

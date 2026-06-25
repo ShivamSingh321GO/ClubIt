@@ -41,7 +41,7 @@ struct PresidentApprovalsModule: View {
 }
 
 #Preview {
-    let session = MockData.session(for: .president)
+    let session = MockData.session(for: .groupLead)
     return PresidentApprovalsModule(user: session.currentUser ?? MockData.studentUser)
         .environment(session)
         .padding()

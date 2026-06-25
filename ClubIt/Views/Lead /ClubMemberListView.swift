@@ -11,11 +11,11 @@ struct ClubMemberListView: View {
             .filter { $0.clubId == club.id }
             .sorted { u1, u2 in
                 let priority: (AppRole) -> Int = { role in
-                    if role == .clubLead {
+                    if role == .subGroupLead {
                         return 0
                     } else if role.rawValue.lowercased().contains("coordinator") {
                         return 1
-                    } else if role == .clubMember {
+                    } else if role == .subGroupMember {
                         return 2
                     } else {
                         return 3
@@ -51,7 +51,7 @@ struct ClubMemberListView: View {
                             
                             Spacer()
                             
-                            if member.role == .clubLead {
+                            if member.role == .subGroupLead {
                                 Text("Lead")
                                     .font(.caption2.bold())
                                     .padding(.horizontal, 8)

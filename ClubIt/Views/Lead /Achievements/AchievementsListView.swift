@@ -67,7 +67,7 @@ struct AchievementsListView: View {
                     AchievementCardView(achievement: achievement)
                         .contentShape(Rectangle())
                         .contextMenu {
-                            if appSession.currentRole == .clubLead {
+                            if appSession.currentRole == .subGroupLead {
                                 Button(role: .destructive) {
                                     Task {
                                         do {
@@ -88,7 +88,7 @@ struct AchievementsListView: View {
         .navigationTitle("Achievements")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if appSession.currentRole == .clubLead {
+            if appSession.currentRole == .subGroupLead {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showCreateModal = true

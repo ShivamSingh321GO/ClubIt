@@ -119,7 +119,7 @@ struct ClubProfileBody: View {
                         }
                         .padding(.top, 8)
                         
-                        if showFollowButton && appSession.currentRole == .student {
+                        if showFollowButton && appSession.currentRole == .guest {
                             let isFollowing = appSession.clubStore.followedClubIds.contains(club.id)
                             Button {
                                 withAnimation {
@@ -170,7 +170,7 @@ struct ClubProfileBody: View {
                                     appSession.selectedActivity = tappedActivity
                                 }
                                 .contextMenu {
-                                    if appSession.currentRole == .clubLead {
+                                    if appSession.currentRole == .subGroupLead {
                                         Button(role: .destructive) {
                                             Task {
                                                 do {

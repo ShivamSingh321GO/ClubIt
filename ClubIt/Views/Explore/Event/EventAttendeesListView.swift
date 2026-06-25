@@ -127,7 +127,7 @@ struct EventAttendeesListView: View {
     
     @ViewBuilder
     private func destinationProfile(for user: User) -> some View {
-        if user.role == .clubLead || user.role == .clubMember {
+        if user.role == .subGroupLead || user.role == .subGroupMember {
             LeadProfileView(user: user)
         } else {
             StudentProfileView(user: user)

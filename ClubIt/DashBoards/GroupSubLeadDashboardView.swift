@@ -1,5 +1,5 @@
 //
-//  StudentDashboardView.swift
+//  GroupSubLeadDashboardView.swift
 //  ConnexusRe
 //
 //  Created by Ansh Srivastava on 3/19/26.
@@ -8,14 +8,15 @@
 import SwiftUI
 import ClubItShared
 
-struct StudentDashboardView: View {
+struct GroupSubLeadDashboardView: View {
     @Environment(AppSession.self) var appSession
     
     var body: some View {
         TabView {
             Tab("Home", systemImage: "house") {
-                StudentHomeView()
+                VicePresidentHomeView()
             }
+            
             Tab("Explore", systemImage: "globe") {
                 ExploreView()
             }
@@ -29,6 +30,6 @@ struct StudentDashboardView: View {
 }
 
 #Preview {
-    StudentDashboardView()
-        .environment(MockData.session(for: .student))
+    GroupSubLeadDashboardView()
+        .environment(MockData.session(for: .groupSubLead))
 }

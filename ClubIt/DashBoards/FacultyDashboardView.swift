@@ -35,5 +35,5 @@ struct FacultyDashboardView: View {
 
 #Preview {
     FacultyDashboardView()
-        .environment(MockData.session(for: .faculty))
+        .environment(MockData.session(for: .groupSubLead))
 }

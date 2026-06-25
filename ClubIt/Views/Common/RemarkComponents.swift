@@ -13,7 +13,7 @@ struct RemarkConversationView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if remarks.isEmpty {
-                let isLead = appSession.currentUser?.role == .clubLead
+                let isLead = appSession.currentUser?.role == .subGroupLead
                 HStack {
                     if isLead { Spacer() }
                     

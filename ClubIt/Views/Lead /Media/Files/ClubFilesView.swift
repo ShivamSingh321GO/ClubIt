@@ -33,7 +33,7 @@ struct ClubFilesView: View {
                             )
                             .contentShape(Rectangle())
                             .contextMenu {
-                                if appSession.currentRole == .clubLead {
+                                if appSession.currentRole == .subGroupLead {
                                     Button(role: .destructive) {
                                         Task {
                                             try? await appSession.clubFileStore.deleteFile(file)
@@ -55,7 +55,7 @@ struct ClubFilesView: View {
         .navigationTitle("Files")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if appSession.currentRole == .clubLead {
+            if appSession.currentRole == .subGroupLead {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         showingAddSheet = true

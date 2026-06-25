@@ -40,7 +40,7 @@ struct PresidentClubsView: View {
                             .bold()
                         
                         VStack(spacing: 16) {
-                            let coreMembers = MockData.allMockUsers.filter { $0.role == .clubLead || $0.role == .vicePresident }
+                            let coreMembers = MockData.allMockUsers.filter { $0.role == .subGroupLead || $0.role == .groupSubLead }
                             
                             ForEach(coreMembers.prefix(5)) { member in
                                 NavigationLink(destination: MemberClubsOverviewView(user: member)) {

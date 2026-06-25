@@ -208,7 +208,7 @@ struct ManageParticipantsView: View {
     
     @ViewBuilder
     private func destinationProfile(for user: User) -> some View {
-        if user.role == .clubLead || user.role == .clubMember {
+        if user.role == .subGroupLead || user.role == .subGroupMember {
             LeadProfileView(user: user)
         } else {
             StudentProfileView(user: user)
@@ -223,11 +223,11 @@ struct ManageParticipantsView: View {
             case .all:
                 return true
             case .students:
-                return user.role == .student
+                return user.role == .guest
             case .members:
-                return user.role == .clubMember
+                return user.role == .subGroupMember
             case .leads:
-                return user.role == .clubLead
+                return user.role == .subGroupLead
             }
         }
     }
@@ -290,7 +290,7 @@ struct ParticipantRow: View {
                 
                 Spacer()
                 
-                if user.role == .clubLead {
+                if user.role == .subGroupLead {
                     Text("Host")
                         .font(.caption2.bold())
                         .padding(.horizontal, 10)
@@ -340,6 +340,6 @@ struct ParticipantRow: View {
 #Preview {
     NavigationStack {
         ManageParticipantsView(event: MockData.technoJamBundle.events[0])
-            .environment(MockData.session(for: .clubLead))
+            .environment(MockData.session(for: .subGroupLead))
     }
 }

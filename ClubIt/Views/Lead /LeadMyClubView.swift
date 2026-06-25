@@ -26,7 +26,7 @@ struct LeadMyClubView: View {
             .toolbarTitleDisplayMode(.inlineLarge)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if appSession.currentRole == .clubLead {
+                    if appSession.currentRole == .subGroupLead {
                         NavigationLink(
                             destination: EditClubDetailView(
                                 club: appSession.clubStore.club
@@ -51,7 +51,7 @@ struct LeadMyClubView: View {
 
 #Preview {
     let session = AppSession()
-    session.currentRole = .clubLead
+    session.currentRole = .subGroupLead
     session.currentUser = MockData.clubLeadUser
     return LeadMyClubView()
         .environment(session)

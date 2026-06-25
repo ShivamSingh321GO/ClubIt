@@ -187,6 +187,6 @@ fileprivate struct FacultyFilterPill: View {
 #Preview {
     NavigationStack {
         FacultyApprovalsListView(user: MockData.facultyResource, selectedEventId: .constant(nil))
-            .environment(MockData.session(for: .faculty))
+            .environment(MockData.session(for: .groupSubLead))
     }
 }

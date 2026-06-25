@@ -108,5 +108,5 @@ struct ClubMemberHomeView: View {
 
 #Preview {
     ClubMemberHomeView()
-        .environment(MockData.session(for: .clubMember))
+        .environment(MockData.session(for: .subGroupMember))
 }

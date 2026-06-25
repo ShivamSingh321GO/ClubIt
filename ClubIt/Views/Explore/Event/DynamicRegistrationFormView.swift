@@ -208,5 +208,5 @@ struct DynamicRegistrationFormView: View {
         ],
         createdAt: Date()
     ))
-    .environment(MockData.session(for: .student))
+    .environment(MockData.session(for: .guest))
 }

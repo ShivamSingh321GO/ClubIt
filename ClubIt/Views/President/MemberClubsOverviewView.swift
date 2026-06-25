@@ -57,7 +57,7 @@ struct MemberClubsOverviewView: View {
                     } else {
                         VStack(spacing: 12) {
                             ForEach(associatedClubs) { club in
-                                AssociatedClubRow(club: club, role: user.role == .clubLead ? "Lead" : "Oversight")
+                                AssociatedClubRow(club: club, role: user.role == .subGroupLead ? "Lead" : "Oversight")
                             }
                         }
                     }
@@ -70,9 +70,9 @@ struct MemberClubsOverviewView: View {
     }
     
     private func getAssociatedClubs() -> [Club] {
-        if user.role == .clubLead {
+        if user.role == .subGroupLead {
             return appSession.clubStore.allClubs.filter { $0.clubLeadId == user.id }
-        } else if user.role == .vicePresident {
+        } else if user.role == .groupSubLead {
             return appSession.clubStore.allClubs.filter { $0.vicePresidentId == user.id }
         }
         return []
@@ -134,6 +134,6 @@ struct AssociatedClubRow: View {
 }
 
 #Preview {
-    MemberClubsOverviewView(user: MockData.allMockUsers.first { $0.role == .clubLead }!)
-        .environment(MockData.session(for: .president))
+    MemberClubsOverviewView(user: MockData.allMockUsers.first { $0.role == .subGroupLead }!)
+        .environment(MockData.session(for: .groupLead))
 }

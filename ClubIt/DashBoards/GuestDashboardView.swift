@@ -1,5 +1,5 @@
 //
-//  ClubLeadDashboardView.swift
+//  GuestDashboardView.swift
 //  ConnexusRe
 //
 //  Created by Ansh Srivastava on 3/19/26.
@@ -8,20 +8,14 @@
 import SwiftUI
 import ClubItShared
 
-struct ClubLeadDashboardView: View {
+struct GuestDashboardView: View {
     @Environment(AppSession.self) var appSession
     
     var body: some View {
         TabView {
             Tab("Home", systemImage: "house") {
-                LeadHomeView()
-                    //.padding(.horizontal)
+                StudentHomeView()
             }
-            
-            Tab("My Club", systemImage: "person.3") {
-                LeadMyClubView()
-            }
-            
             Tab("Explore", systemImage: "globe") {
                 ExploreView()
             }
@@ -35,6 +29,6 @@ struct ClubLeadDashboardView: View {
 }
 
 #Preview {
-    ClubLeadDashboardView()
-        .environment(MockData.session(for: .clubLead))
+    GuestDashboardView()
+        .environment(MockData.session(for: .guest))
 }

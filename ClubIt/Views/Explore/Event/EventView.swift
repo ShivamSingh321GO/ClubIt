@@ -90,7 +90,7 @@ struct EventView: View {
                 
                 if shouldShowToggle {
                     VStack(spacing: -3) {
-                        Text(appSession.currentRole == .clubLead || appSession.currentRole == .clubMember ? "MY\nEVENTS" : (appSession.currentRole == .president ? "COUNCIL\nEVENTS" : (appSession.currentRole == .vicePresident ? "MY CLUB\nEVENTS" : "CLUB\nFOLLOWED")))
+                        Text(appSession.currentRole == .subGroupLead || appSession.currentRole == .subGroupMember ? "MY\nEVENTS" : (appSession.currentRole == .groupLead ? "COUNCIL\nEVENTS" : (appSession.currentRole == .groupSubLead ? "MY CLUB\nEVENTS" : "CLUB\nFOLLOWED")))
                             .multilineTextAlignment(.center)
                             .font(.system(size: 9, weight: .black))
                             .lineLimit(2)
@@ -180,7 +180,7 @@ struct EventView: View {
     }
     
     private var shouldShowToggle: Bool {
-        appSession.currentRole != .faculty
+        appSession.currentRole != .groupSubLead
     }
     
     private var filteredEvents: [Event] {
@@ -197,11 +197,11 @@ struct EventView: View {
             case .allEvents:
                 matchesScope = true
             case .followed:
-                if appSession.currentRole == .clubLead || appSession.currentRole == .clubMember {
+                if appSession.currentRole == .subGroupLead || appSession.currentRole == .subGroupMember {
                     matchesScope = event.clubId == appSession.currentUser?.clubId
-                } else if appSession.currentRole == .president {
+                } else if appSession.currentRole == .groupLead {
                     matchesScope = event.clubId == nil
-                } else if appSession.currentRole == .vicePresident {
+                } else if appSession.currentRole == .groupSubLead {
                     let assignedClubIds = Set(appSession.clubStore.allClubs.filter { $0.vicePresidentId == appSession.currentUser?.id }.map { $0.id })
                     if let clubId = event.clubId {
                         matchesScope = assignedClubIds.contains(clubId)
@@ -257,6 +257,6 @@ struct EventView: View {
 #Preview {
     NavigationStack {
         EventView(scope: .constant(.allEvents), eventStore: EventStore())
-            .environment(MockData.session(for: .clubLead))
+            .environment(MockData.session(for: .subGroupLead))
     }
 }

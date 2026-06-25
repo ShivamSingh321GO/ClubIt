@@ -15,20 +15,18 @@ struct DashboardRouter: View {
     var body: some View {
         Group {
             switch appSession.currentRole {
-            case .admin:
-                AdminDashboardView()
-            case .faculty:
-                EventManagementDashboardView()
-            case .president:
-                PresidentDashboardView()
-            case .vicePresident:
-                VicePresidentDashboardView()
-            case .clubLead:
-                ClubLeadDashboardView()
-            case .clubMember:
-                ClubMemberDashboardView()
-            case .student:
-                StudentDashboardView()
+            case .admin, .superAdmin:
+                OrgAdminDashboardView()
+            case .groupLead:
+                GroupLeadDashboardView()
+            case .groupSubLead:
+                GroupSubLeadDashboardView()
+            case .subGroupLead:
+                SubGroupLeadView()
+            case .subGroupMember:
+                SubGroupMemberView()
+            case .guest:
+                GuestDashboardView()
             case .none:
                 SignInView()
             }

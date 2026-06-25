@@ -36,7 +36,7 @@ struct TaskDetailView: View {
     
     private var canDelegate: Bool {
         let isAssignee = appSession.currentUser?.id == currentTask.assignedTo
-        let isEligibleRole = appSession.currentUser?.role == .clubLead || appSession.currentUser?.role == .president || appSession.currentUser?.role == .vicePresident
+        let isEligibleRole = appSession.currentUser?.role == .subGroupLead || appSession.currentUser?.role == .groupLead || appSession.currentUser?.role == .groupSubLead
         return isAssignee && isEligibleRole && currentTask.delegatedToId == nil
     }
     

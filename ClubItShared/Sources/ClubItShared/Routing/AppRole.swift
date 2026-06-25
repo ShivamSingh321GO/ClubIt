@@ -1,21 +1,18 @@
 //
 //  AppRole.swift
-//  ConnexusRe
+//  ClubItShared
 //
-//  Created by Ansh Srivastava on 3/19/26.
-//
-
 
 import Foundation
 
 public enum AppRole: String, Codable, CaseIterable, Identifiable {
-    case admin = "admin"
-    case faculty = "faculty"
-    case president = "president"
-    case vicePresident = "vicePresident"
-    case clubLead = "clubLead"
-    case clubMember = "clubMember"
-    case student = "student"
+    case superAdmin = "SuperAdmin"
+    case admin = "Admin"
+    case groupLead = "Group Lead"
+    case groupSubLead = "Group SubLead"
+    case subGroupLead = "SubGroup Lead"
+    case subGroupMember = "SubGroup member"
+    case guest = "Guest"
 
     public var id: String { rawValue }
 }

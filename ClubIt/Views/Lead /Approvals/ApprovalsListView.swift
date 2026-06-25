@@ -38,7 +38,7 @@ struct ApprovalsListView: View {
         let totalPending: Int
         let isRejected: Bool
         
-        if appSession.currentRole == .president {
+        if appSession.currentRole == .groupLead {
             totalPending = pendingBudgets.count
             isRejected = appSession.approvalStore.budgets.contains { $0.eventId == eventId && $0.status == .rejected }
         } else {
@@ -89,7 +89,7 @@ struct ApprovalsListView: View {
     
     var body: some View {
         let sortedApprovals = appSession.approvalStore.approvals.filter { approval in
-            if appSession.currentRole == .president {
+            if appSession.currentRole == .groupLead {
                 // President sees budget requests related to them
                 return approval.type == .budget
             } else {
@@ -150,9 +150,9 @@ struct ApprovalsListView: View {
                     VStack(spacing: 16) {
                         if sortedApprovals.isEmpty {
                             ContentUnavailableView(
-                                appSession.currentRole == .president ? "No Budget Requests" : "No Approvals Sent",
-                                systemImage: appSession.currentRole == .president ? "indianrupeesign.circle" : "paperplane",
-                                description: Text(appSession.currentRole == .president ? "Pending budget requests will appear here." : "Created events will generate approval requests here.")
+                                appSession.currentRole == .groupLead ? "No Budget Requests" : "No Approvals Sent",
+                                systemImage: appSession.currentRole == .groupLead ? "indianrupeesign.circle" : "paperplane",
+                                description: Text(appSession.currentRole == .groupLead ? "Pending budget requests will appear here." : "Created events will generate approval requests here.")
                             )
                             .padding(.top, 40)
                         } else if filteredEvents.isEmpty {
@@ -166,7 +166,7 @@ struct ApprovalsListView: View {
                             LazyVStack(spacing: 16) {
                                 ForEach(filteredEvents, id: \.self) { eventId in
                                     if let event = appSession.eventStore.events.first(where: { $0.id == eventId }) {
-                                        if appSession.currentRole == .president {
+                                        if appSession.currentRole == .groupLead {
                                             if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
                                                 NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
                                                     EventManagementEventApprovalCard(event: event, club: club)
@@ -212,7 +212,7 @@ struct ApprovalsListView: View {
             }
         }
 
-        .navigationTitle(appSession.currentRole == .president ? "Budget Requests" : "Approval Requests")
+        .navigationTitle(appSession.currentRole == .groupLead ? "Budget Requests" : "Approval Requests")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedEventId) { id in
             LeadEventApprovalDetailView(eventId: id)

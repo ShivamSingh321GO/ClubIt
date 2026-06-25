@@ -317,7 +317,7 @@ struct PresidentBudgetRequestCard: View {
                 HStack {
                     Spacer()
                     Button(action: onReply) {
-                        Label(appSession.currentUser?.role == .clubLead ? "Reply" : "Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
+                        Label(appSession.currentUser?.role == .subGroupLead ? "Reply" : "Reply to Lead", systemImage: "arrowshape.turn.up.left.fill")
                             .font(.caption.bold())
                             .foregroundColor(.blue)
                             .padding(.vertical, 8)
@@ -329,7 +329,7 @@ struct PresidentBudgetRequestCard: View {
                 .padding(.top, 4)
             }
             
-            if budget.status == .pending && appSession.currentUser?.role == .president {
+            if budget.status == .pending && appSession.currentUser?.role == .groupLead {
                 HStack(spacing: 12) {
                     Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
@@ -466,6 +466,6 @@ struct PresidentBudgetRemarkSheet: View {
 #Preview {
     NavigationStack {
         PresidentClubBudgetDetailView(club: MockData.technoJamClub)
-            .environment(MockData.session(for: .president))
+            .environment(MockData.session(for: .groupLead))
     }
 }

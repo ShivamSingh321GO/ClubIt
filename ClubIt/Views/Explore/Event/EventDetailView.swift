@@ -513,7 +513,7 @@ struct EventDetailView: View {
     private var nativePremiumButton: some View {
         VStack(spacing: 12) {
             if event.status == .pending {
-                if let role = appSession.currentUser?.role, role != .vicePresident && role != .president && role != .faculty {
+                if let role = appSession.currentUser?.role, role != .groupSubLead && role != .groupLead && role != .groupSubLead {
                     Button(action: {}) {
                         Label("Pending Approval", systemImage: "clock.fill")
                             .font(.headline)
@@ -593,7 +593,7 @@ struct EventDetailView: View {
                         .shadow(color: .indigo.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                 }
-            } else if appSession.currentRole == .faculty || appSession.currentRole == .admin || appSession.currentRole == .president || appSession.currentRole == .vicePresident {
+            } else if appSession.currentRole == .groupSubLead || appSession.currentRole == .admin || appSession.currentRole == .groupLead || appSession.currentRole == .groupSubLead {
                 EmptyView()
             } else {
                 let isRegistered = appSession.registeredEventIds.contains(event.id)
@@ -756,6 +756,6 @@ struct EventDetailView: View {
 #Preview {
     NavigationStack {
         EventDetailView(event: MockData.technoJamBundle.events[0], isMyEvent: false)
-            .environment(MockData.session(for: .student))
+            .environment(MockData.session(for: .guest))
     }
 }

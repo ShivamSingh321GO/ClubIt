@@ -123,7 +123,7 @@ struct LeadEventApprovalDetailView: View {
     }
     
     private var presidentUser: User? {
-        appSession.clubStore.allUsers.first(where: { $0.role == .president })
+        appSession.clubStore.allUsers.first(where: { $0.role == .groupLead })
     }
     
     private var facultyUser: User? {

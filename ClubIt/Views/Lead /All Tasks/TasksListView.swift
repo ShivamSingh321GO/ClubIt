@@ -112,8 +112,8 @@ struct TasksListView: View {
                 }
             }
             .toolbar {
-                let role = appSession.currentRole ?? .clubMember
-                if role == .clubLead || role == .president || role == .vicePresident {
+                let role = appSession.currentRole ?? .subGroupMember
+                if role == .subGroupLead || role == .groupLead || role == .groupSubLead {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             showingAddTaskForm = true
@@ -162,7 +162,7 @@ struct FilterPill: View {
 
 #Preview {
     let session = AppSession()
-    session.currentRole = .clubLead
+    session.currentRole = .subGroupLead
     return TasksListView(user: MockData.clubLeadUser)
         .environment(session)
 }

@@ -37,7 +37,7 @@ struct EventManagementTeamView: View {
                             }
                             .buttonStyle(.plain)
                             
-                            if appSession.currentRole == .faculty {
+                            if appSession.currentRole == .groupSubLead {
                                 Divider().padding(.leading, 56)
                                 NavigationLink {
                                     FacultyVenueListView()
@@ -45,7 +45,7 @@ struct EventManagementTeamView: View {
                                     QuickActionRow(icon: "building.2", title: "View Venues", color: .blue)
                                 }
                                 .buttonStyle(.plain)
-                            } else if appSession.currentRole == .president {
+                            } else if appSession.currentRole == .groupLead {
                                 Divider().padding(.leading, 56)
                                 NavigationLink(destination: PresidentAssignClubView()) {
                                     QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Club", color: .accentColor)
@@ -64,7 +64,7 @@ struct EventManagementTeamView: View {
                     .padding(.horizontal)
                     
                     if let user = appSession.currentUser {
-                        if appSession.currentRole == .faculty || appSession.currentRole == .president {
+                        if appSession.currentRole == .groupSubLead || appSession.currentRole == .groupLead {
                             // Assigned clubs
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Assigned Clubs")
@@ -74,7 +74,7 @@ struct EventManagementTeamView: View {
                                 VStack(spacing: 16) {
                                     // For President, we show all clubs since they oversee everything
                                     // For Faculty, we show clubs filtered by their ID (which is now unified)
-                                    let clubsToShow = appSession.currentRole == .president ? appSession.clubStore.allClubs : appSession.clubStore.allClubs.filter { $0.facultyId == user.id }
+                                    let clubsToShow = appSession.currentRole == .groupLead ? appSession.clubStore.allClubs : appSession.clubStore.allClubs.filter { $0.facultyId == user.id }
                                     
                                     if clubsToShow.isEmpty {
                                         Text("No clubs currently assigned")
@@ -91,7 +91,7 @@ struct EventManagementTeamView: View {
                             .padding(.horizontal)
                         }
                         
-                        if appSession.currentRole == .president {
+                        if appSession.currentRole == .groupLead {
                             // President core members
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Core Members")
@@ -99,7 +99,7 @@ struct EventManagementTeamView: View {
                                     .bold()
                                 
                                 VStack(spacing: 16) {
-                                    let coreMembers = MockData.allMockUsers.filter { $0.role == .clubLead || $0.role == .vicePresident }
+                                    let coreMembers = MockData.allMockUsers.filter { $0.role == .subGroupLead || $0.role == .groupSubLead }
                                     
                                     ForEach(coreMembers.prefix(5)) { member in
                                         NavigationLink(destination: MemberClubsOverviewView(user: member)) {
@@ -123,5 +123,5 @@ struct EventManagementTeamView: View {
 
 #Preview {
     EventManagementTeamView()
-        .environment(MockData.session(for: .faculty))
+        .environment(MockData.session(for: .groupSubLead))
 }

@@ -15,7 +15,7 @@ struct PresidentRemoveVPView: View {
                         .padding(.horizontal)
                     
                     VStack(spacing: 12) {
-                        let vicePresidents = MockData.allMockUsers.filter { $0.role == .vicePresident }
+                        let vicePresidents = MockData.allMockUsers.filter { $0.role == .groupSubLead }
                         ForEach(vicePresidents) { vp in
                             let assignedClubs = appSession.clubStore.allClubs.filter { $0.vicePresidentId == vp.id }
                             
@@ -196,5 +196,5 @@ struct VPClubRemovalDetailView: View {
 
 #Preview {
     PresidentRemoveVPView()
-        .environment(MockData.session(for: .president))
+        .environment(MockData.session(for: .groupLead))
 }

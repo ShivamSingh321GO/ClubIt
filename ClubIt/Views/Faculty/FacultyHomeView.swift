@@ -113,5 +113,5 @@ struct FacultyHomeView: View {
 
 #Preview {
     FacultyHomeView()
-        .environment(MockData.session(for: .faculty))
+        .environment(MockData.session(for: .groupSubLead))
 }

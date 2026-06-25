@@ -28,7 +28,7 @@ struct ClubImageDetailView: View {
         .navigationTitle(liveSection.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if appSession.currentRole == .clubLead {
+            if appSession.currentRole == .subGroupLead {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     PhotosPicker(selection: $selectedItems, matching: .images, photoLibrary: .shared()) {
                         Image(systemName: "plus")

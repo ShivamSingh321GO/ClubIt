@@ -8,9 +8,9 @@ struct AddTaskView: View {
     
     enum AssignmentType: String, CaseIterable, Identifiable {
         case myself = "Myself"
-        case clubMember = "Club Member"
+        case subGroupMember = "SubGroup Member"
         case club = "Club"
-        case vicePresident = "Vice President"
+        case groupSubLead = "Group SubLead"
         var id: String { self.rawValue }
     }
     
@@ -31,16 +31,16 @@ struct AddTaskView: View {
     
     private var clubMembers: [User] {
         guard let clubId = appSession.currentUserClubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && ($0.role == .clubMember || $0.role == .clubLead) && $0.id != appSession.currentUser?.id }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && ($0.role == .subGroupMember || $0.role == .subGroupLead) && $0.id != appSession.currentUser?.id }
     }
     
     private var availableClubLeads: [User] {
         guard let clubId = selectedOtherClubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .clubLead }
+        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupLead }
     }
     
     private var vicePresidents: [User] {
-        return appSession.clubStore.allUsers.filter { $0.role == .vicePresident && $0.id != appSession.currentUser?.id }
+        return appSession.clubStore.allUsers.filter { $0.role == .groupSubLead && $0.id != appSession.currentUser?.id }
     }
     
     private var filteredEvents: [Event] {
@@ -49,7 +49,7 @@ struct AddTaskView: View {
                 $0.eventId == event.id && $0.type == .event && $0.status == .approved 
             }
         }
-        if appSession.currentUser?.role == .president {
+        if appSession.currentUser?.role == .groupLead {
             return appSession.eventStore.events.filter { 
                 $0.status == .approved || $0.status == .published || isVPApproved($0)
             }
@@ -62,12 +62,12 @@ struct AddTaskView: View {
     
     private var availableAssignmentTypes: [AssignmentType] {
         let role = appSession.currentUser?.role
-        if role == .president {
-            return [.myself, .vicePresident, .club]
-        } else if role == .vicePresident {
+        if role == .groupLead {
+            return [.myself, .groupSubLead, .club]
+        } else if role == .groupSubLead {
             return [.myself, .club]
         } else {
-            return [.myself, .clubMember, .club]
+            return [.myself, .subGroupMember, .club]
         }
     }
     
@@ -138,7 +138,7 @@ struct AddTaskView: View {
                         }
                     }
                     
-                    if assignmentType == .clubMember {
+                    if assignmentType == .subGroupMember {
                         optionalNavigationRow(
                             title: "Select Member",
                             selection: $selectedMemberId,
@@ -148,7 +148,7 @@ struct AddTaskView: View {
                         )
                     }
                     
-                    if assignmentType == .vicePresident {
+                    if assignmentType == .groupSubLead {
                         optionalNavigationRow(
                             title: "Select Vice President",
                             selection: $selectedVicePresidentId,
@@ -228,11 +228,11 @@ struct AddTaskView: View {
             assignmentType = .club
             selectedOtherClubId = targetId
             selectedClubLeadId = task.assignedTo
-        } else if task.assignedToRole == .clubMember {
-            assignmentType = .clubMember
+        } else if task.assignedToRole == .subGroupMember {
+            assignmentType = .subGroupMember
             selectedMemberId = task.assignedTo
-        } else if task.assignedToRole == .vicePresident {
-            assignmentType = .vicePresident
+        } else if task.assignedToRole == .groupSubLead {
+            assignmentType = .groupSubLead
             selectedVicePresidentId = task.assignedTo
         } else {
             assignmentType = .myself
@@ -250,7 +250,7 @@ struct AddTaskView: View {
         case .myself:
             assignedToId = currentUser.id
             assignedToRole = currentUser.role
-        case .clubMember:
+        case .subGroupMember:
             if let memberId = selectedMemberId,
                let member = appSession.clubStore.allUsers.first(where: { $0.id == memberId }) {
                 assignedToId = memberId
@@ -259,10 +259,10 @@ struct AddTaskView: View {
         case .club:
             if let clubId = selectedOtherClubId, let leadId = selectedClubLeadId {
                 assignedToId = leadId
-                assignedToRole = .clubLead
+                assignedToRole = .subGroupLead
                 targetClubId = clubId
             }
-        case .vicePresident:
+        case .groupSubLead:
             if let vpId = selectedVicePresidentId,
                let vp = appSession.clubStore.allUsers.first(where: { $0.id == vpId }) {
                 assignedToId = vpId
