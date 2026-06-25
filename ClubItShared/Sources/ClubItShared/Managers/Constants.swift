@@ -9,6 +9,6 @@ import Foundation
 
 
 public enum Constants {
-    public static let projectURLString = "https://kuokybtdzbhqjomxdyzg.supabase.co"
-    public static let projectAPIKey = "sb_publishable_D4gXaonDqpqk9pZdwOSvYw_Jf_R8Xvb"
+    public static let projectURLString = "https://cinczbuomasxdspvvhcd.supabase.co"
+    public static let projectAPIKey = "sb_publishable_gYQkNrxYzlI1ePFsyUC-xQ_Oz60o_hc"
 }
