@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct AddMembersView: View {
     let chatId: UUID

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3FAC0B0E2FED04B5008FB0C4 /* ClubItShared in Frameworks */ = {isa = PBXBuildFile; productRef = 3FAC0B0D2FED04B5008FB0C4 /* ClubItShared */; };
 		B30BF7A32F9E1DAB00B9730A /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7A22F9E1DAB00B9730A /* Auth */; };
 		B30BF7A52F9E1DAB00B9730A /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7A42F9E1DAB00B9730A /* Functions */; };
 		B30BF7A72F9E1DAB00B9730A /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = B30BF7A62F9E1DAB00B9730A /* PostgREST */; };
@@ -32,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3FAC0B0E2FED04B5008FB0C4 /* ClubItShared in Frameworks */,
 				B30BF7A72F9E1DAB00B9730A /* PostgREST in Frameworks */,
 				B30BF7A52F9E1DAB00B9730A /* Functions in Frameworks */,
 				B30BF7AD2F9E1DAB00B9730A /* Supabase in Frameworks */,
@@ -86,6 +88,7 @@
 				B30BF7A82F9E1DAB00B9730A /* Realtime */,
 				B30BF7AA2F9E1DAB00B9730A /* Storage */,
 				B30BF7AC2F9E1DAB00B9730A /* Supabase */,
+				3FAC0B0D2FED04B5008FB0C4 /* ClubItShared */,
 			);
 			productName = ClubIt;
 			productReference = B3C35E912F9A30AC00D86333 /* ClubIt.app */;
@@ -117,6 +120,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				3FAC0B0C2FED04B5008FB0C4 /* XCLocalSwiftPackageReference "ClubItShared" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B3C35E922F9A30AC00D86333 /* Products */;
@@ -361,6 +365,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		3FAC0B0C2FED04B5008FB0C4 /* XCLocalSwiftPackageReference "ClubItShared" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ClubItShared;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -373,6 +384,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3FAC0B0D2FED04B5008FB0C4 /* ClubItShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClubItShared;
+		};
 		B30BF7A22F9E1DAB00B9730A /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B30BF7A12F9E1DAB00B9730A /* XCRemoteSwiftPackageReference "supabase-swift" */;

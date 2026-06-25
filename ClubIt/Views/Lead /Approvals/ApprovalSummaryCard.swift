@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ApprovalSummaryCard: View {
     let title: String

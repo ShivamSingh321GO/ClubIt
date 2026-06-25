@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct PresidentAssignClubView: View {
     @Environment(AppSession.self) var appSession

@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct UserAvatarView: View {
     let name: String

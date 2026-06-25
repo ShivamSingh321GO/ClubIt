@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 enum EventScope {
     case allEvents

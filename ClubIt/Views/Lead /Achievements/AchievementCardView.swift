@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct AchievementCardView: View {
     let achievement: Achievement

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct AdminDashboardView: View {
     var body: some View {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 @main
 struct ClubItApp: App {

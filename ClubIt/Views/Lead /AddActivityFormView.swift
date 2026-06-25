@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct AddActivityFormView: View {
     @Environment(AppSession.self) var appSession

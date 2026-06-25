@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct SelectedUserBadge: View {
     let user: User

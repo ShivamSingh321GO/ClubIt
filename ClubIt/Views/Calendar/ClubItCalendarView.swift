@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ClubItCalendarView: View {
     @Environment(AppSession.self) var appSession

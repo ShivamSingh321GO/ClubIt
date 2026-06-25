@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ClubLogoView: View {
     let logo: String

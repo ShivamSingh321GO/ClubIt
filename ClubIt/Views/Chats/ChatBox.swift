@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ChatBox: View {
     let chat: Chat

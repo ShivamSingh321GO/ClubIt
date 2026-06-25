@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct TeamRegistrationFormView: View {
     @Environment(\.dismiss) private var dismiss

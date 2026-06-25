@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct LaunchScreenView: View {
     @Binding var showLaunchScreen: Bool

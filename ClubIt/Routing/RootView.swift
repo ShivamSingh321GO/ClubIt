@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import ClubItShared
 
 struct RootView: View {
     @Environment(AppSession.self) private var appSession

@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct DraftResourceItem: Identifiable {
     var id: UUID = UUID()

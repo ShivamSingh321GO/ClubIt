@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct GlobalReplyBar: View {
     @Binding var text: String

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct ActivityListView: View {
     @Environment(AppSession.self) var appSession

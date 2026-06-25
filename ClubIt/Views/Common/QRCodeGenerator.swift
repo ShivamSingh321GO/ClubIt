@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 import CoreImage.CIFilterBuiltins
 
 struct QRCodeGenerator {

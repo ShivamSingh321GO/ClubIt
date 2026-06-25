@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 extension Color {
     // Colors matching standard system themes for seamless integration

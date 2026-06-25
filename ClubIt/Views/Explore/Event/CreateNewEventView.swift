@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import ClubItShared
 import PhotosUI
 
 

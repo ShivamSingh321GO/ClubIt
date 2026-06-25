@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct EventManagementDashboardView: View {
     @Environment(AppSession.self) var appSession

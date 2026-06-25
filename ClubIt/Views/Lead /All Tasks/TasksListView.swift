@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct TasksListView: View {
     @Environment(AppSession.self) var appSession

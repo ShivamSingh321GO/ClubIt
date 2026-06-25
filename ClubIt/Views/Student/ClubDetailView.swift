@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ClubDetailView: View {
     let club: Club

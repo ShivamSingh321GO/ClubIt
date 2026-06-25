@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 import UniformTypeIdentifiers
 
 struct AddClubFileView: View {

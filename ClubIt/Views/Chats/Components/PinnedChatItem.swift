@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct PinnedChatItem: View {
     let name: String

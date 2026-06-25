@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 import Combine
 struct AttendanceQRDisplayView: View {
     let event: Event

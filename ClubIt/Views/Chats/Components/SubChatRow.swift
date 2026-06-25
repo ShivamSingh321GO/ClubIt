@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct SubChatRow: View {
     let chat: Chat

@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ClubImagesView: View {
     @Environment(\.dismiss) private var dismiss

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct AnnouncementView: View {
     @Environment(AppSession.self) private var appSession

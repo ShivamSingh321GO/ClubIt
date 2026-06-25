@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct FacultyResourceClubsView: View {
     @Environment(AppSession.self) var appSession

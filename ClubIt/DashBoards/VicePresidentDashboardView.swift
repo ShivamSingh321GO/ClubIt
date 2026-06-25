@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct VicePresidentDashboardView: View {
     @Environment(AppSession.self) var appSession

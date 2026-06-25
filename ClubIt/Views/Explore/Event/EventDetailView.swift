@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct EventDetailView: View {
     @Environment(\.dismiss) private var dismiss

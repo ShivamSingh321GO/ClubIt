@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import ClubItShared
 
 struct ExploreEventCard: View {
     @Environment(AppSession.self) var appSession

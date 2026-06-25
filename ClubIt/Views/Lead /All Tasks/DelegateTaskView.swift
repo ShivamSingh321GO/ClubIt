@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct DelegateTaskView: View {
     let task: Tasks

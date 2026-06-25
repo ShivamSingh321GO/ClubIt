@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct EventApprovalsDetailView: View {
     @Environment(AppSession.self) var appSession

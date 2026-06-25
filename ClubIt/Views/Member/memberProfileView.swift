@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClubItShared
 
 struct MemberProfileView: View {
     @Environment(AppSession.self) private var appSession

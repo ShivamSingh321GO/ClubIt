@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ApprovalStatusTrack: View {
     @Environment(AppSession.self) private var appSession

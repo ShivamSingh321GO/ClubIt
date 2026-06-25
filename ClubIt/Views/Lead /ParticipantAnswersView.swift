@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct ParticipantAnswersView: View {
     let user: User

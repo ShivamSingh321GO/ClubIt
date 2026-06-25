@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct MediaImageView: View {
     let media: ClubImage

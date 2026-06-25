@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct AddTaskView: View {
     var initialTask: Tasks? = nil

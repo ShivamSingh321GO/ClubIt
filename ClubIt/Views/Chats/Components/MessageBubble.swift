@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct MessageBubble: View {
     @Environment(AppSession.self) private var appSession

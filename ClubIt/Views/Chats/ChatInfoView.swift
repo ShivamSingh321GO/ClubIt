@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 import PhotosUI
 
 struct ChatInfoView: View {

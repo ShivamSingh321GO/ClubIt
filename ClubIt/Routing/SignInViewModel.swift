@@ -8,6 +8,7 @@
 
 import Foundation
 import Observation
+import ClubItShared
 
 @Observable
 final class SignInViewModel {

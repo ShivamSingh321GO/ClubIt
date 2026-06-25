@@ -1,4 +1,5 @@
 import SwiftUI
+import ClubItShared
 
 struct AttachmentMenu: View {
     let onSelect: (AttachmentType) -> Void
