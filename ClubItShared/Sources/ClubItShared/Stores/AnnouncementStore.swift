@@ -22,6 +22,7 @@ public final class AnnouncementStore {
         self.announcements = try await client
             .from("announcements")
             .select()
+            .order("is_high_priority", ascending: false)
             .order("date", ascending: false)
             .execute()
             .value
@@ -30,17 +31,20 @@ public final class AnnouncementStore {
     }
     
     @MainActor
-    public func addAnnouncement(title: String, content: String, url: String, postedBy: UUID, clubId: UUID?) async throws {
+    public func addAnnouncement(title: String, content: String, url: String, postedBy: UUID, groupId: UUID?, organizationId: UUID?, isHighPriority: Bool? = false) async throws {
         print("DEBUG: [AnnouncementStore] Adding announcement: title='\(title)', postedBy=\(postedBy)")
         let newAnnouncement = Announcement(
             id: UUID(),
-            clubId: clubId,
+            groupId: groupId,
             date: Date(),
             title: title,
             content: content,
             url: url,
             postedBy: postedBy,
-            createdAt: Date()
+            createdAt: Date(),
+            isEdited: false,
+            organizationId: organizationId,
+            isHighPriority: isHighPriority
         )
         
         // 1. Save to Supabase

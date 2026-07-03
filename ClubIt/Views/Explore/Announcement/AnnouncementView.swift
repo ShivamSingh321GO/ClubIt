@@ -73,11 +73,11 @@ private struct AnnouncementCard: View {
             
             HStack(alignment: .top, spacing: 12) {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemGray5))
+                    .fill(announcement.isHighPriority == true ? Color.accentColor.opacity(0.2) : Color(.systemGray5))
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: "megaphone.fill")
-                            .foregroundStyle(.accentColor)
+                            .foregroundStyle(announcement.isHighPriority == true ? Color.accentColor : Color.secondary)
                     )
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -86,7 +86,15 @@ private struct AnnouncementCard: View {
                         .fontWeight(.semibold)
                         .lineLimit(1)
                     
-                    if let clubId = announcement.clubId,
+                    if announcement.isHighPriority == true {
+                        (Text("Posted by ")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        + Text("Superadmin")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.accentColor))
+                    } else if let clubId = announcement.groupId,
                        let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
                         (Text("Posted by ")
                             .font(.subheadline)
@@ -111,6 +119,12 @@ private struct AnnouncementCard: View {
                 }
                 
                 Spacer()
+                
+                if announcement.isHighPriority == true {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                        .font(.caption)
+                }
             }
             
             Text(announcement.content)
@@ -135,7 +149,15 @@ private struct AnnouncementCard: View {
             }
         }
         .padding()
-        .glassEffect(in: .rect(cornerRadius: 20))
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(announcement.isHighPriority == true ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(announcement.isHighPriority == true ? Color.accentColor.opacity(0.3) : Color(.systemGray4), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .contentShape(.rect)
         .contextMenu {
@@ -186,7 +208,7 @@ private struct AnnouncementCard: View {
 #Preview {
     AnnouncementView(
         announcements: [
-            Announcement(id: UUID(), clubId: MockData.tj_id,
+            Announcement(id: UUID(), groupId: MockData.tj_id,
                 date: Date(),
                 title: "Sample Announcement",
                 content: "This is a sample announcement.",
