@@ -950,10 +950,10 @@ public final class ChatStore {
             }
             
             if !parentParticipants.isEmpty {
-                try? await client.from("chat_participants").insert(parentParticipants).execute()
+                _ = try? await client.from("chat_participants").insert(parentParticipants).execute()
             }
             if !generalParticipants.isEmpty {
-                try? await client.from("chat_participants").insert(generalParticipants).execute()
+                _ = try? await client.from("chat_participants").insert(generalParticipants).execute()
             }
             
             sendSystemMessage("All club members were added by the organizer", to: parentChatId, senderId: leadId)
@@ -971,8 +971,8 @@ public final class ChatStore {
                 guard let rUserId = reg.userId, rUserId != leadId && !memberIdsToAdd.contains(rUserId) else { continue }
                 let pParticipant = InsertChatParticipant(chat_id: parentChatId, user_id: rUserId, role: "member", status: "accepted")
                 let gParticipant = InsertChatParticipant(chat_id: generalChatId, user_id: rUserId, role: "member", status: "accepted")
-                try? await client.from("chat_participants").insert(pParticipant).execute()
-                try? await client.from("chat_participants").insert(gParticipant).execute()
+                _ = try? await client.from("chat_participants").insert(pParticipant).execute()
+                _ = try? await client.from("chat_participants").insert(gParticipant).execute()
             }
             
             print("DEBUG: [ChatStore] Auto-created Event Chat for '\(event.title)' and 'General' sub-chat. Added \(memberIdsToAdd.count) club members and \(existingRegistrations.count) existing participants.")
@@ -1146,12 +1146,12 @@ public final class ChatStore {
                 
                 if let parentIndex = chats.firstIndex(where: { $0.id == parentId }) {
                     if !chats[parentIndex].participantIds.contains(participantUserId) {
-                        try? await client.from("chat_participants").insert(parentPayload).execute()
+                        _ = try? await client.from("chat_participants").insert(parentPayload).execute()
                         chats[parentIndex].participantIds.append(participantUserId)
                         addedToParent = true
                     }
                 } else {
-                    try? await client.from("chat_participants").insert(parentPayload).execute()
+                    _ = try? await client.from("chat_participants").insert(parentPayload).execute()
                     addedToParent = true
                 }
             }
@@ -1423,7 +1423,7 @@ public final class ChatStore {
             await client.realtimeV2.connect()
             print("DEBUG: [ChatStore] Realtime client connected")
             
-            try? await msgChannel.subscribeWithError()
+            _ = try? await msgChannel.subscribeWithError()
             print("DEBUG: [ChatStore] Messages channel subscribed")
             
             for await insertion in messageInsertions {
@@ -1445,7 +1445,7 @@ public final class ChatStore {
         )
         
         participantSubscriptionTask = Task {
-            try? await partChannel.subscribeWithError()
+            _ = try? await partChannel.subscribeWithError()
             
             for await _ in participantInsertions {
                 if Task.isCancelled { break }
@@ -1453,7 +1453,7 @@ public final class ChatStore {
                 // (e.g. when creating a group adds multiple participants at once)
                 self.participantDebounceTask?.cancel()
                 self.participantDebounceTask = Task {
-                    try? await Task.sleep(for: .seconds(2))
+                    _ = try? await Task.sleep(for: .seconds(2))
                     guard !Task.isCancelled else { return }
                     await self.fetchChats()
                 }
@@ -1468,10 +1468,10 @@ public final class ChatStore {
         let typingStream = presChannel.broadcastStream(event: "typing")
         
         presenceSubscriptionTask = Task {
-            try? await presChannel.subscribeWithError()
+            _ = try? await presChannel.subscribeWithError()
             
             // Track our own presence
-            try? await presChannel.track(state: ["userId": .string(self.userId.uuidString)])
+            _ = try? await presChannel.track(state: ["userId": .string(self.userId.uuidString)])
             
             // Handle incoming presence events
             Task {
@@ -1515,7 +1515,7 @@ public final class ChatStore {
                            // Clear typing status after 3 seconds
                            self.typingClearTasks[typingUserId]?.cancel()
                            self.typingClearTasks[typingUserId] = Task {
-                               try? await Task.sleep(for: .seconds(3))
+                               _ = try? await Task.sleep(for: .seconds(3))
                                guard !Task.isCancelled else { return }
                                await MainActor.run {
                                    self.typingUsers[chatId]?.remove(typingUserId)
@@ -1535,7 +1535,7 @@ public final class ChatStore {
     public func sendTypingEvent(chatId: UUID) {
         guard let channel = presenceChannel else { return }
         Task {
-            try? await channel.broadcast(
+            _ = try? await channel.broadcast(
                 event: "typing",
                 message: [
                     "chatId": .string(chatId.uuidString),

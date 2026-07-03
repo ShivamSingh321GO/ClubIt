@@ -49,9 +49,8 @@ public final class ImageCacheManager {
         }
         
         // 2. Check if there's already a download in progress for this URL
-        lock.lock()
-        if let existingTask = activeTasks[urlString] {
-            lock.unlock()
+        let existingTask = lock.withLock { activeTasks[urlString] }
+        if let existingTask {
             return await existingTask.value
         }
         
@@ -69,15 +68,11 @@ public final class ImageCacheManager {
             }
         }
         
-        activeTasks[urlString] = task
-        lock.unlock()
+        lock.withLock { activeTasks[urlString] = task }
         
         let result = await task.value
         
-        // Clean up active task
-        lock.lock()
-        activeTasks.removeValue(forKey: urlString)
-        lock.unlock()
+        lock.withLock { activeTasks.removeValue(forKey: urlString) }
         
         return result
     }

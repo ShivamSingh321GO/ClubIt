@@ -107,7 +107,7 @@ struct ExploreView: View {
                 // Toolbar menu/buttons removed as they are now in the FAB
             }
             .sheet(isPresented: $showCreateAnnouncementSheet) {
-                CreateAnnouncementView { title, content, url, postedBy, clubId in
+                CreateAnnouncementView { title, content, url, postedBy, groupId, organizationId in
                     print("DEBUG: [ExploreView] Create announcement closure triggered with title='\(title)'")
                     Task {
                         do {
@@ -116,7 +116,8 @@ struct ExploreView: View {
                                 content: content,
                                 url: url,
                                 postedBy: postedBy,
-                                clubId: clubId
+                                groupId: groupId,
+                                organizationId: organizationId
                             )
                         } catch {
                             print("❌ ERROR ADDING ANNOUNCEMENT: \(error)")
@@ -125,7 +126,7 @@ struct ExploreView: View {
                 }
             }
             .sheet(item: $editingAnnouncement) { announcement in
-                CreateAnnouncementView(announcement: announcement) { title, content, url, _, _ in
+                CreateAnnouncementView(announcement: announcement) { title, content, url, _, _, _ in
                     print("DEBUG: [ExploreView] Edit announcement closure triggered for id=\(announcement.id) with title='\(title)'")
                     Task {
                         do {

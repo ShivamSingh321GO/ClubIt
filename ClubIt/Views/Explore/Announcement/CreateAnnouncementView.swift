@@ -15,14 +15,14 @@ struct CreateAnnouncementView: View {
     @Environment(AppSession.self) private var appSession
     
     let announcement: Announcement?
-    let onSave: (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ clubId: UUID?) -> Void
+    let onSave: (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ groupId: UUID?, _ organizationId: UUID?) -> Void
     
     @State private var title = ""
     @State private var content = ""
     @State private var url = ""
     @State private var errorMessage: String?
     
-    init(announcement: Announcement? = nil, onSave: @escaping (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ clubId: UUID?) -> Void) {
+    init(announcement: Announcement? = nil, onSave: @escaping (_ title: String, _ content: String, _ url: String, _ postedBy: UUID, _ groupId: UUID?, _ organizationId: UUID?) -> Void) {
         self.announcement = announcement
         self.onSave = onSave
         self._title = State(initialValue: announcement?.title ?? "")
@@ -101,7 +101,8 @@ struct CreateAnnouncementView: View {
             trimmedContent,
             trimmedURL,
             announcement?.postedBy ?? currentUser.id,
-            announcement?.clubId ?? currentUser.clubId
+            announcement?.groupId ?? currentUser.clubId,
+            currentUser.organizationId
         )
         
         dismiss()
@@ -109,6 +110,6 @@ struct CreateAnnouncementView: View {
 }
 
 #Preview {
-    CreateAnnouncementView { _, _, _, _, _ in }
+    CreateAnnouncementView { _, _, _, _, _, _ in }
         .environment(MockData.session(for: .subGroupLead))
 }

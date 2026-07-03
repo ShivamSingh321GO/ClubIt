@@ -440,8 +440,7 @@ public final class AppSession {
     
     @MainActor
     public func forwardToEMTApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
-        let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
-        let facultyId = club.facultyId ?? eventManagementTeamID
+        let facultyId = club.facultyId
         let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
         
         var approvalsToSave: [Approval] = []
