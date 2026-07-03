@@ -28,8 +28,8 @@ public final class ImageUploadService {
         try await client.storage
             .from(bucketName)
             .upload(
-                path: fileName,
-                file: imageData,
+                fileName,
+                data: imageData,
                 options: FileOptions(
                     contentType: "image/jpeg",
                     upsert: true
@@ -58,8 +58,8 @@ public final class ImageUploadService {
         try await client.storage
             .from(clubBucket)
             .upload(
-                path: fileName,
-                file: imageData,
+                fileName,
+                data: imageData,
                 options: FileOptions(
                     contentType: "image/jpeg",
                     upsert: true
@@ -91,8 +91,8 @@ public final class ImageUploadService {
         try await client.storage
             .from(fileBucket)
             .upload(
-                path: storagePath,
-                file: fileData,
+                storagePath,
+                data: fileData,
                 options: FileOptions(
                     contentType: "application/octet-stream",
                     upsert: true
