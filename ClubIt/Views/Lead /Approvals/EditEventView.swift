@@ -406,14 +406,14 @@ struct EditEventView: View {
                 let currentUser = appSession.currentUser!
 
                 // Check if Vice President exists and event approval status
-                let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
-                let hasVP = club?.vicePresidentId != nil
-                let vpApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .event && $0.receiverId == club?.vicePresidentId }.sorted(by: { $0.createdAt > $1.createdAt })
+                let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == updatedEvent.subgroupId })
+                let hasVP = subgroup?.vicePresidentId != nil
+                let vpApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .event && $0.receiverId == subgroup?.vicePresidentId }.sorted(by: { $0.createdAt > $1.createdAt })
                 let isVPApproved = vpApprovals.first?.status == .approved
                 let shouldCreateApprovalsForNewItems = !hasVP || isVPApproved
 
                 // 3. Conditional Re-submission Logic for VP
-                if let vicePresidentUserId = club?.vicePresidentId {
+                if let vicePresidentUserId = subgroup?.vicePresidentId {
                     let eventApproval = vpApprovals.first
                     if eventApproval?.status == .rejected {
                         try await appSession.approvalStore.updateApproval(
@@ -511,7 +511,7 @@ struct EditEventView: View {
                         
                         if shouldCreateApprovalsForNewItems {
                             // Create matching Approval entry
-                            let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
+                            let presidentUserId = appSession.subgroupStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
 
                             let budgetApproval = Approval(
                                 id: UUID(),
@@ -576,8 +576,8 @@ struct EditEventView: View {
                         try await appSession.approvalStore.addResource(newRes)
                         
                         if shouldCreateApprovalsForNewItems {
-                            let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
-                            let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                            let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == updatedEvent.subgroupId })
+                            let facultyId = subgroup?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
 
                             let resApproval = Approval(
                                 id: UUID(),
@@ -631,8 +631,8 @@ struct EditEventView: View {
                         try await appSession.approvalStore.addResource(newRes)
                         
                         if shouldCreateApprovalsForNewItems {
-                            let club = appSession.clubStore.allClubs.first(where: { $0.id == updatedEvent.clubId })
-                            let facultyId = club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                            let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == updatedEvent.subgroupId })
+                            let facultyId = subgroup?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
 
                             let resApproval = Approval(
                                 id: UUID(),

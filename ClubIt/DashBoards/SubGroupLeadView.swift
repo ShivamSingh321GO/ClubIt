@@ -18,8 +18,8 @@ struct SubGroupLeadView: View {
                     //.padding(.horizontal)
             }
             
-            Tab("My Club", systemImage: "person.3") {
-                LeadMyClubView()
+            Tab("My Subgroup", systemImage: "person.3") {
+                LeadMySubgroupView()
             }
             
             Tab("Explore", systemImage: "globe") {

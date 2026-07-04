@@ -23,8 +23,8 @@ public enum TaskStatus: String, Codable, CaseIterable {
 
 public struct Tasks: Identifiable, Codable {
     public var id: UUID
-    public var clubId: UUID
-    public var targetClubId: UUID? = nil // For cross-club tasks
+    public var subgroupId: UUID
+    public var targetSubgroupId: UUID? = nil // For cross-subgroup tasks
     public var eventId: UUID? = nil
     public var title: String
     public var description: String
@@ -41,8 +41,8 @@ public struct Tasks: Identifiable, Codable {
 
     public enum CodingKeys: String, CodingKey {
         case id
-        case clubId = "club_id"
-        case targetClubId = "target_club_id"
+        case subgroupId = "subgroup_id"
+        case targetSubgroupId = "target_subgroup_id"
         case eventId = "event_id"
         case title
         case description
@@ -60,8 +60,8 @@ public struct Tasks: Identifiable, Codable {
 
     public init(
         id: UUID,
-        clubId: UUID,
-        targetClubId: UUID? = nil,
+        subgroupId: UUID,
+        targetSubgroupId: UUID? = nil,
         eventId: UUID? = nil,
         title: String,
         description: String,
@@ -77,8 +77,8 @@ public struct Tasks: Identifiable, Codable {
         updatedAt: Date? = nil
     ) {
         self.id = id
-        self.clubId = clubId
-        self.targetClubId = targetClubId
+        self.subgroupId = subgroupId
+        self.targetSubgroupId = targetSubgroupId
         self.eventId = eventId
         self.title = title
         self.description = description

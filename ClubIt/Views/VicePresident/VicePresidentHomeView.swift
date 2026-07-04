@@ -43,9 +43,9 @@ struct VicePresidentHomeView: View {
                         .navigationTitle("Home")
                         .toolbarTitleDisplayMode(.inlineLarge)
                         .navigationDestination(item: $selectedEventId) { id in
-                            if let club = appSession.clubStore.allClubs.first(where: { $0.vicePresidentId == user.id }),
+                            if let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.vicePresidentId == user.id }),
                                let event = appSession.eventStore.events.first(where: { $0.id == id }) {
-                                EventManagementApprovalDetailView(club: club, event: event)
+                                EventManagementApprovalDetailView(subgroup: subgroup, event: event)
                             }
                         }
                         .toolbar {
@@ -140,9 +140,9 @@ struct VicePresidentApprovalsModule: View {
                 VStack(spacing: 16) {
                     ForEach(pendingApprovals.prefix(2)) { approval in
                         if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
-                           let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
-                            NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
-                                EventManagementEventApprovalCard(event: event, club: club)
+                           let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
+                            NavigationLink(destination: EventManagementApprovalDetailView(subgroup: subgroup, event: event)) {
+                                EventManagementEventApprovalCard(event: event, subgroup: subgroup)
                             }
                             .buttonStyle(.plain)
                         }
@@ -157,7 +157,7 @@ struct VicePresidentApprovalsModule: View {
 struct VPApprovalEventCard: View {
     let event: Event
     let approval: Approval
-    let club: Club
+    let subgroup: Subgroup
 
     var body: some View {
         HStack(spacing: 16) {
@@ -165,7 +165,7 @@ struct VPApprovalEventCard: View {
                 Circle()
                     .fill(Color.accentColor.opacity(0.1))
                     .frame(width: 48, height: 48)
-                Text(String(club.name.prefix(1)))
+                Text(String(subgroup.name.prefix(1)))
                     .font(.headline)
                     .foregroundColor(.accentColor)
             }
@@ -322,8 +322,8 @@ struct VPApprovalsListView: View {
                         LazyVStack(spacing: 16) {
                             ForEach(filteredApprovals) { approval in
                                 if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
-                                   let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
-                                    NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
+                                   let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
+                                    NavigationLink(destination: EventManagementApprovalDetailView(subgroup: subgroup, event: event)) {
                                         HStack(spacing: 16) {
                                             ZStack {
                                                 if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

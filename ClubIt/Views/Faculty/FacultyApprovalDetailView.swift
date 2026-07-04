@@ -23,7 +23,7 @@ struct FacultyApprovalDetailView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             InfoRow(icon: "calendar", title: "Date", value: formatDate(event.startDate))
                             InfoRow(icon: "mappin.and.ellipse", title: "Location", value: event.location)
-                            InfoRow(icon: "person.2.fill", title: "Organizer", value: appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })?.name ?? "Club")
+                            InfoRow(icon: "person.2.fill", title: "Organizer", value: appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId })?.name ?? "Subgroup")
                         }
                         
                         Divider()

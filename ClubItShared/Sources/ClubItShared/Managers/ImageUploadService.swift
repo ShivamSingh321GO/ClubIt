@@ -44,19 +44,19 @@ public final class ImageUploadService {
         return publicURL.absoluteString
     }
     
-    /// Uploads image data to Supabase Storage in the club-images bucket and returns the public URL string.
+    /// Uploads image data to Supabase Storage in the subgroup-images bucket and returns the public URL string.
     /// - Parameters:
     ///   - imageData: The raw image Data to upload
-    ///   - clubId: The club UUID, used as the folder name
+    ///   - subgroupId: The subgroup UUID, used as the folder name
     ///   - imageId: The image UUID, used as the file name
     /// - Returns: The public URL string for the uploaded image
-    public func uploadClubImage(imageData: Data, clubId: UUID, imageId: UUID) async throws -> String {
-        let clubBucket = "club-images"
-        let fileName = "\(clubId.uuidString)/\(imageId.uuidString).jpg"
+    public func uploadSubgroupImage(imageData: Data, subgroupId: UUID, imageId: UUID) async throws -> String {
+        let subgroupBucket = "subgroup-images"
+        let fileName = "\(subgroupId.uuidString)/\(imageId.uuidString).jpg"
         
         // Upload to Supabase Storage
         try await client.storage
-            .from(clubBucket)
+            .from(subgroupBucket)
             .upload(
                 fileName,
                 data: imageData,
@@ -68,24 +68,24 @@ public final class ImageUploadService {
         
         // Get the public URL
         let publicURL = try client.storage
-            .from(clubBucket)
+            .from(subgroupBucket)
             .getPublicURL(path: fileName)
         
         return publicURL.absoluteString
     }
     
-    /// Uploads file data to Supabase Storage in the club-files bucket and returns the public URL string.
+    /// Uploads file data to Supabase Storage in the subgroup-files bucket and returns the public URL string.
     /// - Parameters:
     ///   - fileData: The raw file Data to upload
     ///   - fileName: The original name of the file
-    ///   - clubId: The club UUID, used as the folder name
+    ///   - subgroupId: The subgroup UUID, used as the folder name
     ///   - fileId: The file UUID, used as part of the unique path
     /// - Returns: The public URL string for the uploaded file
-    public func uploadClubFile(fileData: Data, fileName: String, clubId: UUID, fileId: UUID) async throws -> String {
-        let fileBucket = "club-files"
+    public func uploadSubgroupFile(fileData: Data, fileName: String, subgroupId: UUID, fileId: UUID) async throws -> String {
+        let fileBucket = "subgroup-files"
         // Sanitize the fileName to prevent storage path issues, but keep extension
         let sanitizedName = fileName.components(separatedBy: CharacterSet.alphanumerics.inverted.union(CharacterSet(charactersIn: "."))).joined(separator: "_")
-        let storagePath = "\(clubId.uuidString)/\(fileId.uuidString)_\(sanitizedName)"
+        let storagePath = "\(subgroupId.uuidString)/\(fileId.uuidString)_\(sanitizedName)"
         
         // Upload to Supabase Storage
         try await client.storage

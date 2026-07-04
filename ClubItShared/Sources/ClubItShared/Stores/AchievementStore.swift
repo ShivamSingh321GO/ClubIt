@@ -10,11 +10,11 @@ public final class AchievementStore {
     public init() {}
     
     @MainActor
-    public func fetchAchievements(clubId: UUID) async throws {
+    public func fetchAchievements(subgroupId: UUID) async throws {
         self.achievements = try await client
             .from("achievements")
             .select()
-            .eq("club_id", value: clubId)
+            .eq("subgroup_id", value: subgroupId)
             .order("created_at", ascending: false)
             .execute()
             .value
@@ -30,7 +30,7 @@ public final class AchievementStore {
             .execute()
         
         // 2. Refresh local list
-        try await fetchAchievements(clubId: achievement.clubId)
+        try await fetchAchievements(subgroupId: achievement.subgroupId)
     }
     
     @MainActor
@@ -43,6 +43,6 @@ public final class AchievementStore {
             .execute()
         
         // 2. Refresh local list
-        try await fetchAchievements(clubId: achievement.clubId)
+        try await fetchAchievements(subgroupId: achievement.subgroupId)
     }
 }

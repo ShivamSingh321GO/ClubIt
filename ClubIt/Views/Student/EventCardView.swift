@@ -63,7 +63,7 @@ struct EventCardView: View {
                 Text(event.title)
                     .font(.headline)
                 
-                Text("Hosted by \(appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })?.name ?? "Club")")
+                Text("Hosted by \(appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId })?.name ?? "Subgroup")")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 

@@ -10,7 +10,7 @@ import ClubItShared
 //
 //struct LeadOnboardingView: View {
 //    
-//    @AppStorage("hasSeenClubLeadOnboarding") private var hasSeenClubLeadOnboarding = false
+//    @AppStorage("hasSeenSubgroupLeadOnboarding") private var hasSeenSubgroupLeadOnboarding = false
 //    @State private var currentPage = 0
 //    
 //    private let pages: [OnboardingPage] = [
@@ -19,12 +19,12 @@ import ClubItShared
 //            subtitle: "Keep conversations event-specific and organized in one space."
 //        ),
 //        OnboardingPage(
-//            title: "Create club events",
+//            title: "Create subgroup events",
 //            subtitle: "Create events, submit them for approval, and track their status."
 //        ),
 //        OnboardingPage(
 //            title: "Manage members",
-//            subtitle: "Keep your club members organized from day one."
+//            subtitle: "Keep your subgroup members organized from day one."
 //        )
 //    ]
 //    
@@ -134,7 +134,7 @@ import ClubItShared
 //    }
 //    
 //    private func finishOnboarding() {
-//        hasSeenClubLeadOnboarding = true
+//        hasSeenSubgroupLeadOnboarding = true
 //    }
 //}
 //

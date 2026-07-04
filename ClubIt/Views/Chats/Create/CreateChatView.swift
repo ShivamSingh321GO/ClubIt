@@ -9,7 +9,7 @@ struct CreateChatView: View {
     var onCreated: ((Chat) -> Void)? = nil
     
     private var suggestedUsers: [User] {
-        appSession.clubStore.allUsers.filter { $0.id != appSession.chatStore.userId }
+        appSession.subgroupStore.allUsers.filter { $0.id != appSession.chatStore.userId }
     }
     
     var filteredUsers: [User] {

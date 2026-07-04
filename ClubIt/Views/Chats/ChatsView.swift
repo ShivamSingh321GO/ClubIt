@@ -22,7 +22,7 @@ struct ChatsView: View {
         guard let parentId = activeParentId,
               let parentChat = appSession.chatStore.chats.first(where: { $0.id == parentId }) else { return [] }
         let parentParticipantIds = parentChat.participantIds
-        return appSession.clubStore.allUsers.filter { parentParticipantIds.contains($0.id) && $0.id != appSession.chatStore.userId }
+        return appSession.subgroupStore.allUsers.filter { parentParticipantIds.contains($0.id) && $0.id != appSession.chatStore.userId }
     }
     
     var body: some View {

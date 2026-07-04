@@ -5,7 +5,7 @@ import ClubItShared
 struct EventManagementApprovalDetailView: View {
     @Environment(AppSession.self) var appSession
     @Environment(\.dismiss) private var dismiss
-    let club: Club
+    let subgroup: Subgroup
     let event: Event
     
     @State private var selectedTab: String = "Venue"
@@ -132,10 +132,10 @@ struct EventManagementApprovalDetailView: View {
                                 await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
                             }
                             if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
-                               let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                               let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
                                 try? await appSession.forwardToPresidentBudgetApproval(
                                     eventId: event.id,
-                                    club: club,
+                                    subgroup: subgroup,
                                     senderId: appSession.currentUser?.id ?? UUID()
                                 )
                             }
@@ -509,28 +509,28 @@ struct EventManagementApprovalDetailView: View {
     
     @ViewBuilder
     private func standardApprovalView() -> some View {
-        let allClubResources = appSession.approvalStore.resources.filter { resource in
+        let allSubgroupResources = appSession.approvalStore.resources.filter { resource in
             resource.eventId == event.id &&
             appSession.approvalStore.approvals.contains { $0.approvalRelatedId == resource.id && $0.type == .resource }
         }
-        let allClubVenueApprovals = appSession.approvalStore.approvals.filter { 
+        let allSubgroupVenueApprovals = appSession.approvalStore.approvals.filter { 
             $0.eventId == event.id && $0.type == .venue 
         }
-        let allClubBudgets = appSession.approvalStore.budgets.filter { budget in
+        let allSubgroupBudgets = appSession.approvalStore.budgets.filter { budget in
             budget.eventId == event.id &&
             appSession.approvalStore.approvals.contains { $0.approvalRelatedId == budget.id && $0.type == .budget }
         }
-        let allClubEventApprovals = appSession.approvalStore.approvals.filter { 
+        let allSubgroupEventApprovals = appSession.approvalStore.approvals.filter { 
             $0.eventId == event.id && $0.type == .event 
         }
         
         let venueApprovalsToDisplay: [Approval] = {
-            if allClubVenueApprovals.isEmpty && !event.location.isEmpty {
+            if allSubgroupVenueApprovals.isEmpty && !event.location.isEmpty {
                 return [Approval(
                     id: UUID(),
                     type: .venue,
                     senderId: event.createdBy,
-                    receiverId: club.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!,
+                    receiverId: subgroup.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!,
                     eventId: event.id,
                     approvalRelatedId: event.id,
                     status: .pending,
@@ -539,21 +539,21 @@ struct EventManagementApprovalDetailView: View {
                     updatedAt: nil
                 )]
             }
-            return allClubVenueApprovals
+            return allSubgroupVenueApprovals
         }()
         
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
-                // MARK: - Club Header
-                ClubHeaderView(club: club, event: event)
+                // MARK: - Subgroup Header
+                SubgroupHeaderView(subgroup: subgroup, event: event)
                 
                 // MARK: - Segmented Filter (3 Segments)
                 if appSession.currentRole != .groupLead {
                     Picker("Select Category", selection: $selectedTab) {
                         Text("Venue (\(venueApprovalsToDisplay.count))").tag("Venue")
-                        Text("Resource (\(allClubResources.count))").tag("Resource")
+                        Text("Resource (\(allSubgroupResources.count))").tag("Resource")
                         if appSession.currentUser?.email != "emt" {
-                            Text("Budget (\(allClubBudgets.count))").tag("Budget")
+                            Text("Budget (\(allSubgroupBudgets.count))").tag("Budget")
                         }
                     }
                     .pickerStyle(.segmented)
@@ -561,10 +561,10 @@ struct EventManagementApprovalDetailView: View {
                 }
                 
                 // MARK: - Global Timestamp
-                let resDates = allClubResources.map { $0.createdAt }
+                let resDates = allSubgroupResources.map { $0.createdAt }
                 let venueDates = venueApprovalsToDisplay.map { $0.createdAt }
-                let budgetDates = allClubBudgets.map { $0.createdAt }
-                let eventDates = allClubEventApprovals.map { $0.createdAt }
+                let budgetDates = allSubgroupBudgets.map { $0.createdAt }
+                let eventDates = allSubgroupEventApprovals.map { $0.createdAt }
                 let allDates = resDates + venueDates + budgetDates + eventDates
                 
                 if let latestRequest = allDates.sorted(by: { $0 > $1 }).first {
@@ -583,9 +583,9 @@ struct EventManagementApprovalDetailView: View {
                 case "Venue":
                     venueSection(venueApprovalsToDisplay)
                 case "Resource":
-                    resourceSection(allClubResources)
+                    resourceSection(allSubgroupResources)
                 case "Budget":
-                    budgetSection(allClubBudgets)
+                    budgetSection(allSubgroupBudgets)
                 default:
                     EmptyView()
                 }
@@ -604,19 +604,19 @@ struct EventManagementApprovalDetailView: View {
     
     @ViewBuilder
     private func vpDraftReviewView() -> some View {
-        let allClubResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
-        let allClubBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
-        let allClubEventApprovals = appSession.approvalStore.approvals.filter { 
+        let allSubgroupResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
+        let allSubgroupBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
+        let allSubgroupEventApprovals = appSession.approvalStore.approvals.filter { 
             $0.eventId == event.id && $0.type == .event 
         }
-        let vpApproval = allClubEventApprovals.sorted(by: { $0.createdAt > $1.createdAt }).first(where: { $0.receiverId == appSession.currentUser?.id && $0.type == .event })
-        let isEdited = allClubEventApprovals.count > 1 && vpApproval?.status == .pending
+        let vpApproval = allSubgroupEventApprovals.sorted(by: { $0.createdAt > $1.createdAt }).first(where: { $0.receiverId == appSession.currentUser?.id && $0.type == .event })
+        let isEdited = allSubgroupEventApprovals.count > 1 && vpApproval?.status == .pending
         
         ZStack(alignment: .bottom) {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header
-                    ClubHeaderView(club: club, event: event, isEditedAfterApproval: isEdited)
+                    SubgroupHeaderView(subgroup: subgroup, event: event, isEditedAfterApproval: isEdited)
                     
                     // Event Details Section
                     VStack(alignment: .leading, spacing: 12) {
@@ -670,11 +670,11 @@ struct EventManagementApprovalDetailView: View {
                     .padding(.horizontal)
                     
                     // Budgets Requested
-                    if !allClubBudgets.isEmpty {
+                    if !allSubgroupBudgets.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            let totalBudget = allClubBudgets.reduce(0) { $0 + $1.totalAmount }
+                            let totalBudget = allSubgroupBudgets.reduce(0) { $0 + $1.totalAmount }
                             HStack {
-                                Text("Budgets Requested (\(allClubBudgets.count))")
+                                Text("Budgets Requested (\(allSubgroupBudgets.count))")
                                     .font(.headline)
                                 Spacer()
                                 Text("Total: ₹\(String(format: "%.0f", totalBudget))")
@@ -683,7 +683,7 @@ struct EventManagementApprovalDetailView: View {
                             }
                             
                             VStack(spacing: 8) {
-                                ForEach(allClubBudgets) { budget in
+                                ForEach(allSubgroupBudgets) { budget in
                                     HStack {
                                         Text(budget.itemName)
                                             .font(.subheadline)
@@ -693,7 +693,7 @@ struct EventManagementApprovalDetailView: View {
                                             .foregroundColor(.secondary)
                                     }
                                     .padding(.vertical, 4)
-                                    if budget.id != allClubBudgets.last?.id {
+                                    if budget.id != allSubgroupBudgets.last?.id {
                                         Divider().opacity(0.3)
                                     }
                                 }
@@ -705,13 +705,13 @@ struct EventManagementApprovalDetailView: View {
                     }
                     
                     // Resources Requested
-                    if !allClubResources.isEmpty {
+                    if !allSubgroupResources.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Resources Requested (\(allClubResources.count))")
+                            Text("Resources Requested (\(allSubgroupResources.count))")
                                 .font(.headline)
                             
                             VStack(spacing: 8) {
-                                ForEach(allClubResources) { res in
+                                ForEach(allSubgroupResources) { res in
                                     HStack {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(res.name)
@@ -726,7 +726,7 @@ struct EventManagementApprovalDetailView: View {
                                             .foregroundColor(.secondary)
                                     }
                                     .padding(.vertical, 4)
-                                    if res.id != allClubResources.last?.id {
+                                    if res.id != allSubgroupResources.last?.id {
                                         Divider().opacity(0.3)
                                     }
                                 }
@@ -833,7 +833,7 @@ struct EventManagementApprovalDetailView: View {
 
 #Preview {
     NavigationStack {
-        EventManagementApprovalDetailView(club: MockData.technoJamClub, event: MockData.sampleEvents[0])
+        EventManagementApprovalDetailView(subgroup: MockData.technoJamSubgroup, event: MockData.sampleEvents[0])
             .environment(MockData.session(for: .groupSubLead))
     }
 }

@@ -131,7 +131,7 @@ struct EditProfileView: View {
 
 #Preview {
     NavigationStack {
-        EditProfileView(user: MockData.clubLeadUser)
+        EditProfileView(user: MockData.subgroupLeadUser)
             .environment(AppSession())
     }
 }

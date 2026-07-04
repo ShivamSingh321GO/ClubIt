@@ -12,7 +12,7 @@ struct EventManagementTeamView: View {
                     // MARK: - Approval Management Quick Action
                     VStack(alignment: .leading, spacing: 16) {
                         VStack(spacing: 0) {
-                            NavigationLink(destination: EventManagementApprovalClubsView()) {
+                            NavigationLink(destination: EventManagementApprovalSubgroupsView()) {
                                 HStack(spacing: 16) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 8)
@@ -47,14 +47,14 @@ struct EventManagementTeamView: View {
                                 .buttonStyle(.plain)
                             } else if appSession.currentRole == .groupLead {
                                 Divider().padding(.leading, 56)
-                                NavigationLink(destination: PresidentAssignClubView()) {
-                                    QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Club", color: .accentColor)
+                                NavigationLink(destination: PresidentAssignSubgroupView()) {
+                                    QuickActionRow(icon: "plus.rectangle.on.folder", title: "Assign Subgroup", color: .accentColor)
                                 }
                                 .buttonStyle(.plain)
                                 
                                 Divider().padding(.leading, 56)
                                 NavigationLink(destination: PresidentRemoveVPView()) {
-                                    QuickActionRow(icon: "person.badge.minus", title: "Remove Club", color: .red)
+                                    QuickActionRow(icon: "person.badge.minus", title: "Remove Subgroup", color: .red)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -65,25 +65,25 @@ struct EventManagementTeamView: View {
                     
                     if let user = appSession.currentUser {
                         if appSession.currentRole == .groupSubLead || appSession.currentRole == .groupLead {
-                            // Assigned clubs
+                            // Assigned subgroups
                             VStack(alignment: .leading, spacing: 16) {
-                                Text("Assigned Clubs")
+                                Text("Assigned Subgroups")
                                     .font(.title2)
                                     .bold()
                                 
                                 VStack(spacing: 16) {
-                                    // For President, we show all clubs since they oversee everything
-                                    // For Faculty, we show clubs filtered by their ID (which is now unified)
-                                    let clubsToShow = appSession.currentRole == .groupLead ? appSession.clubStore.allClubs : appSession.clubStore.allClubs.filter { $0.facultyId == user.id }
+                                    // For President, we show all subgroups since they oversee everything
+                                    // For Faculty, we show subgroups filtered by their ID (which is now unified)
+                                    let subgroupsToShow = appSession.currentRole == .groupLead ? appSession.subgroupStore.allSubgroups : appSession.subgroupStore.allSubgroups.filter { $0.facultyId == user.id }
                                     
-                                    if clubsToShow.isEmpty {
-                                        Text("No clubs currently assigned")
+                                    if subgroupsToShow.isEmpty {
+                                        Text("No subgroups currently assigned")
                                             .font(.subheadline)
                                             .foregroundColor(.secondary)
                                             .padding()
                                     } else {
-                                        ForEach(clubsToShow) { club in
-                                            FacultyExpandableClubRow(club: club)
+                                        ForEach(subgroupsToShow) { subgroup in
+                                            FacultyExpandableSubgroupRow(subgroup: subgroup)
                                         }
                                     }
                                 }
@@ -102,7 +102,7 @@ struct EventManagementTeamView: View {
                                     let coreMembers = MockData.allMockUsers.filter { $0.role == .subGroupLead || $0.role == .groupSubLead }
                                     
                                     ForEach(coreMembers.prefix(5)) { member in
-                                        NavigationLink(destination: MemberClubsOverviewView(user: member)) {
+                                        NavigationLink(destination: MemberSubgroupsOverviewView(user: member)) {
                                             CoreMemberRow(user: member)
                                         }
                                         .buttonStyle(.plain)

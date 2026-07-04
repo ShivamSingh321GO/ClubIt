@@ -15,11 +15,11 @@ public final class ActivityStore {
     public init() {}
     
     @MainActor
-    public func fetchActivities(clubId: UUID) async throws {
+    public func fetchActivities(subgroupId: UUID) async throws {
         self.activities = try await client
             .from("activities")
             .select()
-            .eq("club_id", value: clubId)
+            .eq("subgroup_id", value: subgroupId)
             .order("created_at", ascending: false)
             .execute()
             .value
@@ -34,7 +34,7 @@ public final class ActivityStore {
             .execute()
         
         // 2. Refresh local list
-        try await fetchActivities(clubId: activity.clubId)
+        try await fetchActivities(subgroupId: activity.subgroupId)
     }
     
     @MainActor
@@ -47,6 +47,6 @@ public final class ActivityStore {
             .execute()
         
         // 2. Refresh local list
-        try await fetchActivities(clubId: activity.clubId)
+        try await fetchActivities(subgroupId: activity.subgroupId)
     }
 }

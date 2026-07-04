@@ -11,7 +11,7 @@ struct StudentProfileView: View {
     
     private var displayUser: User? {
         if let user {
-            return appSession.clubStore.allUsers.first(where: { $0.id == user.id }) ?? user
+            return appSession.subgroupStore.allUsers.first(where: { $0.id == user.id }) ?? user
         }
         return appSession.currentUser ?? MockData.studentUser
     }
@@ -29,11 +29,11 @@ struct StudentProfileView: View {
                 // Contact Section
                 contactSection
                 
-                // Requested Clubs
-                requestedClubsSection
+                // Requested Subgroups
+                requestedSubgroupsSection
                 
-                // Clubs Followed
-                clubsFollowedSection
+                // Subgroups Followed
+                subgroupsFollowedSection
                 
                 // Settings Section (Only for current user)
                 if isCurrentUser {
@@ -57,11 +57,11 @@ struct StudentProfileView: View {
             }
         }
         .refreshable {
-            try? await appSession.clubStore.fetchAllUsers()
+            try? await appSession.subgroupStore.fetchAllUsers()
         }
         .task {
             isLoading = true
-            try? await appSession.clubStore.fetchAllUsers()
+            try? await appSession.subgroupStore.fetchAllUsers()
             isLoading = false
         }
         .overlay {
@@ -118,28 +118,28 @@ struct StudentProfileView: View {
         }
     }
     
-    private var requestedClubsSection: some View {
+    private var requestedSubgroupsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Requested Clubs")
+            Text("Requested Subgroups")
                 .font(.headline)
                 .padding(.leading, 4)
             
             VStack(spacing: 0) {
-                let requested = appSession.clubStore.allClubs.filter { appSession.clubStore.requestedClubIds.contains($0.id) }
+                let requested = appSession.subgroupStore.allSubgroups.filter { appSession.subgroupStore.requestedSubgroupIds.contains($0.id) }
                 
                 if requested.isEmpty {
                     HStack {
                         Spacer()
-                        Text("No requested clubs")
+                        Text("No requested subgroups")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .padding()
                         Spacer()
                     }
                 } else {
-                    ForEach(requested) { club in
-                        clubRow(club: club)
-                        if club.id != requested.last?.id {
+                    ForEach(requested) { subgroup in
+                        subgroupRow(subgroup: subgroup)
+                        if subgroup.id != requested.last?.id {
                             Divider().padding(.leading, 56).opacity(0.5)
                         }
                     }
@@ -151,19 +151,19 @@ struct StudentProfileView: View {
     
 
     
-    private var clubsFollowedSection: some View {
+    private var subgroupsFollowedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Clubs Followed")
+            Text("Subgroups Followed")
                 .font(.headline)
                 .padding(.leading, 4)
             
-            let followed = appSession.clubStore.allClubs.filter { appSession.clubStore.followedClubIds.contains($0.id) }
+            let followed = appSession.subgroupStore.allSubgroups.filter { appSession.subgroupStore.followedSubgroupIds.contains($0.id) }
             
             if followed.isEmpty {
                 VStack {
                     HStack {
                         Spacer()
-                        Text("No clubs followed")
+                        Text("No subgroups followed")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .padding()
@@ -173,9 +173,9 @@ struct StudentProfileView: View {
                 .glassEffect(in: .rect(cornerRadius: 20))
             } else {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(followed) { club in
-                        NavigationLink(destination: ClubDetailView(club: club)) {
-                            clubGridItem(club: club)
+                    ForEach(followed) { subgroup in
+                        NavigationLink(destination: SubgroupDetailView(subgroup: subgroup)) {
+                            subgroupGridItem(subgroup: subgroup)
                         }
                         .buttonStyle(.plain)
                     }
@@ -184,11 +184,11 @@ struct StudentProfileView: View {
         }
     }
     
-    private func clubGridItem(club: Club) -> some View {
+    private func subgroupGridItem(subgroup: Subgroup) -> some View {
         HStack(spacing: 10) {
-            ClubLogoView(logo: club.logo, imageData: club.imageData, size: 32, iconSize: 20)
+            SubgroupLogoView(logo: subgroup.logo, imageData: subgroup.imageData, size: 32, iconSize: 20)
             
-            Text(club.name)
+            Text(subgroup.name)
                 .font(.caption.bold())
                 .lineLimit(1)
             
@@ -255,11 +255,11 @@ struct StudentProfileView: View {
         .padding(.horizontal, 16)
     }
     
-    private func clubRow(club: Club) -> some View {
+    private func subgroupRow(subgroup: Subgroup) -> some View {
         HStack(spacing: 12) {
-            ClubLogoView(logo: club.logo, imageData: club.imageData, size: 36, iconSize: 22)
+            SubgroupLogoView(logo: subgroup.logo, imageData: subgroup.imageData, size: 36, iconSize: 22)
             
-            Text(club.name)
+            Text(subgroup.name)
                 .font(.body)
                 .fontWeight(.medium)
             

@@ -74,7 +74,7 @@ struct ManageParticipantsView: View {
                         .padding(.vertical, 60)
                     } else {
                         ForEach(filteredRegistrations(allRegistrations)) { registration in
-                            if let user = appSession.clubStore.allUsers.first(where: { $0.id == registration.userId }) {
+                            if let user = appSession.subgroupStore.allUsers.first(where: { $0.id == registration.userId }) {
                                 NavigationLink {
                                     destinationProfile(for: user)
                                 } label: {
@@ -121,7 +121,7 @@ struct ManageParticipantsView: View {
     private func generateAndShare(forExcel: Bool) {
         let allRegistrations = appSession.registrationStore.getRegistrations(for: event.id)
         let registrations = filteredRegistrations(allRegistrations)
-        let allUsers = appSession.clubStore.allUsers
+        let allUsers = appSession.subgroupStore.allUsers
         
         var csvString = "Name,Admission Number,Role,Course,Year,Email,Phone"
         
@@ -217,7 +217,7 @@ struct ManageParticipantsView: View {
     
     private func filteredRegistrations(_ registrations: [IndividualRegistration]) -> [IndividualRegistration] {
         registrations.filter { registration in
-            guard let user = appSession.clubStore.allUsers.first(where: { $0.id == registration.userId }) else { return false }
+            guard let user = appSession.subgroupStore.allUsers.first(where: { $0.id == registration.userId }) else { return false }
             
             switch selectedRole {
             case .all:

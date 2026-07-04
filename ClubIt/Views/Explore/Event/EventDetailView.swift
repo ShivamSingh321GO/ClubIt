@@ -296,16 +296,16 @@ struct EventDetailView: View {
     // MARK: - Organizer (Inline Row)
     
     private var organizerRow: some View {
-        let matchingClub = appSession.clubStore.allClubs.first { club in
-            if let clubIds = event.clubIds {
-                return clubIds.contains(club.id)
+        let matchingSubgroup = appSession.subgroupStore.allSubgroups.first { subgroup in
+            if let subgroupIds = event.subgroupIds {
+                return subgroupIds.contains(subgroup.id)
             }
-            return club.id == event.clubId
+            return subgroup.id == event.subgroupId
         }
         
         return Group {
-            if let club = matchingClub {
-                NavigationLink(destination: ClubDetailView(club: club)) {
+            if let subgroup = matchingSubgroup {
+                NavigationLink(destination: SubgroupDetailView(subgroup: subgroup)) {
                     organizerContent
                 }
             } else {
@@ -327,7 +327,7 @@ struct EventDetailView: View {
                 )
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.clubId == nil ? "Associated Clubs" : "Hosted by")
+                Text(event.subgroupId == nil ? "Associated Subgroups" : "Hosted by")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(.secondary)
                     .textCase(.uppercase)
@@ -722,14 +722,14 @@ struct EventDetailView: View {
     }
     
     private var organizerName: String {
-        if let clubIds = event.clubIds, !clubIds.isEmpty {
-            let names = clubIds.compactMap { id in appSession.clubStore.allClubs.first(where: { $0.id == id })?.name }
+        if let subgroupIds = event.subgroupIds, !subgroupIds.isEmpty {
+            let names = subgroupIds.compactMap { id in appSession.subgroupStore.allSubgroups.first(where: { $0.id == id })?.name }
             return names.joined(separator: ", ")
         }
-        if let clubId = event.clubId {
-            return appSession.clubStore.allClubs.first { $0.id == clubId }?.name ?? "Event Organizer"
+        if let subgroupId = event.subgroupId {
+            return appSession.subgroupStore.allSubgroups.first { $0.id == subgroupId }?.name ?? "Event Organizer"
         }
-        return "Council Event"
+        return "Group Event"
     }
     
     private var registrationProgress: Double {

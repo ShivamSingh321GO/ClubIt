@@ -90,7 +90,7 @@ struct EventView: View {
                 
                 if shouldShowToggle {
                     VStack(spacing: -3) {
-                        Text(appSession.currentRole == .subGroupLead || appSession.currentRole == .subGroupMember ? "MY\nEVENTS" : (appSession.currentRole == .groupLead ? "COUNCIL\nEVENTS" : (appSession.currentRole == .groupSubLead ? "MY CLUB\nEVENTS" : "CLUB\nFOLLOWED")))
+                        Text(appSession.currentRole == .subGroupLead || appSession.currentRole == .subGroupMember ? "MY\nEVENTS" : (appSession.currentRole == .groupLead ? "GROUP\nEVENTS" : (appSession.currentRole == .groupSubLead ? "MY SUBGROUP\nEVENTS" : "SUBGROUP\nFOLLOWED")))
                             .multilineTextAlignment(.center)
                             .font(.system(size: 9, weight: .black))
                             .lineLimit(2)
@@ -198,23 +198,23 @@ struct EventView: View {
                 matchesScope = true
             case .followed:
                 if appSession.currentRole == .subGroupLead || appSession.currentRole == .subGroupMember {
-                    matchesScope = event.clubId == appSession.currentUser?.clubId
+                    matchesScope = event.subgroupId == appSession.currentUser?.subgroupId
                 } else if appSession.currentRole == .groupLead {
-                    matchesScope = event.clubId == nil
+                    matchesScope = event.subgroupId == nil
                 } else if appSession.currentRole == .groupSubLead {
-                    let assignedClubIds = Set(appSession.clubStore.allClubs.filter { $0.vicePresidentId == appSession.currentUser?.id }.map { $0.id })
-                    if let clubId = event.clubId {
-                        matchesScope = assignedClubIds.contains(clubId)
-                    } else if let clubIds = event.clubIds {
-                        matchesScope = !assignedClubIds.intersection(clubIds).isEmpty
+                    let assignedSubgroupIds = Set(appSession.subgroupStore.allSubgroups.filter { $0.vicePresidentId == appSession.currentUser?.id }.map { $0.id })
+                    if let subgroupId = event.subgroupId {
+                        matchesScope = assignedSubgroupIds.contains(subgroupId)
+                    } else if let subgroupIds = event.subgroupIds {
+                        matchesScope = !assignedSubgroupIds.intersection(subgroupIds).isEmpty
                     } else {
                         matchesScope = false
                     }
                 } else {
-                    if let clubId = event.clubId {
-                        matchesScope = appSession.clubStore.followedClubIds.contains(clubId)
-                    } else if let clubIds = event.clubIds {
-                        matchesScope = !appSession.clubStore.followedClubIds.intersection(clubIds).isEmpty
+                    if let subgroupId = event.subgroupId {
+                        matchesScope = appSession.subgroupStore.followedSubgroupIds.contains(subgroupId)
+                    } else if let subgroupIds = event.subgroupIds {
+                        matchesScope = !appSession.subgroupStore.followedSubgroupIds.intersection(subgroupIds).isEmpty
                     } else {
                         matchesScope = false
                     }

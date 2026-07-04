@@ -14,11 +14,11 @@ struct SubGroupMemberView: View {
     var body: some View {
         TabView {
             Tab("Home", systemImage: "house") {
-                ClubMemberHomeView()
+                SubgroupMemberHomeView()
             }
             
-            Tab("My Club", systemImage: "person.3") {
-                LeadMyClubView()
+            Tab("My Subgroup", systemImage: "person.3") {
+                LeadMySubgroupView()
             }
             
             Tab("Explore", systemImage: "globe") {

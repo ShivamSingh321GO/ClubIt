@@ -112,8 +112,8 @@ public struct Event: Identifiable, Hashable, Codable {
     public var registrationType: RegistrationType?
     public var location: String
     
-    public var clubId: UUID?
-    public var clubIds: [UUID]?
+    public var subgroupId: UUID?
+    public var subgroupIds: [UUID]?
     public var createdBy: UUID
     
     public var category: EventCategory
@@ -143,8 +143,8 @@ public struct Event: Identifiable, Hashable, Codable {
         case maxParticipants = "max_participants"
         case registrationType = "registration_type"
         case location
-        case clubId = "club_id"
-        case clubIds = "club_ids"
+        case subgroupId = "subgroup_id"
+        case subgroupIds = "subgroup_ids"
         case createdBy = "created_by"
         case category
         case status
@@ -157,7 +157,7 @@ public struct Event: Identifiable, Hashable, Codable {
         case createdAt = "created_at"
     }
 
-    public init(id: UUID, name: String, title: String, description: String, startDate: Date, endDate: Date, startTime: Date? = nil, endTime: Date? = nil, numberOfVolunteers: Int, numberOfRegistrations: Int? = nil, maxParticipants: Int, registrationType: RegistrationType? = nil, location: String, clubId: UUID?, clubIds: [UUID]? = nil, createdBy: UUID, category: EventCategory, status: EventStatus, isRegistrationOpen: Bool? = true, registrationDeadline: Date? = nil, bannerImage: String? = nil, imageData: Data? = nil, agenda: String? = nil, registrationForm: [RegistrationFormField]? = nil, createdAt: Date) {
+    public init(id: UUID, name: String, title: String, description: String, startDate: Date, endDate: Date, startTime: Date? = nil, endTime: Date? = nil, numberOfVolunteers: Int, numberOfRegistrations: Int? = nil, maxParticipants: Int, registrationType: RegistrationType? = nil, location: String, subgroupId: UUID?, subgroupIds: [UUID]? = nil, createdBy: UUID, category: EventCategory, status: EventStatus, isRegistrationOpen: Bool? = true, registrationDeadline: Date? = nil, bannerImage: String? = nil, imageData: Data? = nil, agenda: String? = nil, registrationForm: [RegistrationFormField]? = nil, createdAt: Date) {
         self.id = id
         self.name = name
         self.title = title
@@ -171,8 +171,8 @@ public struct Event: Identifiable, Hashable, Codable {
         self.maxParticipants = maxParticipants
         self.registrationType = registrationType
         self.location = location
-        self.clubId = clubId
-        self.clubIds = clubIds
+        self.subgroupId = subgroupId
+        self.subgroupIds = subgroupIds
         self.createdBy = createdBy
         self.category = category
         self.status = status
@@ -208,8 +208,8 @@ public struct Event: Identifiable, Hashable, Codable {
         maxParticipants = (try? container.decode(Int.self, forKey: .maxParticipants)) ?? 0
         registrationType = try? container.decode(RegistrationType.self, forKey: .registrationType)
         location = (try? container.decode(String.self, forKey: .location)) ?? ""
-        clubId = try? container.decodeIfPresent(UUID.self, forKey: .clubId)
-        clubIds = try? container.decodeIfPresent([UUID].self, forKey: .clubIds)
+        subgroupId = try? container.decodeIfPresent(UUID.self, forKey: .subgroupId)
+        subgroupIds = try? container.decodeIfPresent([UUID].self, forKey: .subgroupIds)
         createdBy = (try? container.decode(UUID.self, forKey: .createdBy)) ?? UUID()
         
         // Robust Enum Decoding
@@ -246,7 +246,7 @@ public struct Event: Identifiable, Hashable, Codable {
         try container.encode(maxParticipants, forKey: .maxParticipants)
         try container.encodeIfPresent(registrationType, forKey: .registrationType)
         try container.encode(location, forKey: .location)
-        try container.encodeIfPresent(clubId, forKey: .clubId)
+        try container.encodeIfPresent(subgroupId, forKey: .subgroupId)
         try container.encode(createdBy, forKey: .createdBy)
         try container.encode(category, forKey: .category)
         try container.encode(status, forKey: .status)
@@ -524,11 +524,11 @@ public struct Venue: Identifiable, Codable {
 public struct BookedSlot: Identifiable {
     public var id: UUID { event.id }
     public let event: Event
-    public let club: Club?
+    public let subgroup: Subgroup?
 
-    public init(event: Event, club: Club? = nil) {
+    public init(event: Event, subgroup: Subgroup? = nil) {
         self.event = event
-        self.club = club
+        self.subgroup = subgroup
     }
 
 }

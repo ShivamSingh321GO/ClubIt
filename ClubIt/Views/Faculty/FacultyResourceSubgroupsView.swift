@@ -1,0 +1,147 @@
+import SwiftUI
+import ClubItShared
+
+struct FacultyResourceSubgroupsView: View {
+    @Environment(AppSession.self) var appSession
+    
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+                // Removed Title and Subheadline as per user request
+                
+                if let facultyId = appSession.currentUser?.id {
+                    let assignedSubgroups = appSession.subgroupStore.allSubgroups.filter { $0.facultyId == facultyId }
+                    let subgroupIds = Set(assignedSubgroups.map { $0.id })
+                    
+                    let eventsWithPending = appSession.eventStore.events.filter { event in
+                        if let subgroupId = event.subgroupId {
+                            return subgroupIds.contains(subgroupId) && (
+                                appSession.approvalStore.resources.contains { $0.eventId == event.id && $0.status == .pending } ||
+                                appSession.approvalStore.approvals.contains { $0.eventId == event.id && $0.type == .venue && $0.status == .pending }
+                            )
+                        }
+                        return false
+                    }.sorted(by: { $0.startDate > $1.startDate })
+                    
+                    if eventsWithPending.isEmpty {
+                        FacultyEmptyStateView(icon: "calendar.badge.exclamationmark", title: "No Pending Requests", message: "There are no resource or venue requests currently requiring your approval.")
+                    } else {
+                        LazyVStack(spacing: 16) {
+                            ForEach(eventsWithPending) { event in
+                                if let subgroupId = event.subgroupId, let subgroup = assignedSubgroups.first(where: { $0.id == subgroupId }) {
+                                    NavigationLink(destination: SubgroupResourcesDetailView(subgroup: subgroup, event: event)) {
+                                        FacultyEventResourceCard(event: event, subgroup: subgroup)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+            .padding(.vertical)
+        }
+        .navigationTitle("Approval Management")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct FacultyEventResourceCard: View {
+    @Environment(AppSession.self) var appSession
+    let event: Event
+    let subgroup: Subgroup
+    
+    var body: some View {
+        let pendingResources = appSession.approvalStore.resources.filter { 
+            $0.eventId == event.id && $0.status == .pending 
+        }
+        let pendingVenues = appSession.approvalStore.approvals.filter { 
+            $0.eventId == event.id && $0.type == .venue && $0.status == .pending 
+        }
+        
+        let pendingCount = pendingResources.count + pendingVenues.count
+        
+        HStack(spacing: 16) {
+            // Subgroup Logo/Initials
+            ZStack {
+                Circle()
+                    .fill(Color.blue.gradient.opacity(0.1))
+                    .frame(width: 60, height: 60)
+                
+                Text(String(subgroup.name.prefix(1)))
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.blue)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(event.name)
+                    .font(.headline)
+                    .lineLimit(1)
+                
+                Text(subgroup.name)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 6) {
+                if pendingCount > 0 {
+                    Text("!")
+                        .font(.title3.bold())
+                        .foregroundColor(.accentColor)
+                        .frame(width: 40, height: 40)
+                        .background(Color.accentColor.opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+            
+            Image(systemName: "chevron.right")
+                .font(.caption.bold())
+                .foregroundColor(.secondary.opacity(0.3))
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                )
+        )
+        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+    }
+}
+
+struct FacultyEmptyStateView: View {
+    let icon: String
+    let title: String
+    let message: String
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 60))
+                .foregroundColor(.secondary.opacity(0.5))
+            
+            Text(title)
+                .font(.title3.bold())
+            
+            Text(message)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(40)
+        .frame(maxWidth: .infinity)
+    }
+}
+
+#Preview {
+    NavigationStack {
+        FacultyResourceSubgroupsView()
+            .environment(MockData.session(for: .groupSubLead))
+    }
+}

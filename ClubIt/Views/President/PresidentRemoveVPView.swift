@@ -9,7 +9,7 @@ struct PresidentRemoveVPView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Select a Vice President to remove their access from assigned clubs.")
+                    Text("Select a Vice President to remove their access from assigned subgroups.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
@@ -17,9 +17,9 @@ struct PresidentRemoveVPView: View {
                     VStack(spacing: 12) {
                         let vicePresidents = MockData.allMockUsers.filter { $0.role == .groupSubLead }
                         ForEach(vicePresidents) { vp in
-                            let assignedClubs = appSession.clubStore.allClubs.filter { $0.vicePresidentId == vp.id }
+                            let assignedSubgroups = appSession.subgroupStore.allSubgroups.filter { $0.vicePresidentId == vp.id }
                             
-                            NavigationLink(destination: VPClubRemovalDetailView(vp: vp)) {
+                            NavigationLink(destination: VPSubgroupRemovalDetailView(vp: vp)) {
                                 HStack(spacing: 16) {
                                     ZStack {
                                         Circle()
@@ -33,7 +33,7 @@ struct PresidentRemoveVPView: View {
                                         Text(vp.name)
                                             .font(.body.bold())
                                             .foregroundColor(.primary)
-                                        Text("\(assignedClubs.count) clubs assigned")
+                                        Text("\(assignedSubgroups.count) subgroups assigned")
                                             .font(.caption)
                                             .foregroundColor(.secondary)
                                     }
@@ -61,13 +61,13 @@ struct PresidentRemoveVPView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Remove Club")
+            .navigationTitle("Remove Subgroup")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
-struct VPClubRemovalDetailView: View {
+struct VPSubgroupRemovalDetailView: View {
     @Environment(AppSession.self) var appSession
     @Environment(\.dismiss) var dismiss
     let vp: User
@@ -76,7 +76,7 @@ struct VPClubRemovalDetailView: View {
     @State private var showingSuccessAlert = false
     
     var body: some View {
-        let assignedClubs = appSession.clubStore.allClubs.filter { $0.vicePresidentId == vp.id }
+        let assignedSubgroups = appSession.subgroupStore.allSubgroups.filter { $0.vicePresidentId == vp.id }
         
         VStack(alignment: .leading, spacing: 24) {
             // VP Info Header
@@ -100,19 +100,19 @@ struct VPClubRemovalDetailView: View {
             .cornerRadius(20)
             .padding(.horizontal)
             
-            Text("Select the clubs you want to remove from \(vp.name)'s oversight.")
+            Text("Select the subgroups you want to remove from \(vp.name)'s oversight.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
             
-            if assignedClubs.isEmpty {
+            if assignedSubgroups.isEmpty {
                 VStack(spacing: 16) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 48))
                         .foregroundColor(.accentColor)
-                    Text("No clubs assigned")
+                    Text("No subgroups assigned")
                         .font(.headline)
-                    Text("This Vice President currently has no club assignments.")
+                    Text("This Vice President currently has no subgroup assignments.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -122,12 +122,12 @@ struct VPClubRemovalDetailView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 12) {
-                        ForEach(assignedClubs) { club in
+                        ForEach(assignedSubgroups) { subgroup in
                             Button(action: {
-                                if selectedForRemoval.contains(club.id) {
-                                    selectedForRemoval.remove(club.id)
+                                if selectedForRemoval.contains(subgroup.id) {
+                                    selectedForRemoval.remove(subgroup.id)
                                 } else {
-                                    selectedForRemoval.insert(club.id)
+                                    selectedForRemoval.insert(subgroup.id)
                                 }
                             }) {
                                 HStack(spacing: 16) {
@@ -135,26 +135,26 @@ struct VPClubRemovalDetailView: View {
                                         Circle()
                                             .fill(Color.gray.opacity(0.1))
                                             .frame(width: 40, height: 40)
-                                        Text(String(club.name.prefix(1))).font(.caption.bold())
+                                        Text(String(subgroup.name.prefix(1))).font(.caption.bold())
                                     }
                                     
-                                    Text(club.name)
+                                    Text(subgroup.name)
                                         .font(.body.bold())
                                     
                                     Spacer()
                                     
-                                    Image(systemName: selectedForRemoval.contains(club.id) ? "checkmark.circle.fill" : "circle")
-                                        .foregroundColor(selectedForRemoval.contains(club.id) ? .red : .secondary)
+                                    Image(systemName: selectedForRemoval.contains(subgroup.id) ? "checkmark.circle.fill" : "circle")
+                                        .foregroundColor(selectedForRemoval.contains(subgroup.id) ? .red : .secondary)
                                         .font(.title3)
                                 }
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(selectedForRemoval.contains(club.id) ? Color.red.opacity(0.05) : Color.secondary.opacity(0.05))
+                                        .fill(selectedForRemoval.contains(subgroup.id) ? Color.red.opacity(0.05) : Color.secondary.opacity(0.05))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(selectedForRemoval.contains(club.id) ? Color.red.opacity(0.2) : Color.clear, lineWidth: 1)
+                                        .stroke(selectedForRemoval.contains(subgroup.id) ? Color.red.opacity(0.2) : Color.clear, lineWidth: 1)
                                 )
                             }
                             .buttonStyle(.plain)
@@ -166,7 +166,7 @@ struct VPClubRemovalDetailView: View {
             
             Spacer()
         }
-        .navigationTitle("Remove Club")
+        .navigationTitle("Remove Subgroup")
         .toolbar {
             if !selectedForRemoval.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -180,14 +180,14 @@ struct VPClubRemovalDetailView: View {
         .alert("Success", isPresented: $showingSuccessAlert) {
             Button("OK") { dismiss() }
         } message: {
-            Text("Selected clubs have been successfully removed.")
+            Text("Selected subgroups have been successfully removed.")
         }
     }
     
     private func removeSelectedAccess() {
-        for i in 0..<appSession.clubStore.allClubs.count {
-            if selectedForRemoval.contains(appSession.clubStore.allClubs[i].id) {
-                appSession.clubStore.allClubs[i].vicePresidentId = MockData.unassignedVPId
+        for i in 0..<appSession.subgroupStore.allSubgroups.count {
+            if selectedForRemoval.contains(appSession.subgroupStore.allSubgroups[i].id) {
+                appSession.subgroupStore.allSubgroups[i].vicePresidentId = MockData.unassignedVPId
             }
         }
         showingSuccessAlert = true

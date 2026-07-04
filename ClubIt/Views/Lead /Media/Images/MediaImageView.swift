@@ -2,7 +2,7 @@ import SwiftUI
 import ClubItShared
 
 struct MediaImageView: View {
-    let media: ClubImage
+    let media: SubgroupImage
     var contentMode: ContentMode = .fill
     
     @State private var loadedImage: UIImage? = nil
@@ -77,8 +77,8 @@ struct MediaImageView: View {
 
 #Preview {
     VStack {
-        MediaImageView(media: ClubImage(
-            clubId: UUID(),
+        MediaImageView(media: SubgroupImage(
+            subgroupId: UUID(),
             type: .image,
             title: "Asset Image",
             fileUrl: "image1",

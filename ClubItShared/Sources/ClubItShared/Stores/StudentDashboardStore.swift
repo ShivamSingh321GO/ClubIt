@@ -4,24 +4,24 @@ import Observation
 @Observable
 public final class StudentDashboardStore {
     public var searchText: String = ""
-    public var selectedCategory: ClubCategory? = nil
+    public var selectedCategory: SubgroupCategory? = nil
     
-    private var clubStore: ClubStore
+    private var subgroupStore: SubgroupStore
     private var eventStore: EventStore
     
     public var registeredEventIds: Set<UUID> = []
     
-    public init(clubStore: ClubStore, eventStore: EventStore) {
-        self.clubStore = clubStore
+    public init(subgroupStore: SubgroupStore, eventStore: EventStore) {
+        self.subgroupStore = subgroupStore
         self.eventStore = eventStore
     }
     
-    public var filteredClubs: [Club] {
-        clubStore.allClubs.filter { club in
+    public var filteredSubgroups: [Subgroup] {
+        subgroupStore.allSubgroups.filter { subgroup in
             let matchesSearch = searchText.isEmpty || 
-                                club.name.localizedCaseInsensitiveContains(searchText) || 
-                                (club.description ?? "").localizedCaseInsensitiveContains(searchText)
-            let matchesCategory = selectedCategory == nil || club.category == selectedCategory
+                                subgroup.name.localizedCaseInsensitiveContains(searchText) || 
+                                (subgroup.description ?? "").localizedCaseInsensitiveContains(searchText)
+            let matchesCategory = selectedCategory == nil || subgroup.category == selectedCategory
             return matchesSearch && matchesCategory
         }
     }
@@ -34,7 +34,7 @@ public final class StudentDashboardStore {
         }.sorted { $0.startDate < $1.startDate }
     }
     
-    public func selectCategory(_ category: ClubCategory?) {
+    public func selectCategory(_ category: SubgroupCategory?) {
         selectedCategory = category
     }
 }

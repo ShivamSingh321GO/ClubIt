@@ -11,7 +11,7 @@ struct CreateEventChatView: View {
     var onCreated: ((Chat) -> Void)? = nil
     
     private var suggestedUsers: [User] {
-        appSession.clubStore.allUsers.filter { $0.id != appSession.chatStore.userId }
+        appSession.subgroupStore.allUsers.filter { $0.id != appSession.chatStore.userId }
     }
     
     var filteredUsers: [User] {
@@ -112,7 +112,7 @@ struct CreateEventChatView: View {
                     Button {
                         let chat = appSession.chatStore.createEventChat(
                             name: eventName,
-                            clubId: appSession.currentUserClubId ?? UUID(),
+                            subgroupId: appSession.currentUserSubgroupId ?? UUID(),
                             icon: nil,
                             memberIds: Array(selectedUsers)
                         )

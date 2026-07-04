@@ -16,7 +16,7 @@ public struct SubscriptionPlan: Identifiable, Codable {
     public var id = UUID()
     public var planName: String
     public var billingCycle: BillingCycle
-    public var maxClubs: Int
+    public var maxSubgroups: Int
     public var maxUsers: Int
     public var features: [String]
     public var price: Double
@@ -27,7 +27,7 @@ public struct SubscriptionPlan: Identifiable, Codable {
         id: UUID = UUID(),
         planName: String,
         billingCycle: BillingCycle,
-        maxClubs: Int,
+        maxSubgroups: Int,
         maxUsers: Int,
         features: [String],
         price: Double,
@@ -36,7 +36,7 @@ public struct SubscriptionPlan: Identifiable, Codable {
         self.id = id
         self.planName = planName
         self.billingCycle = billingCycle
-        self.maxClubs = maxClubs
+        self.maxSubgroups = maxSubgroups
         self.maxUsers = maxUsers
         self.features = features
         self.price = price

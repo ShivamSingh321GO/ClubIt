@@ -72,7 +72,7 @@ public struct EventRoleAssignment: Identifiable, Codable {
     public var eventId: UUID
     public var role: EventRole
     
-    public var assignedTo: UUID      // ClubMember ID
+    public var assignedTo: UUID      // SubgroupMember ID
     public var assignedBy: UUID      // User ID
     
     public var assignedAt: Date

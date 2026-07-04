@@ -10,7 +10,7 @@ struct ActivityDetailView: View {
     
     private var postedByName: String {
         if activity.postedBy == appSession.currentUser?.id { return "You" }
-        return appSession.clubStore.allUsers.first(where: { $0.id == activity.postedBy })?.name ?? "Unknown"
+        return appSession.subgroupStore.allUsers.first(where: { $0.id == activity.postedBy })?.name ?? "Unknown"
     }
     
     var body: some View {
@@ -159,7 +159,7 @@ struct ActivityDetailView: View {
         description: "An in-depth session on using the new Observation framework, custom transitions, and complex layouts in SwiftUI 5.0.",
         date: Date().addingTimeInterval(86400),
         location: "Block C, Room 204",
-        clubId: UUID(),
+        subgroupId: UUID(),
         postedBy: UUID(),
         createdAt: Date()
     ))

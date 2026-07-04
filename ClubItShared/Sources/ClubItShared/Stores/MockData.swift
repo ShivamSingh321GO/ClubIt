@@ -3,7 +3,7 @@ import Foundation
 public struct MockData {
     public static let instituteId = UUID()
     
-    // Static IDs for Council
+    // Static IDs for Group
     public static let presidentId = UUID(uuidString: "db2cc487-3f38-473c-893c-20e352dfdd6b")!
     public static let vpTechId = UUID()
     public static let vpLitId = UUID()
@@ -12,25 +12,25 @@ public struct MockData {
     public static let unassignedVPId = UUID()
 
 
-    public struct MockClubBundle {
-        public let club: Club
+    public struct MockSubgroupBundle {
+        public let subgroup: Subgroup
         public let users: [User]
         public let events: [Event]
         public let announcements: [Announcement]
     }
 
-    public static let technoJamBundle: MockClubBundle = {
-        let clubId = UUID()
+    public static let technoJamBundle: MockSubgroupBundle = {
+        let subgroupId = UUID()
         let leadId = UUID()
         let facultyId = eventManagementFacultyId
-        let club = Club(
-            id: clubId,
+        let subgroup = Subgroup(
+            id: subgroupId,
             name: "Technojam",
             tagLine: "Shaping future tech leaders through innovation",
             description: "Technojam is a community of passionate individuals dedicated to exploring and creating innovative technological solutions.",
             category: .technical,
             logo: "technojamLogo",
-            clubLeadId: leadId,
+            subgroupLeadId: leadId,
             facultyId: facultyId,
 
             vicePresidentId: vpTechId,
@@ -52,16 +52,16 @@ public struct MockData {
         )
         
         let users = [
-            User(id: leadId, email: "tjlead", name: "Rahul", instituteId: instituteId, role: .subGroupLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3rd Year", bio: "TechnoJam club leader | UI designer", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "tjm1", name: "Shivam", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "tjm2", name: "Mayank", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Web developer", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "tjm3", name: "Rohan", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3nd Year", bio: "Web developer", createdAt: Date(), status: .active)
+            User(id: leadId, email: "tjlead", name: "Rahul", instituteId: instituteId, role: .subGroupLead, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3rd Year", bio: "TechnoJam subgroup leader | UI designer", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "tjm1", name: "Shivam", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "tjm2", name: "Mayank", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Web developer", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "tjm3", name: "Rohan", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3nd Year", bio: "Web developer", createdAt: Date(), status: .active)
         ]
         
         let events = [
-            Event(id: UUID(), name: "Tech Summit", title: "Annual Tech Summit 2025", description: "A grand gathering of technology enthusiasts.", startDate: Date().addingTimeInterval(3600 * 24 * 3), endDate: Date().addingTimeInterval(3600 * 24 * 3 + 3600 * 8), startTime: Date(), endTime: Date(), numberOfVolunteers: 10, numberOfRegistrations: 0, maxParticipants: 100, registrationType: .individual, location: "New Auditorium", clubId: clubId, createdBy: leadId, category: .technical, status: .pending, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 2), bannerImage: "banner1", agenda: "Opening keynote, Workshops", createdAt: Date()),
+            Event(id: UUID(), name: "Tech Summit", title: "Annual Tech Summit 2025", description: "A grand gathering of technology enthusiasts.", startDate: Date().addingTimeInterval(3600 * 24 * 3), endDate: Date().addingTimeInterval(3600 * 24 * 3 + 3600 * 8), startTime: Date(), endTime: Date(), numberOfVolunteers: 10, numberOfRegistrations: 0, maxParticipants: 100, registrationType: .individual, location: "New Auditorium", subgroupId: subgroupId, createdBy: leadId, category: .technical, status: .pending, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 2), bannerImage: "banner1", agenda: "Opening keynote, Workshops", createdAt: Date()),
             
-            Event(id: UUID(), name: "Web Dev Workshop", title: "Modern Web Development", description: "Learn React and Tailwind in this hands-on workshop.", startDate: Date().addingTimeInterval(3600 * 24 * 5), endDate: Date().addingTimeInterval(3600 * 24 * 5 + 3600 * 3), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 30, registrationType: .team, location: "Lab 3", clubId: clubId, createdBy: leadId, category: .technical, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 4), bannerImage: "banner1", agenda: "Intro, React Basics, Deployment", 
+            Event(id: UUID(), name: "Web Dev Workshop", title: "Modern Web Development", description: "Learn React and Tailwind in this hands-on workshop.", startDate: Date().addingTimeInterval(3600 * 24 * 5), endDate: Date().addingTimeInterval(3600 * 24 * 5 + 3600 * 3), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 30, registrationType: .team, location: "Lab 3", subgroupId: subgroupId, createdBy: leadId, category: .technical, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 4), bannerImage: "banner1", agenda: "Intro, React Basics, Deployment", 
                 registrationForm: [
                     RegistrationFormField(id: UUID(), label: "Full Name", type: .text),
                     RegistrationFormField(id: UUID(), label: "Student ID", type: .text),
@@ -71,28 +71,28 @@ public struct MockData {
                 ],
                 createdAt: Date()),
             
-            Event(id: UUID(), name: "AI Workshop 2025", title: "AI Workshop 2025", description: "Hands-on workshop on generative AI.", startDate: Date().addingTimeInterval(3600 * 24 * 7), endDate: Date().addingTimeInterval(3600 * 24 * 7 + 3600 * 4), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 50, registrationType: .individual, location: "Lab 5", clubId: clubId, createdBy: leadId, category: .ai, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 6), bannerImage: "banner1", agenda: "Intro, GenAI, Practical Lab", createdAt: Date())
+            Event(id: UUID(), name: "AI Workshop 2025", title: "AI Workshop 2025", description: "Hands-on workshop on generative AI.", startDate: Date().addingTimeInterval(3600 * 24 * 7), endDate: Date().addingTimeInterval(3600 * 24 * 7 + 3600 * 4), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 50, registrationType: .individual, location: "Lab 5", subgroupId: subgroupId, createdBy: leadId, category: .ai, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 6), bannerImage: "banner1", agenda: "Intro, GenAI, Practical Lab", createdAt: Date())
         ]
         
         let announcements = [
-            Announcement(id: UUID(), groupId: clubId, date: Date(), title: "Tech Summit 2024", content: "Registration for our annual Tech Summit is now open.", url: "https://technojam.com/summit", postedBy: leadId, createdAt: Date().addingTimeInterval(-7200))
+            Announcement(id: UUID(), groupId: subgroupId, date: Date(), title: "Tech Summit 2024", content: "Registration for our annual Tech Summit is now open.", url: "https://technojam.com/summit", postedBy: leadId, createdAt: Date().addingTimeInterval(-7200))
         ]
         
-        return MockClubBundle(club: club, users: users, events: events, announcements: announcements)
+        return MockSubgroupBundle(subgroup: subgroup, users: users, events: events, announcements: announcements)
     }()
 
-    public static let lingoFreaksBundle: MockClubBundle = {
-        let clubId = UUID()
+    public static let lingoFreaksBundle: MockSubgroupBundle = {
+        let subgroupId = UUID()
         let leadId = UUID()
         let facultyId = eventManagementFacultyId
-        let club = Club(
-            id: clubId,
+        let subgroup = Subgroup(
+            id: subgroupId,
             name: "Lingo Freaks",
             tagLine: "Beyond Borders, Beyond Languages",
-            description: "One Club. Many Voices. Literary & Language society.",
+            description: "One Subgroup. Many Voices. Literary & Language society.",
             category: .literary,
             logo: "lingofreaksLogo",
-            clubLeadId: leadId,
+            subgroupLeadId: leadId,
             facultyId: facultyId,
 
             vicePresidentId: vpLitId,
@@ -114,31 +114,31 @@ public struct MockData {
         )
         
         let users = [
-            User(id: leadId, email: "lflead", name: "Kavya", instituteId: instituteId, role: .subGroupLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.A. English", year: "3rd Year", bio: "Literature lover.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "lfm1", name: "Rohan", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "lfm2", name: "Rishi", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "lfm3", name: "Isha", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active)
+            User(id: leadId, email: "lflead", name: "Kavya", instituteId: instituteId, role: .subGroupLead, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.A. English", year: "3rd Year", bio: "Literature lover.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "lfm1", name: "Rohan", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "lfm2", name: "Rishi", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "lfm3", name: "Isha", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "Tech enthusiast.", createdAt: Date(), status: .active)
         ]
         
         let events = [
-            Event(id: UUID(), name: "Music Night", title: "Euphoria 2025", description: "Cultural event.", startDate: Date().addingTimeInterval(3600 * 24 * 7), endDate: Date().addingTimeInterval(3600 * 24 * 7 + 3600 * 4), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 300, registrationType: .individual, location: "New Auditorium", clubId: clubId, createdBy: leadId, category: .entertainment, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 6), bannerImage: "banner2", agenda: "Performances", createdAt: Date()),
-            Event(id: UUID(), name: "Debate Night", title: "Speak Up 2025", description: "Literary debate competition.", startDate: Date().addingTimeInterval(3600 * 24 * 10), endDate: Date().addingTimeInterval(3600 * 24 * 10 + 3600 * 3), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 100, registrationType: .individual, location: "A101", clubId: clubId, createdBy: leadId, category: .literary, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 9), bannerImage: "banner1", agenda: "Debate rounds", createdAt: Date())
+            Event(id: UUID(), name: "Music Night", title: "Euphoria 2025", description: "Cultural event.", startDate: Date().addingTimeInterval(3600 * 24 * 7), endDate: Date().addingTimeInterval(3600 * 24 * 7 + 3600 * 4), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 300, registrationType: .individual, location: "New Auditorium", subgroupId: subgroupId, createdBy: leadId, category: .entertainment, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 6), bannerImage: "banner2", agenda: "Performances", createdAt: Date()),
+            Event(id: UUID(), name: "Debate Night", title: "Speak Up 2025", description: "Literary debate competition.", startDate: Date().addingTimeInterval(3600 * 24 * 10), endDate: Date().addingTimeInterval(3600 * 24 * 10 + 3600 * 3), startTime: Date(), endTime: Date(), numberOfVolunteers: 5, numberOfRegistrations: 0, maxParticipants: 100, registrationType: .individual, location: "A101", subgroupId: subgroupId, createdBy: leadId, category: .literary, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 9), bannerImage: "banner1", agenda: "Debate rounds", createdAt: Date())
         ]
         
-        return MockClubBundle(club: club, users: users, events: events, announcements: [])
+        return MockSubgroupBundle(subgroup: subgroup, users: users, events: events, announcements: [])
     }()
 
-    public static let eCellBundle: MockClubBundle = {
-        let clubId = UUID()
+    public static let eCellBundle: MockSubgroupBundle = {
+        let subgroupId = UUID()
         let leadId = UUID()
-        let club = Club(
-            id: clubId,
+        let subgroup = Subgroup(
+            id: subgroupId,
             name: "E-cell",
             tagLine: "Innovation & Entrepreneurship",
             description: "Where innovative ideas transform into impactful ventures.",
             category: .entrepreneurship,
             logo: "ecellLogo",
-            clubLeadId: leadId,
+            subgroupLeadId: leadId,
             facultyId: eventManagementFacultyId,
             vicePresidentId: vpBizId,
 //            vicePresidentId: nil,
@@ -157,30 +157,30 @@ public struct MockData {
         )
         
         let users = [
-            User(id: leadId, email: "eclead", name: "Ishaan", instituteId: instituteId, role: .subGroupLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "ecm1", name: "Saanvi", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "ecm2", name: "Siddharth", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "ecm3", name: "Vihaan", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active)
+            User(id: leadId, email: "eclead", name: "Ishaan", instituteId: instituteId, role: .subGroupLead, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "ecm1", name: "Saanvi", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "ecm2", name: "Siddharth", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "ecm3", name: "Vihaan", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "MBA", year: "2nd Year", bio: "Entrepreneurial spirit.", createdAt: Date(), status: .active)
         ]
         
         let events = [
-            Event(id: UUID(), name: "Startup Pitch", title: "Idea Tank 2025", description: "Pitch your ideas to investors.", startDate: Date().addingTimeInterval(3600 * 24 * 15), endDate: Date().addingTimeInterval(3600 * 24 * 15 + 3600 * 5), startTime: Date(), endTime: Date(), numberOfVolunteers: 10, numberOfRegistrations: 0, maxParticipants: 50, registrationType: .individual, location: "Old Auditorium", clubId: clubId, createdBy: leadId, category: .entrepreneurship, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 14), bannerImage: "banner2", agenda: "Pitching rounds", createdAt: Date())
+            Event(id: UUID(), name: "Startup Pitch", title: "Idea Tank 2025", description: "Pitch your ideas to investors.", startDate: Date().addingTimeInterval(3600 * 24 * 15), endDate: Date().addingTimeInterval(3600 * 24 * 15 + 3600 * 5), startTime: Date(), endTime: Date(), numberOfVolunteers: 10, numberOfRegistrations: 0, maxParticipants: 50, registrationType: .individual, location: "Old Auditorium", subgroupId: subgroupId, createdBy: leadId, category: .entrepreneurship, status: .approved, registrationDeadline: Date().addingTimeInterval(3600 * 24 * 14), bannerImage: "banner2", agenda: "Pitching rounds", createdAt: Date())
         ]
         
-        return MockClubBundle(club: club, users: users, events: events, announcements: [])
+        return MockSubgroupBundle(subgroup: subgroup, users: users, events: events, announcements: [])
     }()
 
-    public static let quizzardsBundle: MockClubBundle = {
-        let clubId = UUID()
+    public static let quizzardsBundle: MockSubgroupBundle = {
+        let subgroupId = UUID()
         let leadId = UUID()
-        let club = Club(
-            id: clubId,
+        let subgroup = Subgroup(
+            id: subgroupId,
             name: "Quizzards",
             tagLine: "Challenge your mind",
             description: "The ultimate destination for trivia lovers.",
             category: .technical,
             logo: "quizzardsLogo",
-            clubLeadId: leadId,
+            subgroupLeadId: leadId,
             facultyId: eventManagementFacultyId,
 
             vicePresidentId: vpTechId,
@@ -201,43 +201,43 @@ public struct MockData {
         )
         
         let users = [
-            User(id: leadId, email: "qzlead", name: "Aditi", instituteId: instituteId, role: .subGroupLead, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "qzm1", name: "Rahul", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "qzm2", name: "Shivam", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
-            User(id: UUID(), email: "qzm3", name: "Harshit", instituteId: instituteId, role: .subGroupMember, clubId: clubId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active)
+            User(id: leadId, email: "qzlead", name: "Aditi", instituteId: instituteId, role: .subGroupLead, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "qzm1", name: "Rahul", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "qzm2", name: "Shivam", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active),
+            User(id: UUID(), email: "qzm3", name: "Harshit", instituteId: instituteId, role: .subGroupMember, subgroupId: subgroupId, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech IT", year: "4th Year", bio: "Quizzer.", createdAt: Date(), status: .active)
         ]
         
-        return MockClubBundle(club: club, users: users, events: [], announcements: [])
+        return MockSubgroupBundle(subgroup: subgroup, users: users, events: [], announcements: [])
     }()
 
     // MARK: - Collections
     public static let allBundles = [technoJamBundle, lingoFreaksBundle, eCellBundle, quizzardsBundle]
 
-    public static let allClubs: [Club] = allBundles.map { $0.club }
+    public static let allSubgroups: [Subgroup] = allBundles.map { $0.subgroup }
 
     public static let allMockUsers: [User] = {
         var users = allBundles.flatMap { $0.users }
         
 
         // Add President
-        users.append(User(id: presidentId, email: "president", name: "Kamakshi", instituteId: instituteId, role: .groupLead, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
+        users.append(User(id: presidentId, email: "president", name: "Kamakshi", instituteId: instituteId, role: .groupLead, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Administration", year: "N/A", bio: "University President", createdAt: Date(), status: .active))
         
         // Add Vice Presidents
-        users.append(User(id: vpTechId, email: "vpTech", name: "Rahul Sharma", instituteId: instituteId, role: .groupSubLead, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Council", year: "4th Year", bio: "VP Technical", createdAt: Date(), status: .active))
-        users.append(User(id: vpLitId, email: "vpLit", name: "Aryan", instituteId: instituteId, role: .groupSubLead, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Council", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
-        users.append(User(id: vpBizId, email: "vpBiz", name: "Ishaan Verma", instituteId: instituteId, role: .groupSubLead, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Council", year: "4th Year", bio: "VP Professional", createdAt: Date(), status: .active))
+        users.append(User(id: vpTechId, email: "vpTech", name: "Rahul Sharma", instituteId: instituteId, role: .groupSubLead, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Group", year: "4th Year", bio: "VP Technical", createdAt: Date(), status: .active))
+        users.append(User(id: vpLitId, email: "vpLit", name: "Aryan", instituteId: instituteId, role: .groupSubLead, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Group", year: "4th Year", bio: "VP Literary", createdAt: Date(), status: .active))
+        users.append(User(id: vpBizId, email: "vpBiz", name: "Ishaan Verma", instituteId: instituteId, role: .groupSubLead, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Group", year: "4th Year", bio: "VP Professional", createdAt: Date(), status: .active))
 
         // Add Event Management Team
-        users.append(User(id: eventManagementFacultyId, email: "emt", name: "Event Management Team", instituteId: instituteId, role: .groupSubLead, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Administration", year: "N/A", bio: "Centralized Event Management Team Hub", createdAt: Date(), status: .active))
+        users.append(User(id: eventManagementFacultyId, email: "emt", name: "Event Management Team", instituteId: instituteId, role: .groupSubLead, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "Administration", year: "N/A", bio: "Centralized Event Management Team Hub", createdAt: Date(), status: .active))
         
         // Add more members for TechJam
-//        users.append(User(id: UUID(), email: "tjm3", name: "Ananya", instituteId: instituteId, role: .subGroupMember, clubId: technoJamBundle.club.id, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "AI enthusiast.", createdAt: Date(), status: .active))
-//        users.append(User(id: UUID(), email: "tjm4", name: "Rohan", instituteId: instituteId, role: .subGroupMember, clubId: technoJamBundle.club.id, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3rd Year", bio: "Designer", createdAt: Date(), status: .active))
+//        users.append(User(id: UUID(), email: "tjm3", name: "Ananya", instituteId: instituteId, role: .subGroupMember, subgroupId: technoJamBundle.subgroup.id, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "2nd Year", bio: "AI enthusiast.", createdAt: Date(), status: .active))
+//        users.append(User(id: UUID(), email: "tjm4", name: "Rohan", instituteId: instituteId, role: .subGroupMember, subgroupId: technoJamBundle.subgroup.id, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech CSE", year: "3rd Year", bio: "Designer", createdAt: Date(), status: .active))
         
         // Add more students
-        users.append(User(id: UUID(), email: "s1", name: "Priya", instituteId: instituteId, role: .guest, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "B.Sc Physics", year: "1st Year", bio: "user2", createdAt: Date(), status: .active))
-        users.append(User(id: UUID(), email: "s2", name: "Amit", instituteId: instituteId, role: .guest, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "B.Com", year: "2nd Year", bio: "", createdAt: Date(), status: .active))
-        users.append(User(id: UUID(), email: "s3", name: "Sneha", instituteId: instituteId, role: .guest, clubId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech ME", year: "4th Year", bio: "", createdAt: Date(), status: .active))
+        users.append(User(id: UUID(), email: "s1", name: "Priya", instituteId: instituteId, role: .guest, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "B.Sc Physics", year: "1st Year", bio: "user2", createdAt: Date(), status: .active))
+        users.append(User(id: UUID(), email: "s2", name: "Amit", instituteId: instituteId, role: .guest, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "B.Com", year: "2nd Year", bio: "", createdAt: Date(), status: .active))
+        users.append(User(id: UUID(), email: "s3", name: "Sneha", instituteId: instituteId, role: .guest, subgroupId: nil, profileImg: "user2", phoneNumber: "0000000000", course: "B.Tech ME", year: "4th Year", bio: "", createdAt: Date(), status: .active))
         
         return users
     }()
@@ -246,27 +246,27 @@ public struct MockData {
     
     public static let sampleAnnouncements: [Announcement] = allBundles.flatMap { $0.announcements }
 
-    public static let technoJamClub = technoJamBundle.club
-    public static let lingoFreaksClub = lingoFreaksBundle.club
-    public static let eCellClub = eCellBundle.club
-    public static let quizzardsClub = quizzardsBundle.club
+    public static let technoJamSubgroup = technoJamBundle.subgroup
+    public static let lingoFreaksSubgroup = lingoFreaksBundle.subgroup
+    public static let eCellSubgroup = eCellBundle.subgroup
+    public static let quizzardsSubgroup = quizzardsBundle.subgroup
     
-    public static let tj_id = technoJamBundle.club.id
-    public static let lf_id = lingoFreaksBundle.club.id
-    public static let ec_id = eCellBundle.club.id
-    public static let qz_id = quizzardsBundle.club.id
+    public static let tj_id = technoJamBundle.subgroup.id
+    public static let lf_id = lingoFreaksBundle.subgroup.id
+    public static let ec_id = eCellBundle.subgroup.id
+    public static let qz_id = quizzardsBundle.subgroup.id
 
-    public static let clubLeadUser = allMockUsers.first { $0.role == .subGroupLead } ?? allMockUsers.first ?? placeholderUser
+    public static let subgroupLeadUser = allMockUsers.first { $0.role == .subGroupLead } ?? allMockUsers.first ?? placeholderUser
     public static let facultyResource = allMockUsers.first { $0.email == "tjfac" } ?? allMockUsers.first ?? placeholderUser
     public static let facultyVenue = allMockUsers.first { $0.email == "lffac" } ?? allMockUsers.first ?? placeholderUser
     public static let studentUser = allMockUsers.first { $0.role == .guest } ?? allMockUsers.first ?? placeholderUser
     
-    public static let placeholderUser = User(id: UUID(), email: "placeholder", name: "User", instituteId: instituteId, role: .guest, clubId: nil, profileImg: "user2", phoneNumber: "", course: "", year: "", bio: "", createdAt: Date(), status: .active)
+    public static let placeholderUser = User(id: UUID(), email: "placeholder", name: "User", instituteId: instituteId, role: .guest, subgroupId: nil, profileImg: "user2", phoneNumber: "", course: "", year: "", bio: "", createdAt: Date(), status: .active)
 
     public static let sampleApprovals: [Approval] = {
         let techSummitId = sampleEvents.first { $0.title.contains("Annual Tech Summit") }?.id ?? UUID()
         let musicNightId = sampleEvents.first { $0.title.contains("Euphoria") }?.id ?? UUID()
-        let leadId = clubLeadUser.id
+        let leadId = subgroupLeadUser.id
         
         return [
             Approval(id: UUID(), type: .event, senderId: leadId, receiverId: facultyResource.id, eventId: techSummitId, approvalRelatedId: techSummitId, status: .pending, remarks: [Remark(id: UUID(), approvalId: UUID(), authorId: leadId, content: "Event creation approval requested", createdAt: Date().addingTimeInterval(-172800))], createdAt: Date().addingTimeInterval(-172800), updatedAt: Date()),
@@ -281,7 +281,7 @@ public struct MockData {
         let musicNightId = sampleEvents.first { $0.title.contains("Euphoria") }?.id ?? UUID()
         let startupPitchId = sampleEvents.first { $0.title.contains("Idea Tank") }?.id ?? UUID()
         
-        let leadId = clubLeadUser.id
+        let leadId = subgroupLeadUser.id
         
         return [
             // Technojam University Resources
@@ -308,7 +308,7 @@ public struct MockData {
     public static let sampleBudgets: [Budget] = {
         let techSummitId = sampleEvents.first { $0.title.contains("Annual Tech Summit") }?.id ?? UUID()
         let musicNightId = sampleEvents.first { $0.title.contains("Euphoria") }?.id ?? UUID()
-        let leadId = clubLeadUser.id
+        let leadId = subgroupLeadUser.id
         
         return [
             Budget(id: UUID(), eventId: techSummitId, itemName: "Swags & T-shirts", unitPrice: 500, quantity: 100, status: .pending, addedBy: leadId, remarks: [], createdAt: Date().addingTimeInterval(-86400)),

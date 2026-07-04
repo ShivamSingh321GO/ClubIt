@@ -34,10 +34,10 @@ struct HomeTasksModule: View {
 
 #Preview {
     let session = AppSession()
-    session.currentUser = MockData.clubLeadUser
+    session.currentUser = MockData.subgroupLeadUser
     
     return NavigationStack {
-        HomeTasksModule(user: MockData.clubLeadUser)
+        HomeTasksModule(user: MockData.subgroupLeadUser)
             .environment(session)
     }
 }

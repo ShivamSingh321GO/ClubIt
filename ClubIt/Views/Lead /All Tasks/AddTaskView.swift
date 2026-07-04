@@ -9,16 +9,16 @@ struct AddTaskView: View {
     enum AssignmentType: String, CaseIterable, Identifiable {
         case myself = "Myself"
         case subGroupMember = "SubGroup Member"
-        case club = "Club"
+        case subgroup = "Subgroup"
         case groupSubLead = "Group SubLead"
         var id: String { self.rawValue }
     }
     
     // State properties
     @State private var assignmentType: AssignmentType = .myself
-    @State private var selectedOtherClubId: UUID? = nil
+    @State private var selectedOtherSubgroupId: UUID? = nil
     @State private var selectedMemberId: UUID? = nil
-    @State private var selectedClubLeadId: UUID? = nil
+    @State private var selectedSubgroupLeadId: UUID? = nil
     @State private var selectedVicePresidentId: UUID? = nil
     @State private var title: String = ""
     @State private var description: String = ""
@@ -29,18 +29,18 @@ struct AddTaskView: View {
     // Track initialization to avoid infinite loops
     @State private var isFirstAppear = true
     
-    private var clubMembers: [User] {
-        guard let clubId = appSession.currentUserClubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && ($0.role == .subGroupMember || $0.role == .subGroupLead) && $0.id != appSession.currentUser?.id }
+    private var subgroupMembers: [User] {
+        guard let subgroupId = appSession.currentUserSubgroupId else { return [] }
+        return appSession.subgroupStore.allUsers.filter { $0.subgroupId == subgroupId && ($0.role == .subGroupMember || $0.role == .subGroupLead) && $0.id != appSession.currentUser?.id }
     }
     
-    private var availableClubLeads: [User] {
-        guard let clubId = selectedOtherClubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupLead }
+    private var availableSubgroupLeads: [User] {
+        guard let subgroupId = selectedOtherSubgroupId else { return [] }
+        return appSession.subgroupStore.allUsers.filter { $0.subgroupId == subgroupId && $0.role == .subGroupLead }
     }
     
     private var vicePresidents: [User] {
-        return appSession.clubStore.allUsers.filter { $0.role == .groupSubLead && $0.id != appSession.currentUser?.id }
+        return appSession.subgroupStore.allUsers.filter { $0.role == .groupSubLead && $0.id != appSession.currentUser?.id }
     }
     
     private var filteredEvents: [Event] {
@@ -54,20 +54,20 @@ struct AddTaskView: View {
                 $0.status == .approved || $0.status == .published || isVPApproved($0)
             }
         }
-        guard let clubId = appSession.currentUserClubId else { return [] }
+        guard let subgroupId = appSession.currentUserSubgroupId else { return [] }
         return appSession.eventStore.events.filter { 
-            $0.clubId == clubId && ($0.status == .approved || $0.status == .published || isVPApproved($0))
+            $0.subgroupId == subgroupId && ($0.status == .approved || $0.status == .published || isVPApproved($0))
         }
     }
     
     private var availableAssignmentTypes: [AssignmentType] {
         let role = appSession.currentUser?.role
         if role == .groupLead {
-            return [.myself, .groupSubLead, .club]
+            return [.myself, .groupSubLead, .subgroup]
         } else if role == .groupSubLead {
-            return [.myself, .club]
+            return [.myself, .subgroup]
         } else {
-            return [.myself, .subGroupMember, .club]
+            return [.myself, .subGroupMember, .subgroup]
         }
     }
     
@@ -113,27 +113,27 @@ struct AddTaskView: View {
                         displayValue: { $0.rawValue }
                     )
                     
-                    if assignmentType == .club {
+                    if assignmentType == .subgroup {
                         optionalNavigationRow(
-                            title: "Select Club",
-                            selection: $selectedOtherClubId,
-                            options: appSession.clubStore.allClubs.filter { $0.id != appSession.currentUser?.clubId }.map { $0.id },
-                            noneLabel: "Select a club",
-                            displayValue: { id in appSession.clubStore.allClubs.first(where: { $0.id == id })?.name ?? "Unknown" }
+                            title: "Select Subgroup",
+                            selection: $selectedOtherSubgroupId,
+                            options: appSession.subgroupStore.allSubgroups.filter { $0.id != appSession.currentUser?.subgroupId }.map { $0.id },
+                            noneLabel: "Select a subgroup",
+                            displayValue: { id in appSession.subgroupStore.allSubgroups.first(where: { $0.id == id })?.name ?? "Unknown" }
                         )
-                        .onChange(of: selectedOtherClubId) { _, newValue in
-                            if let clubId = newValue {
-                                selectedClubLeadId = appSession.clubStore.allClubs.first(where: { $0.id == clubId })?.clubLeadId
+                        .onChange(of: selectedOtherSubgroupId) { _, newValue in
+                            if let subgroupId = newValue {
+                                selectedSubgroupLeadId = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId })?.subgroupLeadId
                             }
                         }
                         
-                        if selectedOtherClubId != nil {
+                        if selectedOtherSubgroupId != nil {
                             optionalNavigationRow(
-                                title: "Select Club Lead",
-                                selection: $selectedClubLeadId,
-                                options: availableClubLeads.map { $0.id },
+                                title: "Select Subgroup Lead",
+                                selection: $selectedSubgroupLeadId,
+                                options: availableSubgroupLeads.map { $0.id },
                                 noneLabel: "Select a lead",
-                                displayValue: { id in availableClubLeads.first(where: { $0.id == id })?.name ?? "Unknown" }
+                                displayValue: { id in availableSubgroupLeads.first(where: { $0.id == id })?.name ?? "Unknown" }
                             )
                         }
                     }
@@ -142,9 +142,9 @@ struct AddTaskView: View {
                         optionalNavigationRow(
                             title: "Select Member",
                             selection: $selectedMemberId,
-                            options: clubMembers.map { $0.id },
+                            options: subgroupMembers.map { $0.id },
                             noneLabel: "Select a member",
-                            displayValue: { id in clubMembers.first(where: { $0.id == id })?.name ?? "Unknown" }
+                            displayValue: { id in subgroupMembers.first(where: { $0.id == id })?.name ?? "Unknown" }
                         )
                     }
                     
@@ -224,10 +224,10 @@ struct AddTaskView: View {
         deadline = task.deadline
         selectedEventId = task.eventId
         
-        if let targetId = task.targetClubId {
-            assignmentType = .club
-            selectedOtherClubId = targetId
-            selectedClubLeadId = task.assignedTo
+        if let targetId = task.targetSubgroupId {
+            assignmentType = .subgroup
+            selectedOtherSubgroupId = targetId
+            selectedSubgroupLeadId = task.assignedTo
         } else if task.assignedToRole == .subGroupMember {
             assignmentType = .subGroupMember
             selectedMemberId = task.assignedTo
@@ -244,7 +244,7 @@ struct AddTaskView: View {
         
         var assignedToId = currentUser.id
         var assignedToRole = currentUser.role
-        var targetClubId: UUID? = nil
+        var targetSubgroupId: UUID? = nil
         
         switch assignmentType {
         case .myself:
@@ -252,19 +252,19 @@ struct AddTaskView: View {
             assignedToRole = currentUser.role
         case .subGroupMember:
             if let memberId = selectedMemberId,
-               let member = appSession.clubStore.allUsers.first(where: { $0.id == memberId }) {
+               let member = appSession.subgroupStore.allUsers.first(where: { $0.id == memberId }) {
                 assignedToId = memberId
                 assignedToRole = member.role
             }
-        case .club:
-            if let clubId = selectedOtherClubId, let leadId = selectedClubLeadId {
+        case .subgroup:
+            if let subgroupId = selectedOtherSubgroupId, let leadId = selectedSubgroupLeadId {
                 assignedToId = leadId
                 assignedToRole = .subGroupLead
-                targetClubId = clubId
+                targetSubgroupId = subgroupId
             }
         case .groupSubLead:
             if let vpId = selectedVicePresidentId,
-               let vp = appSession.clubStore.allUsers.first(where: { $0.id == vpId }) {
+               let vp = appSession.subgroupStore.allUsers.first(where: { $0.id == vpId }) {
                 assignedToId = vpId
                 assignedToRole = vp.role
             }
@@ -274,11 +274,11 @@ struct AddTaskView: View {
         let creationDate = initialTask?.createdAt ?? now
         let updatedDate = initialTask != nil ? now : creationDate
         
-        let defaultClubId = appSession.clubStore.allClubs.first?.id ?? UUID()
+        let defaultSubgroupId = appSession.subgroupStore.allSubgroups.first?.id ?? UUID()
         let taskToSave = Tasks(
             id: initialTask?.id ?? UUID(),
-            clubId: targetClubId ?? appSession.currentUserClubId ?? defaultClubId,
-            targetClubId: targetClubId,
+            subgroupId: targetSubgroupId ?? appSession.currentUserSubgroupId ?? defaultSubgroupId,
+            targetSubgroupId: targetSubgroupId,
             eventId: selectedEventId,
             title: title,
             description: description,

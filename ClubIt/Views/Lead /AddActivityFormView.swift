@@ -68,7 +68,7 @@ struct AddActivityFormView: View {
             description: description,
             date: date,
             location: location.isEmpty ? nil : location,
-            clubId: appSession.clubStore.club.id,
+            subgroupId: appSession.subgroupStore.subgroup.id,
             postedBy: user.id,
             createdAt: Date()
         )

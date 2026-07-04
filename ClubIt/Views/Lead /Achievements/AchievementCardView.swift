@@ -53,8 +53,8 @@ struct AchievementCardView: View {
     AchievementCardView(
         achievement: Achievement(
             id: UUID(),
-            clubId: UUID(),
-            title: "Best Technical Club Award",
+            subgroupId: UUID(),
+            title: "Best Technical Subgroup Award",
             description: "Recognized for exceptional performance, impactful events, and outstanding student engagement throughout the academic year.",
             type: .award,
             createdAt: .now

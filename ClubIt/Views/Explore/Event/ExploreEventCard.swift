@@ -217,14 +217,14 @@ struct ExploreEventCard: View {
     }
     
     private var hostName: String {
-        if let clubIds = event.clubIds, !clubIds.isEmpty {
-            let names = clubIds.compactMap { id in appSession.clubStore.allClubs.first(where: { $0.id == id })?.name }
+        if let subgroupIds = event.subgroupIds, !subgroupIds.isEmpty {
+            let names = subgroupIds.compactMap { id in appSession.subgroupStore.allSubgroups.first(where: { $0.id == id })?.name }
             return names.joined(separator: ", ")
         }
-        if let clubId = event.clubId {
-            return appSession.clubStore.allClubs.first(where: { $0.id == clubId })?.name ?? "Organizer"
+        if let subgroupId = event.subgroupId {
+            return appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId })?.name ?? "Organizer"
         }
-        return "Council Event"
+        return "Group Event"
     }
     
     private var formattedDate: String {
@@ -283,7 +283,7 @@ struct ExploreEventCard: View {
                 maxParticipants: 150,
                 registrationType: .individual,
                 location: "C-Block",
-                clubId: UUID(),
+                subgroupId: UUID(),
                 createdBy: UUID(),
                 category: .entertainment,
                 status: .approved,

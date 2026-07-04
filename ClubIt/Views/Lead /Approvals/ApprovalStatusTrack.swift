@@ -8,17 +8,17 @@ struct ApprovalStatusTrack: View {
     var body: some View {
         let eventId = approval.eventId ?? UUID()
         let event = appSession.eventStore.events.first(where: { $0.id == eventId })
-        let club = appSession.clubStore.allClubs.first(where: { $0.id == event?.clubId })
+        let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == event?.subgroupId })
         
         let allApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId }
         let allBudgets = appSession.approvalStore.budgets.filter { $0.eventId == eventId }
         let allResources = appSession.approvalStore.resources.filter { $0.eventId == eventId }
         
         // 1. VP Step Status
-        let hasVP = club?.vicePresidentId != nil
+        let hasVP = subgroup?.vicePresidentId != nil
         let vpStatusText = hasVP ? "VP" : "VP (N/A)"
         let vpApproved = !hasVP || 
-            allApprovals.contains { $0.type == .event && $0.status == .approved && $0.receiverId == club?.vicePresidentId } ||
+            allApprovals.contains { $0.type == .event && $0.status == .approved && $0.receiverId == subgroup?.vicePresidentId } ||
             !allBudgets.isEmpty ||
             allApprovals.contains { $0.type == .budget || $0.type == .resource || $0.type == .venue }
         
@@ -31,7 +31,7 @@ struct ApprovalStatusTrack: View {
         
         // 3. EMT Step Status
         let emtApproved = presidentApproved && (
-            allApprovals.filter { $0.type == .event && $0.receiverId == (club?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!) }.allSatisfy { $0.status == .approved } &&
+            allApprovals.filter { $0.type == .event && $0.receiverId == (subgroup?.facultyId ?? UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!) }.allSatisfy { $0.status == .approved } &&
             allResources.allSatisfy { $0.status == .approved } &&
             allApprovals.filter { $0.type == .venue }.allSatisfy { $0.status == .approved }
         )

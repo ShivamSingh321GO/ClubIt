@@ -101,7 +101,7 @@ struct CreateAnnouncementView: View {
             trimmedContent,
             trimmedURL,
             announcement?.postedBy ?? currentUser.id,
-            announcement?.groupId ?? currentUser.clubId,
+            announcement?.groupId ?? currentUser.subgroupId,
             currentUser.organizationId
         )
         

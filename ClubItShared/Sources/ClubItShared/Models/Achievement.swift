@@ -33,7 +33,7 @@ public enum AchievementType: String, Codable, CaseIterable, Identifiable {
 
 public struct Achievement: Identifiable, Codable {
     public var id: UUID
-    public var clubId: UUID
+    public var subgroupId: UUID
     public var title: String
     public var description: String
     public var type: AchievementType
@@ -41,7 +41,7 @@ public struct Achievement: Identifiable, Codable {
 
     public enum CodingKeys: String, CodingKey {
         case id
-        case clubId = "club_id"
+        case subgroupId = "subgroup_id"
         case title
         case description
         case type
@@ -50,14 +50,14 @@ public struct Achievement: Identifiable, Codable {
 
     public init(
         id: UUID,
-        clubId: UUID,
+        subgroupId: UUID,
         title: String,
         description: String,
         type: AchievementType,
         createdAt: Date
     ) {
         self.id = id
-        self.clubId = clubId
+        self.subgroupId = subgroupId
         self.title = title
         self.description = description
         self.type = type

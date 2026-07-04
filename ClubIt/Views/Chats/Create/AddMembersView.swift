@@ -12,7 +12,7 @@ struct AddMembersView: View {
     @State private var isAdding = false
     
     private var availableUsers: [User] {
-        appSession.clubStore.allUsers.filter { user in
+        appSession.subgroupStore.allUsers.filter { user in
             !existingParticipantIds.contains(user.id) && user.id != appSession.chatStore.userId
         }
     }

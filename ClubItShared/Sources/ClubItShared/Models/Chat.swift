@@ -42,7 +42,7 @@ public struct Chat: Identifiable, Codable, Equatable, Hashable {
     public var name: String?
     public var description: String?
     public var icon: String?
-    public var clubId: UUID?
+    public var subgroupId: UUID?
     public var parentChatId: UUID?
     public var createdBy: UUID
     public var createdAt: Date
@@ -66,7 +66,7 @@ public struct Chat: Identifiable, Codable, Equatable, Hashable {
         case name
         case description
         case icon
-        case clubId = "club_id"
+        case subgroupId = "subgroup_id"
         case parentChatId = "parent_chat_id"
         case createdBy = "created_by"
         case createdAt = "created_at"
@@ -83,7 +83,7 @@ public struct Chat: Identifiable, Codable, Equatable, Hashable {
         name: String? = nil,
         description: String? = nil,
         icon: String? = nil,
-        clubId: UUID? = nil,
+        subgroupId: UUID? = nil,
         parentChatId: UUID? = nil,
         createdBy: UUID,
         createdAt: Date,
@@ -102,7 +102,7 @@ public struct Chat: Identifiable, Codable, Equatable, Hashable {
         self.name = name
         self.description = description
         self.icon = icon
-        self.clubId = clubId
+        self.subgroupId = subgroupId
         self.parentChatId = parentChatId
         self.createdBy = createdBy
         self.createdAt = createdAt
@@ -227,7 +227,7 @@ public struct InsertChat: Encodable {
     public let name: String?
     public let description: String?
     public let icon: String?
-    public let club_id: UUID?
+    public let subgroup_id: UUID?
     public let parent_chat_id: UUID?
     public let created_by: UUID
     public let created_at: String
@@ -238,7 +238,7 @@ public struct InsertChat: Encodable {
         name: String? = nil,
         description: String? = nil,
         icon: String? = nil,
-        club_id: UUID? = nil,
+        subgroup_id: UUID? = nil,
         parent_chat_id: UUID? = nil,
         created_by: UUID,
         created_at: String
@@ -248,7 +248,7 @@ public struct InsertChat: Encodable {
         self.name = name
         self.description = description
         self.icon = icon
-        self.club_id = club_id
+        self.subgroup_id = subgroup_id
         self.parent_chat_id = parent_chat_id
         self.created_by = created_by
         self.created_at = created_at

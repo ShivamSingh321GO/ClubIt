@@ -32,10 +32,10 @@ struct UserSelectionGridItem: View {
     let isSelected: Bool
     let onToggle: () -> Void
     
-    private var clubName: String {
-        if let clubId = user.clubId,
-           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
-            return club.name
+    private var subgroupName: String {
+        if let subgroupId = user.subgroupId,
+           let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
+            return subgroup.name
         }
         return roleName(for: user.role)
     }
@@ -66,7 +66,7 @@ struct UserSelectionGridItem: View {
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     
-                    Text(clubName)
+                    Text(subgroupName)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
@@ -93,10 +93,10 @@ struct UserGridItem: View {
     @Environment(AppSession.self) private var appSession
     let user: User
     
-    private var clubName: String {
-        if let clubId = user.clubId,
-           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
-            return club.name
+    private var subgroupName: String {
+        if let subgroupId = user.subgroupId,
+           let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
+            return subgroup.name
         }
         return roleName(for: user.role)
     }
@@ -110,7 +110,7 @@ struct UserGridItem: View {
                     .font(.subheadline.bold())
                     .lineLimit(1)
                 
-                Text(clubName)
+                Text(subgroupName)
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .lineLimit(1)

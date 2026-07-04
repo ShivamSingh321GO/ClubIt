@@ -40,7 +40,7 @@ struct MessageBubble: View {
             return display
         }
         
-        if cleanContent == "All club members were added by the organizer" {
+        if cleanContent == "All subgroup members were added by the organizer" {
             if !isCurrentChatCreator {
                 return "You were added by the organizer"
             }
@@ -50,7 +50,7 @@ struct MessageBubble: View {
     }
     
     private var senderUser: User? {
-        appSession.clubStore.allUsers.first(where: { $0.id == message.senderId })
+        appSession.subgroupStore.allUsers.first(where: { $0.id == message.senderId })
     }
     
     var body: some View {

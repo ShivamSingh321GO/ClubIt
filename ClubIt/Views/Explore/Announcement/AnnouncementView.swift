@@ -58,7 +58,7 @@ private struct AnnouncementCard: View {
     }
     
     private var posterName: String {
-        let posterRole = appSession.clubStore.allUsers.first(where: { $0.id == announcement.postedBy })?.role
+        let posterRole = appSession.subgroupStore.allUsers.first(where: { $0.id == announcement.postedBy })?.role
         if posterRole == .groupLead {
             return "President"
         } else if posterRole == .groupSubLead {
@@ -94,12 +94,12 @@ private struct AnnouncementCard: View {
                             .font(.subheadline)
                             .fontWeight(.bold)
                             .foregroundColor(.accentColor))
-                    } else if let clubId = announcement.groupId,
-                       let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
+                    } else if let subgroupId = announcement.groupId,
+                       let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
                         (Text("Posted by ")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                        + Text(club.name)
+                        + Text(subgroup.name)
                             .font(.subheadline)
                             .fontWeight(.bold)
                             .foregroundColor(.primary))

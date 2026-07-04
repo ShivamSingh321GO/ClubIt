@@ -49,13 +49,13 @@ struct MemberProfileView: View {
                     Label(user.year ?? "N/A", systemImage: "graduationcap")
                 }
                 
-                // MARK: - Club
-                Section("Club") {
-                    if let clubId = user.clubId,
-                       let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
+                // MARK: - Subgroup
+                Section("Subgroup") {
+                    if let subgroupId = user.subgroupId,
+                       let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
                         
                         HStack {
-                            Text(club.name)
+                            Text(subgroup.name)
                             
                             Spacer()
                             
@@ -64,7 +64,7 @@ struct MemberProfileView: View {
                                 .foregroundStyle(.secondary)
                         }
                     } else {
-                        Text("Not part of any club")
+                        Text("Not part of any subgroup")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -105,11 +105,11 @@ struct MemberProfileView: View {
                 }
             }
             .refreshable {
-                try? await appSession.clubStore.fetchAllUsers()
+                try? await appSession.subgroupStore.fetchAllUsers()
             }
             .task {
                 isLoading = true
-                try? await appSession.clubStore.fetchAllUsers()
+                try? await appSession.subgroupStore.fetchAllUsers()
                 isLoading = false
             }
             .overlay {

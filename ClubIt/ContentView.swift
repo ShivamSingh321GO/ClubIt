@@ -15,10 +15,10 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     
                     NavigationLink {
-                        ClubAnnouncementListView()
+                        SubgroupAnnouncementListView()
                     } label: {
                         HStack(spacing: 6) {
-                            Text("Club announcement")
+                            Text("Subgroup announcement")
                                 .font(.title3.weight(.semibold))
                                 .foregroundStyle(.primary)
                             
@@ -37,10 +37,10 @@ struct ContentView: View {
     }
 }
 
-struct ClubAnnouncementListView: View {
+struct SubgroupAnnouncementListView: View {
     var body: some View {
-        Text("Club Announcements")
-            .navigationTitle("Club Announcement")
+        Text("Subgroup Announcements")
+            .navigationTitle("Subgroup Announcement")
             .navigationBarTitleDisplayMode(.inline)
     }
 }

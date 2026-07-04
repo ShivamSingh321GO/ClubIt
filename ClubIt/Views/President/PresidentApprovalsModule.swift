@@ -27,9 +27,9 @@ struct PresidentApprovalsModule: View {
                 VStack(spacing: 16) {
                     ForEach(eventsWithApprovals.prefix(2)) { event in
 
-                        if let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId }) {
-                            NavigationLink(destination: EventManagementApprovalDetailView(club: club, event: event)) {
-                                EventManagementEventApprovalCard(event: event, club: club)
+                        if let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
+                            NavigationLink(destination: EventManagementApprovalDetailView(subgroup: subgroup, event: event)) {
+                                EventManagementEventApprovalCard(event: event, subgroup: subgroup)
                             }
                             .buttonStyle(.plain)
                         }

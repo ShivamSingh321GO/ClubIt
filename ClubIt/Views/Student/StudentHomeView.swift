@@ -18,8 +18,8 @@ struct StudentHomeView: View {
                             eventsRegisteredSection
                         }
                         
-                        // Clubs Section
-                        clubsSection
+                        // Subgroups Section
+                        subgroupsSection
                     }
                     .padding(.vertical, 20)
                 }
@@ -57,8 +57,8 @@ struct StudentHomeView: View {
                     }
                 }
             }
-            .navigationDestination(for: Club.self) { club in
-                ClubDetailView(club: club)
+            .navigationDestination(for: Subgroup.self) { subgroup in
+                SubgroupDetailView(subgroup: subgroup)
             }
             .navigationDestination(for: Event.self) { event in
                 EventDetailView(event: event, isMyEvent: false)
@@ -76,7 +76,7 @@ struct StudentHomeView: View {
             } // Close ZStack
         }
         .fullScreenCover(isPresented: $isSearchActive) {
-            ClubSearchView()
+            SubgroupSearchView()
         }
         .task {
             await appSession.refreshData()
@@ -129,9 +129,9 @@ struct StudentHomeView: View {
         }
     }
     
-    private var clubsSection: some View {
+    private var subgroupsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Clubs")
+            Text("Subgroups")
                 .font(.title2)
                 .bold()
                 .padding(.horizontal)
@@ -145,7 +145,7 @@ struct StudentHomeView: View {
                         }
                     }
                     
-                    ForEach(ClubCategory.allCases, id: \.self) { category in
+                    ForEach(SubgroupCategory.allCases, id: \.self) { category in
                         categoryChip(category.rawValue.capitalized, isSelected: appSession.studentDashboardStore.selectedCategory == category) {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 appSession.studentDashboardStore.selectCategory(category)
@@ -160,11 +160,11 @@ struct StudentHomeView: View {
                 }
             }
             
-            // Club List
+            // Subgroup List
             LazyVStack(spacing: 16) {
-                ForEach(appSession.studentDashboardStore.filteredClubs) { club in
-                    NavigationLink(value: club) {
-                        ClubCard(club: club)
+                ForEach(appSession.studentDashboardStore.filteredSubgroups) { subgroup in
+                    NavigationLink(value: subgroup) {
+                        SubgroupCard(subgroup: subgroup)
                     }
                     .buttonStyle(.plain)
                 }

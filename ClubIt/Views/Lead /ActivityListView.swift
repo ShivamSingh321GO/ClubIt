@@ -14,7 +14,7 @@ struct ActivityListView: View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
                 if appSession.activityStore.activities.isEmpty {
-                    ContentUnavailableView("No Activities", systemImage: "calendar.badge.exclamationmark", description: Text("Start adding activities for your club members."))
+                    ContentUnavailableView("No Activities", systemImage: "calendar.badge.exclamationmark", description: Text("Start adding activities for your subgroup members."))
                         .padding(.top, 40)
                 } else {
                     ForEach(appSession.activityStore.activities) { activity in

@@ -163,6 +163,6 @@ struct FilterPill: View {
 #Preview {
     let session = AppSession()
     session.currentRole = .subGroupLead
-    return TasksListView(user: MockData.clubLeadUser)
+    return TasksListView(user: MockData.subgroupLeadUser)
         .environment(session)
 }

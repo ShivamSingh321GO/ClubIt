@@ -196,7 +196,7 @@ struct DynamicRegistrationFormView: View {
         maxParticipants: 100,
         registrationType: .team,
         location: "Hall A",
-        clubId: UUID(),
+        subgroupId: UUID(),
         createdBy: UUID(),
         category: .technical,
         status: .approved,

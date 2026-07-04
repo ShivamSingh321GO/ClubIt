@@ -33,7 +33,7 @@ struct EventAttendeesListView: View {
                 ForEach(groupedAttendances, id: \.0) { date, attendances in
                     Section {
                         ForEach(attendances) { attendance in
-                            let user = appSession.clubStore.allUsers.first(where: { $0.id == attendance.userId })
+                            let user = appSession.subgroupStore.allUsers.first(where: { $0.id == attendance.userId })
                             
                             if let validUser = user {
                                 NavigationLink(destination: destinationProfile(for: validUser)) {
@@ -79,7 +79,7 @@ struct EventAttendeesListView: View {
         formatter.dateStyle = .short
         
         for attendance in appSession.attendanceStore.eventAttendances {
-            let user = appSession.clubStore.allUsers.first(where: { $0.id == attendance.userId })
+            let user = appSession.subgroupStore.allUsers.first(where: { $0.id == attendance.userId })
             let name = user?.name ?? "Unknown User"
             let admission = user?.admissionNumber ?? "N/A"
             let entry = attendance.entryTime.map { formatter.string(from: $0) } ?? "-"

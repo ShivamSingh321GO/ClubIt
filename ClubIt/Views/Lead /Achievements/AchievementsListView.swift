@@ -11,8 +11,8 @@ struct AchievementsListView: View {
     @State private var showCreateModal = false
     
     private var achievements: [Achievement] {
-        appSession.clubAchievementStore.achievements
-            .filter { $0.clubId == appSession.clubStore.club.id }
+        appSession.subgroupAchievementStore.achievements
+            .filter { $0.subgroupId == appSession.subgroupStore.subgroup.id }
             .sorted(by: { $0.createdAt > $1.createdAt })
     }
     
@@ -71,7 +71,7 @@ struct AchievementsListView: View {
                                 Button(role: .destructive) {
                                     Task {
                                         do {
-                                            try await appSession.clubAchievementStore.deleteAchievement(achievement)
+                                            try await appSession.subgroupAchievementStore.deleteAchievement(achievement)
                                         } catch {
                                             print("DEBUG ERROR: Failed to delete achievement: \(error.localizedDescription)")
                                         }

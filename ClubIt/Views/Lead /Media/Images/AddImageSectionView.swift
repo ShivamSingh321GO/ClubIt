@@ -105,15 +105,15 @@ struct AddImageSectionView: View {
         
         Task {
             do {
-                let clubId = appSession.clubStore.club.id
+                let subgroupId = appSession.subgroupStore.subgroup.id
                 let userId = appSession.currentUser?.id ?? UUID()
                 
                 // Upload all picked images
                 for data in pickedImagesData {
-                    try await appSession.clubImageStore.addImage(
+                    try await appSession.subgroupImageStore.addImage(
                         title: title,
                         imageData: data,
-                        clubId: clubId,
+                        subgroupId: subgroupId,
                         uploadedBy: userId
                     )
                 }

@@ -26,29 +26,29 @@ public final class EventStore {
             .execute()
             .value
             
-        var councilEvents: [Event] = []
+        var groupEvents: [Event] = []
         do {
-            councilEvents = try await client
-                .from("council_events")
+            groupEvents = try await client
+                .from("group_events")
                 .select()
                 .order("created_at", ascending: false)
                 .execute()
                 .value
         } catch {
-            print("WARNING: Could not fetch from 'council_events' table. Error: \(error.localizedDescription)")
+            print("WARNING: Could not fetch from 'group_events' table. Error: \(error.localizedDescription)")
         }
         
-        var mappedCouncilEvents = councilEvents
-        for i in 0..<mappedCouncilEvents.count {
-            mappedCouncilEvents[i].status = .published
+        var mappedGroupEvents = groupEvents
+        for i in 0..<mappedGroupEvents.count {
+            mappedGroupEvents[i].status = .published
         }
         
-        self.events = (regularEvents + mappedCouncilEvents).sorted(by: { $0.createdAt > $1.createdAt })
+        self.events = (regularEvents + mappedGroupEvents).sorted(by: { $0.createdAt > $1.createdAt })
     }
     
     @MainActor
-    public func createEvent(_ event: Event, isCouncil: Bool = false) async throws {
-        let table = isCouncil ? "council_events" : "events"
+    public func createEvent(_ event: Event, isGroup: Bool = false) async throws {
+        let table = isGroup ? "group_events" : "events"
         try await client
             .from(table)
             .insert(event)
@@ -59,7 +59,7 @@ public final class EventStore {
         
         // Update locally to avoid full network fetch
         var updatedEvent = event
-        if isCouncil {
+        if isGroup {
             updatedEvent.status = .published
         }
         if !events.contains(where: { $0.id == event.id }) {
@@ -88,9 +88,9 @@ public final class EventStore {
                 .value
             
             if updatedEvents.isEmpty {
-                // Try updating council_events instead
+                // Try updating group_events instead
                 updatedEvents = try await client
-                    .from("council_events")
+                    .from("group_events")
                     .update(["status": status.rawValue])
                     .eq("id", value: id)
                     .select()
@@ -98,10 +98,10 @@ public final class EventStore {
                     .value
                 
                 if updatedEvents.isEmpty {
-                    print("ERROR: No rows were updated in 'events' or 'council_events' table. This usually means RLS is blocking you or the ID is wrong.")
+                    print("ERROR: No rows were updated in 'events' or 'group_events' table. This usually means RLS is blocking you or the ID is wrong.")
                     throw NSError(domain: "SupabaseError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Update blocked by database security (RLS)."])
                 }
-                print("DEBUG: Successfully updated 'council_events' table. New status: \(updatedEvents.first?.status.rawValue ?? "unknown")")
+                print("DEBUG: Successfully updated 'group_events' table. New status: \(updatedEvents.first?.status.rawValue ?? "unknown")")
             } else {
                 print("DEBUG: Successfully updated 'events' table. New status: \(updatedEvents.first?.status.rawValue ?? "unknown")")
                 
@@ -135,7 +135,7 @@ public final class EventStore {
                 .execute()
         } catch {
             try await client
-                .from("council_events")
+                .from("group_events")
                 .update(event)
                 .eq("id", value: event.id)
                 .execute()

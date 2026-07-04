@@ -41,7 +41,7 @@ public struct Activity: Identifiable, Codable {
     public var description: String
     public var date: Date
     public var location: String?
-    public var clubId: UUID
+    public var subgroupId: UUID
     public var postedBy: UUID
     public var createdAt: Date
 
@@ -52,7 +52,7 @@ public struct Activity: Identifiable, Codable {
         case description
         case date
         case location
-        case clubId = "club_id"
+        case subgroupId = "subgroup_id"
         case postedBy = "posted_by"
         case createdAt = "created_at"
     }
@@ -64,7 +64,7 @@ public struct Activity: Identifiable, Codable {
         description: String,
         date: Date,
         location: String? = nil,
-        clubId: UUID,
+        subgroupId: UUID,
         postedBy: UUID,
         createdAt: Date
     ) {
@@ -74,7 +74,7 @@ public struct Activity: Identifiable, Codable {
         self.description = description
         self.date = date
         self.location = location
-        self.clubId = clubId
+        self.subgroupId = subgroupId
         self.postedBy = postedBy
         self.createdAt = createdAt
     }

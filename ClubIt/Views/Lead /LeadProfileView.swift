@@ -11,7 +11,7 @@ struct LeadProfileView: View {
     
     private var displayUser: User? {
         if let user {
-            return appSession.clubStore.allUsers.first(where: { $0.id == user.id }) ?? user
+            return appSession.subgroupStore.allUsers.first(where: { $0.id == user.id }) ?? user
         }
         return appSession.currentUser
     }
@@ -57,14 +57,14 @@ struct LeadProfileView: View {
                     Label(user.year ?? "N/A", systemImage: "graduationcap")
                 }
                 
-                // MARK: - Club
-                Section("Club") {
+                // MARK: - Subgroup
+                Section("Subgroup") {
                     if user.role == .groupSubLead {
-                        let assignedClubs = appSession.clubStore.allClubs.filter { $0.vicePresidentId == user.id }
-                        if !assignedClubs.isEmpty {
-                            ForEach(assignedClubs) { club in
+                        let assignedSubgroups = appSession.subgroupStore.allSubgroups.filter { $0.vicePresidentId == user.id }
+                        if !assignedSubgroups.isEmpty {
+                            ForEach(assignedSubgroups) { subgroup in
                                 HStack {
-                                    Text(club.name)
+                                    Text(subgroup.name)
                                     
                                     Spacer()
                                     
@@ -74,15 +74,15 @@ struct LeadProfileView: View {
                                 }
                             }
                         } else {
-                            Text("No clubs assigned")
+                            Text("No subgroups assigned")
                                 .foregroundStyle(.secondary)
                         }
                     } else {
-                        if let clubId = user.clubId,
-                           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
+                        if let subgroupId = user.subgroupId,
+                           let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
                             
                             HStack {
-                                Text(club.name)
+                                Text(subgroup.name)
                                 
                                 Spacer()
                                 
@@ -91,7 +91,7 @@ struct LeadProfileView: View {
                                     .foregroundStyle(.secondary)
                             }
                         } else {
-                            Text("Not part of any club")
+                            Text("Not part of any subgroup")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -136,11 +136,11 @@ struct LeadProfileView: View {
                 }
             }
             .refreshable {
-                try? await appSession.clubStore.fetchAllUsers()
+                try? await appSession.subgroupStore.fetchAllUsers()
             }
             .task {
                 isLoading = true
-                try? await appSession.clubStore.fetchAllUsers()
+                try? await appSession.subgroupStore.fetchAllUsers()
                 isLoading = false
             }
             .overlay {

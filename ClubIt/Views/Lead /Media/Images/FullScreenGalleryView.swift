@@ -2,7 +2,7 @@ import SwiftUI
 import ClubItShared
 
 struct FullScreenGalleryView: View {
-    let images: [ClubImage]
+    let images: [SubgroupImage]
     @Binding var selectedIndex: Int
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSession.self) var appSession
@@ -12,7 +12,7 @@ struct FullScreenGalleryView: View {
     @State private var showDeleteAlert: Bool = false
     @State private var isDownloading: Bool = false
     
-    init(images: [ClubImage], selectedIndex: Binding<Int>) {
+    init(images: [SubgroupImage], selectedIndex: Binding<Int>) {
         self.images = images
         self._selectedIndex = selectedIndex
         self._activeIndex = State(initialValue: selectedIndex.wrappedValue)
@@ -77,7 +77,7 @@ struct FullScreenGalleryView: View {
                         }
                         .disabled(isDownloading)
                         
-                        // Delete button (Club Lead only)
+                        // Delete button (Subgroup Lead only)
                         if appSession.currentRole == .subGroupLead {
                             Button {
                                 showDeleteAlert = true
@@ -106,20 +106,20 @@ struct FullScreenGalleryView: View {
                 ImageCacheManager.shared.removeImage(for: currentImage.fileUrl)
                 
                 // 2. Optimistically remove locally and dismiss immediately to solve latency/lag
-                appSession.clubImageStore.deleteImageOptimistically(currentImage)
+                appSession.subgroupImageStore.deleteImageOptimistically(currentImage)
                 dismiss()
                 
                 // 3. Perform backend cleanup asynchronously in the background
                 Task {
                     do {
-                        try await appSession.clubImageStore.deleteImage(currentImage)
+                        try await appSession.subgroupImageStore.deleteImage(currentImage)
                     } catch {
                         print("DEBUG: Background deletion failed: \(error)")
                     }
                 }
             }
         } message: {
-            Text("Are you sure you want to permanently delete this image from the club gallery?")
+            Text("Are you sure you want to permanently delete this image from the subgroup gallery?")
         }
         .onAppear {
             activeIndex = selectedIndex
@@ -138,7 +138,7 @@ struct FullScreenGalleryView: View {
         return topVC
     }
     
-    private func downloadImage(image: ClubImage) {
+    private func downloadImage(image: SubgroupImage) {
         isDownloading = true
         Task {
             var imageToShare: UIImage? = nil
@@ -178,7 +178,7 @@ struct FullScreenGalleryView: View {
 /// A dedicated view that eagerly loads and retains the image for fullscreen display.
 /// Unlike MediaImageView, this ensures the image stays loaded even when off-screen in a TabView.
 private struct CachedFullScreenImage: View {
-    let media: ClubImage
+    let media: SubgroupImage
     @State private var uiImage: UIImage? = nil
     @State private var isLoading: Bool = true
     
@@ -228,8 +228,8 @@ private struct CachedFullScreenImage: View {
 
 #Preview {
     let images = (1...5).map { index in
-        ClubImage(
-            clubId: UUID(),
+        SubgroupImage(
+            subgroupId: UUID(),
             eventId: UUID(),
             type: .image,
             title: "Gallery Image \(index)",

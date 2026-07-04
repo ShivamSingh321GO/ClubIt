@@ -23,12 +23,12 @@ public final class AppSession {
     public var activeDashboardTab: Int = 0
     public var activeExploreTab: Int = 0
     
-    public var clubAchievementStore: AchievementStore
+    public var subgroupAchievementStore: AchievementStore
     public var announcementStore: AnnouncementStore
-    public var clubLinkStore: ClubLinkStore
-    public var clubFileStore: ClubFileStore
-    public var clubImageStore: ClubImageStore
-    public var clubStore: ClubStore
+    public var subgroupLinkStore: SubgroupLinkStore
+    public var subgroupFileStore: SubgroupFileStore
+    public var subgroupImageStore: SubgroupImageStore
+    public var subgroupStore: SubgroupStore
     public var eventStore: EventStore
     public var taskStore: TaskStore
     public var venueStore: VenueStore
@@ -45,12 +45,12 @@ public final class AppSession {
     public var selectedTask: Tasks? = nil
     public var selectedActivity: Activity? = nil
     
-    public var currentUserClubId: UUID? {
-        if let clubId = currentUser?.clubId {
-            return clubId
+    public var currentUserSubgroupId: UUID? {
+        if let subgroupId = currentUser?.subgroupId {
+            return subgroupId
         }
         if currentUser?.role == .groupSubLead {
-            return clubStore.allClubs.first(where: { $0.vicePresidentId == currentUser?.id })?.id
+            return subgroupStore.allSubgroups.first(where: { $0.vicePresidentId == currentUser?.id })?.id
         }
         return nil
     }
@@ -59,23 +59,23 @@ public final class AppSession {
     private var timer: Timer?
 
     public init() {
-        let clubStore = ClubStore()
+        let subgroupStore = SubgroupStore()
         let eventStore = EventStore()
         let approvalStore = ApprovalStore()
         let taskStore = TaskStore()
         
-        self.clubStore = clubStore
+        self.subgroupStore = subgroupStore
         self.eventStore = eventStore
         self.approvalStore = approvalStore
         self.taskStore = taskStore
         self.venueStore = VenueStore()
         
-        self.clubAchievementStore = AchievementStore()
+        self.subgroupAchievementStore = AchievementStore()
         self.announcementStore = AnnouncementStore()
-        self.clubLinkStore = ClubLinkStore()
-        self.clubFileStore = ClubFileStore()
-        self.clubImageStore = ClubImageStore(clubId: clubStore.club.id)
-        self.studentDashboardStore = StudentDashboardStore(clubStore: clubStore, eventStore: eventStore)
+        self.subgroupLinkStore = SubgroupLinkStore()
+        self.subgroupFileStore = SubgroupFileStore()
+        self.subgroupImageStore = SubgroupImageStore(subgroupId: subgroupStore.subgroup.id)
+        self.studentDashboardStore = StudentDashboardStore(subgroupStore: subgroupStore, eventStore: eventStore)
         self.chatStore = ChatStore()
         self.activityStore = ActivityStore()
         self.registrationStore = RegistrationStore()
@@ -106,19 +106,19 @@ public final class AppSession {
     public func silentRefreshKeyData() async {
         guard isLoggedIn, let user = currentUser else { return }
         
-        // Fetch key data in parallel including clubs
+        // Fetch key data in parallel including subgroups
         async let eventsTask: Void = { try? await self.eventStore.fetchAllEvents() }()
         async let approvalsTask: Void = { try? await self.approvalStore.fetchApprovals() }()
         async let budgetsTask: Void = { try? await self.approvalStore.fetchBudgets() }()
         async let resourcesTask: Void = { try? await self.approvalStore.fetchResources() }()
         async let tasksTask: Void = { try? await self.taskStore.fetchTasks() }()
-        async let clubsTask: Void = { try? await self.clubStore.fetchAllClubs() }()
-        async let usersTask: Void = { try? await self.clubStore.fetchAllUsers() }()
+        async let subgroupsTask: Void = { try? await self.subgroupStore.fetchAllSubgroups() }()
+        async let usersTask: Void = { try? await self.subgroupStore.fetchAllUsers() }()
         
-        // If user is affiliated with a club, refresh details in parallel
-        async let clubDetailsTask: Void = {
-            if let clubId = user.clubId {
-                try? await self.clubStore.fetchClubDetails(id: clubId)
+        // If user is affiliated with a subgroup, refresh details in parallel
+        async let subgroupDetailsTask: Void = {
+            if let subgroupId = user.subgroupId {
+                try? await self.subgroupStore.fetchSubgroupDetails(id: subgroupId)
             }
         }()
         
@@ -127,9 +127,9 @@ public final class AppSession {
         await budgetsTask
         await resourcesTask
         await tasksTask
-        await clubsTask
+        await subgroupsTask
         await usersTask
-        await clubDetailsTask
+        await subgroupDetailsTask
         
         await chatStore.autoArchiveExpiredEventChats(events: eventStore.events)
         
@@ -176,28 +176,28 @@ public final class AppSession {
         
         print("DEBUG: Starting Data Refresh for \(user.name)...")
         
-        // 1. Fetch User's specific Club Details FIRST
-        if let clubId = user.clubId {
+        // 1. Fetch User's specific Subgroup Details FIRST
+        if let subgroupId = user.subgroupId {
             do {
-                print("DEBUG: Loading personal club data for \(clubId)")
-                try await clubStore.fetchClubDetails(id: clubId)
+                print("DEBUG: Loading personal subgroup data for \(subgroupId)")
+                try await subgroupStore.fetchSubgroupDetails(id: subgroupId)
                 
                 // Fetch achievements from Supabase
-                try await clubAchievementStore.fetchAchievements(clubId: clubId)
+                try await subgroupAchievementStore.fetchAchievements(subgroupId: subgroupId)
                 
-                try await activityStore.fetchActivities(clubId: clubId)
-                try await clubFileStore.fetchFiles(clubId: clubId)
-                try await clubLinkStore.fetchLinks(clubId: clubId)
-                try await clubImageStore.fetchImages(clubId: clubId)
-                print("DEBUG: Personal club data loaded: \(clubStore.club.name)")
+                try await activityStore.fetchActivities(subgroupId: subgroupId)
+                try await subgroupFileStore.fetchFiles(subgroupId: subgroupId)
+                try await subgroupLinkStore.fetchLinks(subgroupId: subgroupId)
+                try await subgroupImageStore.fetchImages(subgroupId: subgroupId)
+                print("DEBUG: Personal subgroup data loaded: \(subgroupStore.subgroup.name)")
             } catch {
-                print("DEBUG ERROR: Personal club data failed: \(error.localizedDescription)")
+                print("DEBUG ERROR: Personal subgroup data failed: \(error.localizedDescription)")
             }
         }
 
         // 2. Load Global Data in parallel (Non-blocking)
-        async let clubsTask: Void = { try? await clubStore.fetchAllClubs() }()
-        async let usersTask: Void = { try? await clubStore.fetchAllUsers() }()
+        async let subgroupsTask: Void = { try? await subgroupStore.fetchAllSubgroups() }()
+        async let usersTask: Void = { try? await subgroupStore.fetchAllUsers() }()
         async let eventsTask: Void = { try? await eventStore.fetchAllEvents() }()
         async let approvalsTask: Void = { try? await approvalStore.fetchApprovals() }()
         async let budgetsTask: Void = { try? await approvalStore.fetchBudgets() }()
@@ -208,7 +208,7 @@ public final class AppSession {
         async let venuesTask: Void = { try? await venueStore.fetchVenues() }()
         async let chatsTask: Void = { await chatStore.fetchChatsIfNeeded() }()
         
-        await clubsTask
+        await subgroupsTask
         await usersTask
         await eventsTask
         await approvalsTask
@@ -316,10 +316,10 @@ public final class AppSession {
         currentUser = user
         
         // Sync with global users list
-        clubStore.updateMember(updatedUser: user)
+        subgroupStore.updateMember(updatedUser: user)
         
         // Refresh global users list from database so other views see the changes
-        try? await clubStore.fetchAllUsers()
+        try? await subgroupStore.fetchAllUsers()
     }
     
     @MainActor
@@ -352,20 +352,20 @@ public final class AppSession {
                     registeredEventIds.insert(id)
                     
                     // Add user to the event's General chat globally
-                    print("DEBUG: [AppSession] Registering user \(userId) for event '\(event.title)' clubId=\(event.clubId?.uuidString ?? "nil")")
-                    if let clubId = event.clubId {
-                        await chatStore.addUserToEventChatsGlobally(userId: userId, eventId: id, eventTitle: event.title, clubId: clubId)
+                    print("DEBUG: [AppSession] Registering user \(userId) for event '\(event.title)' subgroupId=\(event.subgroupId?.uuidString ?? "nil")")
+                    if let subgroupId = event.subgroupId {
+                        await chatStore.addUserToEventChatsGlobally(userId: userId, eventId: id, eventTitle: event.title, subgroupId: subgroupId)
                     } else {
-                        print("DEBUG: [AppSession] WARNING: event.clubId is nil, cannot add to chat")
+                        print("DEBUG: [AppSession] WARNING: event.subgroupId is nil, cannot add to chat")
                     }
                 } else {
                     eventStore.events[index].numberOfRegistrations = max(0, currentRegistrations - 1)
                     registeredEventIds.remove(id)
                     
                     // Remove user from the event's General chat globally
-                    print("DEBUG: [AppSession] Withdrawing user \(userId) from event '\(event.title)' clubId=\(event.clubId?.uuidString ?? "nil")")
-                    if let clubId = event.clubId {
-                        await chatStore.removeUserFromEventChatsGlobally(userId: userId, eventId: id, eventTitle: event.title, clubId: clubId)
+                    print("DEBUG: [AppSession] Withdrawing user \(userId) from event '\(event.title)' subgroupId=\(event.subgroupId?.uuidString ?? "nil")")
+                    if let subgroupId = event.subgroupId {
+                        await chatStore.removeUserFromEventChatsGlobally(userId: userId, eventId: id, eventTitle: event.title, subgroupId: subgroupId)
                     }
                 }
             }
@@ -405,13 +405,13 @@ public final class AppSession {
     }
     
     @MainActor
-    public func forwardToPresidentBudgetApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
-        let presidentUserId = clubStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
+    public func forwardToPresidentBudgetApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
+        let presidentUserId = subgroupStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
         let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
         
         if eventBudgets.isEmpty {
             // No budgets to approve, skip to EMT directly!
-            try await forwardToEMTApproval(eventId: eventId, club: club, senderId: senderId)
+            try await forwardToEMTApproval(eventId: eventId, subgroup: subgroup, senderId: senderId)
             return
         }
         
@@ -439,8 +439,8 @@ public final class AppSession {
     }
     
     @MainActor
-    public func forwardToEMTApproval(eventId: UUID, club: Club, senderId: UUID) async throws {
-        let facultyId = club.facultyId
+    public func forwardToEMTApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
+        let facultyId = subgroup.facultyId
         let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
         
         var approvalsToSave: [Approval] = []
@@ -516,10 +516,10 @@ public final class AppSession {
             if allApproved {
                 // If all budgets are approved, forward venue/resource approvals to EMT
                 if let event = eventStore.events.first(where: { $0.id == eventId }),
-                   let club = clubStore.allClubs.first(where: { $0.id == event.clubId }) {
+                   let subgroup = subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
                     try await forwardToEMTApproval(
                         eventId: eventId,
-                        club: club,
+                        subgroup: subgroup,
                         senderId: currentUser?.id ?? UUID()
                     )
                 }

@@ -46,7 +46,7 @@ struct ChatInfoView: View {
     
     private var participantUsers: [User] {
         let userIds = participants.map { $0.userId }
-        var users = appSession.clubStore.allUsers.filter { userIds.contains($0.id) }
+        var users = appSession.subgroupStore.allUsers.filter { userIds.contains($0.id) }
         users.sort { u1, u2 in
             let isU1Admin = participants.first(where: { $0.userId == u1.id })?.role == .admin
             let isU2Admin = participants.first(where: { $0.userId == u2.id })?.role == .admin
@@ -191,17 +191,17 @@ struct ChatInfoView: View {
                             .padding(.horizontal)
                         }
                         
-                        // Club
-                        if let clubId = otherUser.clubId,
-                           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
+                        // Subgroup
+                        if let subgroupId = otherUser.subgroupId,
+                           let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Club")
+                                Text("Subgroup")
                                     .font(.headline)
                                     .padding(.horizontal)
                                 
-                                NavigationLink(destination: ClubDetailView(club: club)) {
+                                NavigationLink(destination: SubgroupDetailView(subgroup: subgroup)) {
                                     HStack {
-                                        Text(club.name)
+                                        Text(subgroup.name)
                                             .foregroundColor(.primary)
                                         Spacer()
                                         Text(roleName(for: otherUser))
@@ -260,9 +260,9 @@ struct ChatInfoView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(user.name)
                                             .font(.body)
-                                        if let clubId = user.clubId,
-                                           let club = appSession.clubStore.allClubs.first(where: { $0.id == clubId }) {
-                                            Text(club.name)
+                                        if let subgroupId = user.subgroupId,
+                                           let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
+                                            Text(subgroup.name)
                                                 .font(.caption)
                                                 .foregroundColor(.secondary)
                                         }

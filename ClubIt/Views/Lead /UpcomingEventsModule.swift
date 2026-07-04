@@ -10,7 +10,7 @@ struct UpcomingEventsModule: View {
             VStack(spacing: 16) {
                 let today = Calendar.current.startOfDay(for: Date())
                 let upcomingEvents = appSession.eventStore.events.filter { event in
-                    event.clubId == user.clubId &&
+                    event.subgroupId == user.subgroupId &&
                     Calendar.current.startOfDay(for: event.startDate) >= today
                 }.sorted { $0.startDate < $1.startDate }
                 

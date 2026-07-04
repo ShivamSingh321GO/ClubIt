@@ -119,7 +119,7 @@ struct VenueRow: View {
         let bookedSlots = appSession.venueStore.getBookingInfo(
             for: venue,
             events: appSession.eventStore.events,
-            clubs: appSession.clubStore.allClubs
+            subgroups: appSession.subgroupStore.allSubgroups
         )
         
         VStack(alignment: .leading, spacing: 12) {
@@ -187,13 +187,13 @@ struct VenueRow: View {
                             
                             Spacer()
                             
-                            if let club = slot.club {
+                            if let subgroup = slot.subgroup {
                                 VStack(alignment: .trailing, spacing: 2) {
                                     Text("Booked by")
                                         .font(.caption2)
                                         .foregroundColor(.secondary)
                                     
-                                    Text(club.name)
+                                    Text(subgroup.name)
                                         .font(.subheadline)
                                         .bold()
                                         .foregroundColor(venueColor)

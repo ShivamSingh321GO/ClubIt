@@ -30,7 +30,7 @@ struct PresidentHomeView: View {
                                 VStack(alignment: .leading, spacing: 16) {
                                     HStack {
                                         Text("Approval Management")
-                                        NavigationLink(destination: EventManagementApprovalClubsView()) {
+                                        NavigationLink(destination: EventManagementApprovalSubgroupsView()) {
                                             Image(systemName: "chevron.right")
                                         }
                                     }

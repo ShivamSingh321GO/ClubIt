@@ -30,7 +30,7 @@ struct FacultyHomeView: View {
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
                                 Text("Approval Management")
-                                NavigationLink(destination: FacultyResourceClubsView()) {
+                                NavigationLink(destination: FacultyResourceSubgroupsView()) {
                                     Image(systemName: "chevron.right")
                                 }
                             }

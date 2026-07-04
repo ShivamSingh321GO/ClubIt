@@ -17,17 +17,17 @@ struct TaskDetailView: View {
     
     private var assignerName: String {
         if currentTask.assignedBy == appSession.currentUser?.id { return "You" }
-        return appSession.clubStore.allUsers.first(where: { $0.id == currentTask.assignedBy })?.name ?? "Unknown"
+        return appSession.subgroupStore.allUsers.first(where: { $0.id == currentTask.assignedBy })?.name ?? "Unknown"
     }
     
     private var assigneeName: String {
         if currentTask.assignedTo == appSession.currentUser?.id { return "You" }
-        return appSession.clubStore.allUsers.first(where: { $0.id == currentTask.assignedTo })?.name ?? "Unknown"
+        return appSession.subgroupStore.allUsers.first(where: { $0.id == currentTask.assignedTo })?.name ?? "Unknown"
     }
     
     private var delegatedName: String? {
         guard let id = currentTask.delegatedToId else { return nil }
-        return appSession.clubStore.allUsers.first(where: { $0.id == id })?.name
+        return appSession.subgroupStore.allUsers.first(where: { $0.id == id })?.name
     }
     
     private var associatedEvent: Event? {
@@ -130,7 +130,7 @@ struct TaskDetailView: View {
                                 
                                 if let delegated = delegatedName {
                                     lineConnector()
-                                    historyRow(name: delegated, role: "Club Member", icon: "person.circle.fill", isCurrent: true, isDelegated: true)
+                                    historyRow(name: delegated, role: "Subgroup Member", icon: "person.circle.fill", isCurrent: true, isDelegated: true)
                                 }
                             } else {
                                 // Standard Assignment Flow
@@ -160,7 +160,7 @@ struct TaskDetailView: View {
                                 
                                 if let delegated = delegatedName {
                                     lineConnector()
-                                    historyRow(name: delegated, role: "Club Member", icon: "person.circle.fill", isCurrent: true, isDelegated: true)
+                                    historyRow(name: delegated, role: "Subgroup Member", icon: "person.circle.fill", isCurrent: true, isDelegated: true)
                                 }
                             }
                         }
@@ -283,7 +283,7 @@ struct TaskDetailView: View {
                 DelegateTaskView(task: currentTask)
             }
             .navigationDestination(item: $selectedEvent) { event in
-                EventDetailView(event: event, isMyEvent: event.clubId == appSession.currentUser?.clubId)
+                EventDetailView(event: event, isMyEvent: event.subgroupId == appSession.currentUser?.subgroupId)
             }
         }
     }

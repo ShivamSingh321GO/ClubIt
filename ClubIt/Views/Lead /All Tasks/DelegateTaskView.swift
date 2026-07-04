@@ -7,26 +7,26 @@ struct DelegateTaskView: View {
     @Environment(AppSession.self) var appSession
     
     @State private var selectedMemberId: UUID? = nil
-    @State private var selectedOtherClubId: UUID? = nil
+    @State private var selectedOtherSubgroupId: UUID? = nil
     
     private var isPresidentOrVP: Bool {
         let role = appSession.currentRole ?? .subGroupMember
         return role == .groupLead || role == .groupSubLead
     }
     
-    private var availableClubs: [Club] {
-        return appSession.clubStore.allClubs.filter { $0.id != appSession.currentUser?.clubId }
+    private var availableSubgroups: [Subgroup] {
+        return appSession.subgroupStore.allSubgroups.filter { $0.id != appSession.currentUser?.subgroupId }
     }
     
-    private var availableClubLeads: [User] {
-        guard let clubId = selectedOtherClubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupLead }
+    private var availableSubgroupLeads: [User] {
+        guard let subgroupId = selectedOtherSubgroupId else { return [] }
+        return appSession.subgroupStore.allUsers.filter { $0.subgroupId == subgroupId && $0.role == .subGroupLead }
     }
     
-    var clubMembers: [User] {
-        // Club Lead delegates to Members in their club
-        guard let clubId = appSession.currentUser?.clubId else { return [] }
-        return appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupMember }
+    var subgroupMembers: [User] {
+        // Subgroup Lead delegates to Members in their subgroup
+        guard let subgroupId = appSession.currentUser?.subgroupId else { return [] }
+        return appSession.subgroupStore.allUsers.filter { $0.subgroupId == subgroupId && $0.role == .subGroupMember }
     }
     
     var body: some View {
@@ -34,17 +34,17 @@ struct DelegateTaskView: View {
             Group {
                 if isPresidentOrVP {
                     Form {
-                        Section("Delegate to Club Lead") {
+                        Section("Delegate to Subgroup Lead") {
                             optionalNavigationRow(
-                                title: "Select Club",
-                                selection: $selectedOtherClubId,
-                                options: availableClubs.map { $0.id },
-                                noneLabel: "Select a club",
-                                displayValue: { id in availableClubs.first(where: { $0.id == id })?.name ?? "Unknown" }
+                                title: "Select Subgroup",
+                                selection: $selectedOtherSubgroupId,
+                                options: availableSubgroups.map { $0.id },
+                                noneLabel: "Select a subgroup",
+                                displayValue: { id in availableSubgroups.first(where: { $0.id == id })?.name ?? "Unknown" }
                             )
-                            .onChange(of: selectedOtherClubId) { _, newValue in
-                                if let clubId = newValue {
-                                    let leads = appSession.clubStore.allUsers.filter { $0.clubId == clubId && $0.role == .subGroupLead }
+                            .onChange(of: selectedOtherSubgroupId) { _, newValue in
+                                if let subgroupId = newValue {
+                                    let leads = appSession.subgroupStore.allUsers.filter { $0.subgroupId == subgroupId && $0.role == .subGroupLead }
                                     if leads.count == 1 {
                                         selectedMemberId = leads.first?.id
                                     } else {
@@ -53,25 +53,25 @@ struct DelegateTaskView: View {
                                 }
                             }
                             
-                            if selectedOtherClubId != nil {
+                            if selectedOtherSubgroupId != nil {
                                 optionalNavigationRow(
-                                    title: "Select Club Lead",
+                                    title: "Select Subgroup Lead",
                                     selection: $selectedMemberId,
-                                    options: availableClubLeads.map { $0.id },
+                                    options: availableSubgroupLeads.map { $0.id },
                                     noneLabel: "Select a lead",
-                                    displayValue: { id in availableClubLeads.first(where: { $0.id == id })?.name ?? "Unknown" }
+                                    displayValue: { id in availableSubgroupLeads.first(where: { $0.id == id })?.name ?? "Unknown" }
                                 )
                             }
                         }
                     }
                 } else {
                     List {
-                        if clubMembers.isEmpty {
-                            Text("No members found in your club")
+                        if subgroupMembers.isEmpty {
+                            Text("No members found in your subgroup")
                                 .foregroundStyle(.secondary)
                         } else {
                             Section("Select Member to Delegate") {
-                                ForEach(clubMembers) { member in
+                                ForEach(subgroupMembers) { member in
                                     Button {
                                         selectedMemberId = member.id
                                     } label: {
@@ -144,16 +144,16 @@ struct DelegateTaskView: View {
 
 #Preview {
     let session = AppSession()
-    session.currentUser = MockData.clubLeadUser
+    session.currentUser = MockData.subgroupLeadUser
     
-    let sampleTask = Tasks(id: UUID(), clubId: MockData.tj_id,
-        targetClubId: nil,
+    let sampleTask = Tasks(id: UUID(), subgroupId: MockData.tj_id,
+        targetSubgroupId: nil,
         eventId: nil,
         title: "Test Task",
         description: "Test Description",
         assignedBy: UUID(),
         assignedByRole: AppRole.subGroupLead,
-        assignedTo: MockData.clubLeadUser.id,
+        assignedTo: MockData.subgroupLeadUser.id,
         assignedToRole: AppRole.subGroupLead,
         deadline: Date(),
         priority: .high,

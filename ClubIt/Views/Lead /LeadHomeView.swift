@@ -153,7 +153,7 @@ struct HomeApprovalsModule: View {
 
 #Preview {
     let session = AppSession()
-    session.currentUser = MockData.clubLeadUser
+    session.currentUser = MockData.subgroupLeadUser
     
     return LeadHomeView()
         .environment(session)

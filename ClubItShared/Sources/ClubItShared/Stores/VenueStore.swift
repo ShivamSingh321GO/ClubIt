@@ -54,13 +54,13 @@ public final class VenueStore {
         return venues
     }
     
-    public func getBookingInfo(for venue: Venue, events: [Event], clubs: [Club]) -> [BookedSlot] {
+    public func getBookingInfo(for venue: Venue, events: [Event], subgroups: [Subgroup]) -> [BookedSlot] {
         // Find future events at this location
         let futureEvents = events.filter { $0.location == venue.name && $0.startDate > Date() }
             .sorted { $0.startDate < $1.startDate }
         
         return futureEvents.map { event in
-            BookedSlot(event: event, club: clubs.first { $0.id == event.clubId })
+            BookedSlot(event: event, subgroup: subgroups.first { $0.id == event.subgroupId })
         }
     }
 }

@@ -112,7 +112,7 @@ struct ActivityCard: View {
         description: "Explaining the new observation framework and animation systems with practical examples.",
         date: Date(),
         location: "Lab 3, Ramanujan Block",
-        clubId: UUID(),
+        subgroupId: UUID(),
         postedBy: UUID(),
         createdAt: Date()
     ))

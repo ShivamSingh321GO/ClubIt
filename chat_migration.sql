@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.chats (
     name            text,
     description     text,
     icon            text,
-    club_id         uuid REFERENCES public.clubs(id) ON DELETE SET NULL,
+    subgroup_id         uuid REFERENCES public.subgroups(id) ON DELETE SET NULL,
     parent_chat_id  uuid REFERENCES public.chats(id) ON DELETE CASCADE,
     created_by      uuid NOT NULL REFERENCES public.users(id),
     created_at      timestamptz DEFAULT now()

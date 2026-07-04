@@ -732,7 +732,7 @@ public final class ChatStore {
                     name: user.name,
                     description: nil,
                     icon: user.profileImg,
-                    club_id: nil,
+                    subgroup_id: nil,
                     parent_chat_id: nil,
                     created_by: userId,
                     created_at: istDateString(from: newChat.createdAt)
@@ -785,7 +785,7 @@ public final class ChatStore {
                     name: name,
                     description: description.isEmpty ? nil : description,
                     icon: icon ?? "person.2.fill",
-                    club_id: nil,
+                    subgroup_id: nil,
                     parent_chat_id: nil,
                     created_by: userId,
                     created_at: istDateString(from: newChat.createdAt)
@@ -840,20 +840,20 @@ public final class ChatStore {
         let parentChatId = event.id
         let generalChatId = UUID()
         let leadId = event.createdBy
-        guard let clubId = event.clubId else { return }
+        guard let subgroupId = event.subgroupId else { return }
         
-        // Fetch club members to populate initial participant list
+        // Fetch subgroup members to populate initial participant list
         var memberIdsToAdd: [UUID] = []
         do {
-            let clubMembers: [User] = try await client
+            let subgroupMembers: [User] = try await client
                 .from("users")
                 .select()
-                .eq("club_id", value: clubId)
+                .eq("subgroup_id", value: subgroupId)
                 .execute()
                 .value
-            memberIdsToAdd = clubMembers.map { $0.id }.filter { $0 != leadId }
+            memberIdsToAdd = subgroupMembers.map { $0.id }.filter { $0 != leadId }
         } catch {
-            print("DEBUG ERROR: [ChatStore] Failed to fetch club members: \(error)")
+            print("DEBUG ERROR: [ChatStore] Failed to fetch subgroup members: \(error)")
         }
         
         let allParticipantIds = [leadId] + memberIdsToAdd
@@ -863,7 +863,7 @@ public final class ChatStore {
             type: .event,
             name: event.title,
             icon: "calendar",
-            clubId: clubId,
+            subgroupId: subgroupId,
             createdBy: leadId,
             createdAt: Date(),
             participantIds: allParticipantIds
@@ -874,7 +874,7 @@ public final class ChatStore {
             type: .event,
             name: "General",
             icon: nil,
-            clubId: clubId,
+            subgroupId: subgroupId,
             parentChatId: parentChatId,
             createdBy: leadId,
             createdAt: Date(),
@@ -895,7 +895,7 @@ public final class ChatStore {
                 name: event.title,
                 description: nil,
                 icon: "calendar",
-                club_id: clubId,
+                subgroup_id: subgroupId,
                 parent_chat_id: nil,
                 created_by: leadId,
                 created_at: istDateString(from: parentChat.createdAt)
@@ -916,7 +916,7 @@ public final class ChatStore {
                 name: "General",
                 description: nil,
                 icon: nil,
-                club_id: clubId,
+                subgroup_id: subgroupId,
                 parent_chat_id: parentChatId,
                 created_by: leadId,
                 created_at: istDateString(from: generalChat.createdAt)
@@ -931,7 +931,7 @@ public final class ChatStore {
             )
             try await client.from("chat_participants").insert(generalParticipant).execute()
             
-            // Add all club members as participants to both parent & general chats in Supabase
+            // Add all subgroup members as participants to both parent & general chats in Supabase
             let parentParticipants = memberIdsToAdd.map { userId in
                 InsertChatParticipant(
                     chat_id: parentChatId,
@@ -956,8 +956,8 @@ public final class ChatStore {
                 _ = try? await client.from("chat_participants").insert(generalParticipants).execute()
             }
             
-            sendSystemMessage("All club members were added by the organizer", to: parentChatId, senderId: leadId)
-            sendSystemMessage("All club members were added by the organizer", to: generalChatId, senderId: leadId)
+            sendSystemMessage("All subgroup members were added by the organizer", to: parentChatId, senderId: leadId)
+            sendSystemMessage("All subgroup members were added by the organizer", to: generalChatId, senderId: leadId)
             
             // Retroactively add any already-registered users (in case they registered before the chat was created)
             let existingRegistrations: [IndividualRegistration] = try await client
@@ -975,7 +975,7 @@ public final class ChatStore {
                 _ = try? await client.from("chat_participants").insert(gParticipant).execute()
             }
             
-            print("DEBUG: [ChatStore] Auto-created Event Chat for '\(event.title)' and 'General' sub-chat. Added \(memberIdsToAdd.count) club members and \(existingRegistrations.count) existing participants.")
+            print("DEBUG: [ChatStore] Auto-created Event Chat for '\(event.title)' and 'General' sub-chat. Added \(memberIdsToAdd.count) subgroup members and \(existingRegistrations.count) existing participants.")
         } catch {
             print("DEBUG ERROR: [ChatStore] createEventChatsForPublishedEvent failed: \(error)")
             self.chats.removeAll { $0.id == parentChatId || $0.id == generalChatId }
@@ -986,7 +986,7 @@ public final class ChatStore {
     
     @discardableResult
     @MainActor
-    public func createEventChat(name: String, clubId: UUID, icon: String?, memberIds: [UUID]) -> Chat {
+    public func createEventChat(name: String, subgroupId: UUID, icon: String?, memberIds: [UUID]) -> Chat {
         let chatId = UUID()
         let allParticipantIds = [userId] + memberIds
         
@@ -995,7 +995,7 @@ public final class ChatStore {
             type: .event,
             name: name,
             icon: icon ?? "calendar",
-            clubId: clubId,
+            subgroupId: subgroupId,
             createdBy: userId,
             createdAt: Date(),
             participantIds: allParticipantIds
@@ -1011,7 +1011,7 @@ public final class ChatStore {
                     name: name,
                     description: nil,
                     icon: icon ?? "calendar",
-                    club_id: clubId,
+                    subgroup_id: subgroupId,
                     parent_chat_id: nil,
                     created_by: userId,
                     created_at: istDateString(from: newChat.createdAt)
@@ -1051,7 +1051,7 @@ public final class ChatStore {
             type: .event,
             name: name,
             description: description,
-            clubId: parent.clubId,
+            subgroupId: parent.subgroupId,
             parentChatId: parentId,
             createdBy: userId,
             createdAt: Date(),
@@ -1071,7 +1071,7 @@ public final class ChatStore {
                     name: name,
                     description: description,
                     icon: nil,
-                    club_id: parent.clubId,
+                    subgroup_id: parent.subgroupId,
                     parent_chat_id: parentId,
                     created_by: userId,
                     created_at: istDateString(from: newChat.createdAt)
@@ -1209,7 +1209,7 @@ public final class ChatStore {
     // MARK: - Global Event Chat Registration
     
     @MainActor
-    public func addUserToEventChatsGlobally(userId: UUID, eventId: UUID, eventTitle: String, clubId: UUID) async {
+    public func addUserToEventChatsGlobally(userId: UUID, eventId: UUID, eventTitle: String, subgroupId: UUID) async {
         do {
             var parentChat: Chat? = nil
             let chatsById: [Chat] = try await client
@@ -1227,7 +1227,7 @@ public final class ChatStore {
                     .select()
                     .eq("type", value: "event")
                     .eq("name", value: eventTitle)
-                    .eq("club_id", value: clubId)
+                    .eq("subgroup_id", value: subgroupId)
                     .execute()
                     .value
                 parentChat = allChats.first(where: { $0.parentChatId == nil })
@@ -1292,7 +1292,7 @@ public final class ChatStore {
     }
     
     @MainActor
-    public func removeUserFromEventChatsGlobally(userId: UUID, eventId: UUID, eventTitle: String, clubId: UUID) async {
+    public func removeUserFromEventChatsGlobally(userId: UUID, eventId: UUID, eventTitle: String, subgroupId: UUID) async {
         do {
             var parentChat: Chat? = nil
             let chatsById: [Chat] = try await client
@@ -1310,7 +1310,7 @@ public final class ChatStore {
                     .select()
                     .eq("type", value: "event")
                     .eq("name", value: eventTitle)
-                    .eq("club_id", value: clubId)
+                    .eq("subgroup_id", value: subgroupId)
                     .execute()
                     .value
                 parentChat = allChats.first(where: { $0.parentChatId == nil })

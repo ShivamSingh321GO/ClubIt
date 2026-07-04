@@ -7,7 +7,7 @@ struct LeadApprovalEventCard: View {
     let approval: Approval
     
     var body: some View {
-        let club = appSession.clubStore.allClubs.first(where: { $0.id == event.clubId })
+        let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId })
         
         // 1. Pending Resources
         let pendingResources = appSession.approvalStore.resources.filter { 
@@ -30,7 +30,7 @@ struct LeadApprovalEventCard: View {
         
         // 4. Pending VP Event Approval
         let pendingEventApprovalsCount: Int = {
-            if let vpId = club?.vicePresidentId {
+            if let vpId = subgroup?.vicePresidentId {
                 let vpApproval = appSession.approvalStore.approvals.filter { 
                     $0.eventId == event.id && $0.type == .event && $0.receiverId == vpId 
                 }.sorted(by: { $0.createdAt > $1.createdAt }).first
@@ -97,7 +97,7 @@ struct LeadApprovalEventCard: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                 
-                Text(club?.name ?? "Club")
+                Text(subgroup?.name ?? "Subgroup")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(1)

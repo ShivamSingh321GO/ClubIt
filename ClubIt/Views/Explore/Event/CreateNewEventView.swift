@@ -47,7 +47,7 @@ struct CreateNewEventView: View {
     @State private var isSaving = false
     @State private var showSuccessView = false
     @State private var currentEventId = UUID()
-    @State private var selectedClubIds: Set<UUID> = []
+    @State private var selectedSubgroupIds: Set<UUID> = []
     @State private var isShowingPublishConfirmation = false
     @State private var isRegistrationOpen = true
 
@@ -131,22 +131,22 @@ struct CreateNewEventView: View {
                 if appSession.currentUser?.role == .groupLead {
                     Section {
                         NavigationLink {
-                            MultiClubSelectionView(selectedClubIds: $selectedClubIds)
+                            MultiSubgroupSelectionView(selectedSubgroupIds: $selectedSubgroupIds)
                         } label: {
                             HStack {
-                                Text("Associated Clubs")
+                                Text("Associated Subgroups")
                                 Spacer()
-                                if selectedClubIds.isEmpty {
-                                    Text("None (All Clubs)")
+                                if selectedSubgroupIds.isEmpty {
+                                    Text("None (All Subgroups)")
                                         .foregroundStyle(.secondary)
                                 } else {
-                                    Text("\(selectedClubIds.count) Clubs")
+                                    Text("\(selectedSubgroupIds.count) Subgroups")
                                         .foregroundStyle(.secondary)
                                 }
                             }
                         }
                     } header: {
-                        Text("Club Association")
+                        Text("Subgroup Association")
                     }
                     
                     Section {
@@ -507,19 +507,19 @@ struct CreateNewEventView: View {
             return
         }
         
-        let resolvedClubId: UUID?
-        var resolvedClubIds: [UUID] = []
+        let resolvedSubgroupId: UUID?
+        var resolvedSubgroupIds: [UUID] = []
         if currentUser.role == .groupLead {
-            resolvedClubId = nil
-            resolvedClubIds = Array(selectedClubIds)
+            resolvedSubgroupId = nil
+            resolvedSubgroupIds = Array(selectedSubgroupIds)
         } else {
-            guard let userClubId = currentUser.clubId else {
-                errorMessage = "Error: Your user account is not linked to any club."
+            guard let userSubgroupId = currentUser.subgroupId else {
+                errorMessage = "Error: Your user account is not linked to any subgroup."
                 isSaving = false
                 return
             }
-            resolvedClubId = userClubId
-            resolvedClubIds = [userClubId]
+            resolvedSubgroupId = userSubgroupId
+            resolvedSubgroupIds = [userSubgroupId]
         }
         
         let isPresident = currentUser.role == .groupLead
@@ -549,8 +549,8 @@ struct CreateNewEventView: View {
             maxParticipants: maxParticipantsVal,
             registrationType: registrationType,
             location: venue,
-            clubId: resolvedClubId,
-            clubIds: resolvedClubIds,
+            subgroupId: resolvedSubgroupId,
+            subgroupIds: resolvedSubgroupIds,
             createdBy: currentUser.id,
             category: selectedCategory,
             status: isPresident ? .published : .pending,
@@ -566,13 +566,13 @@ struct CreateNewEventView: View {
         print("DEBUG: Attempting to create event:")
         print("  - ID: \(newEvent.id)")
         print("  - Name: \(newEvent.name)")
-        print("  - ClubID: \(newEvent.clubId)")
+        print("  - SubgroupID: \(newEvent.subgroupId)")
         print("  - CreatedBy: \(newEvent.createdBy)")
         print("  - Status: \(newEvent.status.rawValue)")
         
-        if currentUser.role != .groupLead && currentUser.clubId == nil {
-            print("WARNING: currentUser.clubId is NIL! RLS will likely fail.")
-            errorMessage = "Error: Your user account is not linked to any club. Please contact your administrator."
+        if currentUser.role != .groupLead && currentUser.subgroupId == nil {
+            print("WARNING: currentUser.subgroupId is NIL! RLS will likely fail.")
+            errorMessage = "Error: Your user account is not linked to any subgroup. Please contact your administrator."
             isSaving = false
             return
         }
@@ -595,8 +595,8 @@ struct CreateNewEventView: View {
                     }
                 }
                 
-                // 1. Save the main event (pass isCouncil if isPresident)
-                try await appSession.eventStore.createEvent(eventToSave, isCouncil: isPresident)
+                // 1. Save the main event (pass isGroup if isPresident)
+                try await appSession.eventStore.createEvent(eventToSave, isGroup: isPresident)
                 
                 // If president created the event, auto-create event chat immediately
                 // (President events skip the approval flow and are published directly)
@@ -605,10 +605,10 @@ struct CreateNewEventView: View {
                 }
                 
                 if !isPresident {
-                    let club = appSession.clubStore.allClubs.first(where: { $0.id == newEvent.clubId })
+                    let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == newEvent.subgroupId })
                     let eventManagementTeamID = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
-                    let facultyId = club?.facultyId ?? eventManagementTeamID
-                    let presidentUserId = appSession.clubStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
+                    let facultyId = subgroup?.facultyId ?? eventManagementTeamID
+                    let presidentUserId = appSession.subgroupStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
                     
                     var budgetsToSave: [Budget] = []
                     var resourcesToSave: [Resource] = []
@@ -676,8 +676,8 @@ struct CreateNewEventView: View {
                         try await appSession.approvalStore.addResources(resourcesToSave)
                     }
 
-                    // Check if Vice President exists for the club
-                    if let vicePresidentUserId = club?.vicePresidentId {
+                    // Check if Vice President exists for the subgroup
+                    if let vicePresidentUserId = subgroup?.vicePresidentId {
                         // Send to Vice President first as a draft
                         let eventApproval = Approval(
                             id: UUID(),
@@ -692,12 +692,12 @@ struct CreateNewEventView: View {
                             updatedAt: nil
                         )
                         approvalsToSave.append(eventApproval)
-                    } else if let club = club {
+                    } else if let subgroup = subgroup {
                         // Let AppSession handle the sequential forwarding:
                         // First to President if budget exists, else straight to EMT.
                         try await appSession.forwardToPresidentBudgetApproval(
                             eventId: newEvent.id,
-                            club: club,
+                            subgroup: subgroup,
                             senderId: currentUser.id
                         )
                     }
@@ -892,25 +892,25 @@ struct ResourceSummarySheet: View {
         .environment(MockData.session(for: .subGroupLead))
 }
 
-struct MultiClubSelectionView: View {
+struct MultiSubgroupSelectionView: View {
     @Environment(AppSession.self) var appSession
-    @Binding var selectedClubIds: Set<UUID>
+    @Binding var selectedSubgroupIds: Set<UUID>
     
     var body: some View {
         List {
-            ForEach(appSession.clubStore.allClubs) { club in
+            ForEach(appSession.subgroupStore.allSubgroups) { subgroup in
                 Button {
-                    if selectedClubIds.contains(club.id) {
-                        selectedClubIds.remove(club.id)
+                    if selectedSubgroupIds.contains(subgroup.id) {
+                        selectedSubgroupIds.remove(subgroup.id)
                     } else {
-                        selectedClubIds.insert(club.id)
+                        selectedSubgroupIds.insert(subgroup.id)
                     }
                 } label: {
                     HStack {
-                        Text(club.name)
+                        Text(subgroup.name)
                             .foregroundStyle(.primary)
                         Spacer()
-                        if selectedClubIds.contains(club.id) {
+                        if selectedSubgroupIds.contains(subgroup.id) {
                             Image(systemName: "checkmark")
                                 .foregroundColor(.accentColor)
                         }
@@ -918,6 +918,6 @@ struct MultiClubSelectionView: View {
                 }
             }
         }
-        .navigationTitle("Select Clubs")
+        .navigationTitle("Select Subgroups")
     }
 }

@@ -20,7 +20,7 @@ struct TaskRowView: View {
         if task.assignedBy == appSession.currentUser?.id {
             return "You"
         }
-        let user = appSession.clubStore.allUsers.first(where: { $0.id == task.assignedBy })
+        let user = appSession.subgroupStore.allUsers.first(where: { $0.id == task.assignedBy })
         return user?.name ?? "Unknown"
     }
     
@@ -29,20 +29,20 @@ struct TaskRowView: View {
         if assigneeId == appSession.currentUser?.id {
             return "You"
         }
-        let user = appSession.clubStore.allUsers.first(where: { $0.id == assigneeId })
+        let user = appSession.subgroupStore.allUsers.first(where: { $0.id == assigneeId })
         return user?.name ?? "Unknown"
     }
     
-    private var targetClubName: String? {
-        guard let targetId = task.targetClubId else { return nil }
-        return appSession.clubStore.allClubs.first(where: { $0.id == targetId })?.name
+    private var targetSubgroupName: String? {
+        guard let targetId = task.targetSubgroupId else { return nil }
+        return appSession.subgroupStore.allSubgroups.first(where: { $0.id == targetId })?.name
     }
     
     private var assignmentInfo: String {
         if task.assignedTo == task.assignedBy && task.delegatedToId == nil {
             return "Self Assigned"
-        } else if let clubName = targetClubName {
-            return "\(assignerName) → \(clubName)"
+        } else if let subgroupName = targetSubgroupName {
+            return "\(assignerName) → \(subgroupName)"
         } else {
             return "\(assignerName) → \(assigneeName)"
         }
@@ -189,7 +189,7 @@ struct TaskRowView: View {
 #Preview {
     let session = AppSession()
     let eventId = UUID()
-    let clubId = UUID()
+    let subgroupId = UUID()
     
     let event = Event(
         id: eventId,
@@ -205,7 +205,7 @@ struct TaskRowView: View {
         maxParticipants: 100,
         registrationType: .individual,
         location: "Main Hall",
-        clubId: clubId,
+        subgroupId: subgroupId,
         createdBy: UUID(),
         category: .technical,
         status: .approved,
@@ -217,8 +217,8 @@ struct TaskRowView: View {
     
     session.eventStore.events.append(event)
     
-    let sampleTask = Tasks(id: UUID(), clubId: clubId,
-        targetClubId: nil,
+    let sampleTask = Tasks(id: UUID(), subgroupId: subgroupId,
+        targetSubgroupId: nil,
         eventId: eventId,
         title: "Sample Task",
         description: "This is a sample task description.",

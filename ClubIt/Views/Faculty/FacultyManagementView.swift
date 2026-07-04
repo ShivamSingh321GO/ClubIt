@@ -13,7 +13,7 @@ struct FacultyManagementView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         
                         VStack(spacing: 0) {
-                            NavigationLink(destination: FacultyResourceClubsView()) {
+                            NavigationLink(destination: FacultyResourceSubgroupsView()) {
                                 HStack(spacing: 16) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 8)
@@ -50,24 +50,24 @@ struct FacultyManagementView: View {
                     }
                     .padding(.horizontal)
                     
-                    // MARK: - Handled Clubs
+                    // MARK: - Handled Subgroups
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Assigned Clubs")
+                        Text("Assigned Subgroups")
                             .font(.title2)
                             .bold()
                         
                         VStack(spacing: 16) {
                             if let user = appSession.currentUser {
-                                let assignedClubs = appSession.clubStore.allClubs.filter { $0.facultyId == user.id }
+                                let assignedSubgroups = appSession.subgroupStore.allSubgroups.filter { $0.facultyId == user.id }
                                 
-                                if assignedClubs.isEmpty {
-                                    Text("No clubs currently assigned")
+                                if assignedSubgroups.isEmpty {
+                                    Text("No subgroups currently assigned")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                         .padding()
                                 } else {
-                                    ForEach(assignedClubs) { club in
-                                        FacultyExpandableClubRow(club: club)
+                                    ForEach(assignedSubgroups) { subgroup in
+                                        FacultyExpandableSubgroupRow(subgroup: subgroup)
                                     }
                                 }
                             }
@@ -85,9 +85,9 @@ struct FacultyManagementView: View {
 
 
 
-struct FacultyExpandableClubRow: View {
+struct FacultyExpandableSubgroupRow: View {
     @Environment(AppSession.self) var appSession
-    let club: Club
+    let subgroup: Subgroup
     @State private var isExpanded = false
     
     var body: some View {
@@ -102,16 +102,16 @@ struct FacultyExpandableClubRow: View {
                         .fill(Color.accentColor.opacity(0.1))
                         .frame(width: 44, height: 44)
                         .overlay(
-                            Text(String(club.name.prefix(1)))
+                            Text(String(subgroup.name.prefix(1)))
                                 .font(.headline)
                                 .foregroundColor(.accentColor)
                         )
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(club.name)
+                        Text(subgroup.name)
                             .font(.body)
                             .bold()
-                        Text(club.category.displayName)
+                        Text(subgroup.category.displayName)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -134,10 +134,10 @@ struct FacultyExpandableClubRow: View {
                     Divider().padding(.horizontal)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("About the Club")
+                        Text("About the Subgroup")
                             .font(.headline)
                             .bold()
-                        Text(club.description ?? "No description available.")
+                        Text(subgroup.description ?? "No description available.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .lineSpacing(4)
@@ -145,12 +145,12 @@ struct FacultyExpandableClubRow: View {
                     .padding(.horizontal)
                     
                     HStack(spacing: 12) {
-                        FacultyStatBadge(icon: "person.2.fill", count: "\(appSession.clubStore.allUsers.filter { $0.clubId == club.id }.count)", label: "Members", color: .green)
-                        FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.clubAchievementStore.achievements.filter { $0.clubId == club.id }.count)", label: "Achievements", color: .accentColor)
+                        FacultyStatBadge(icon: "person.2.fill", count: "\(appSession.subgroupStore.allUsers.filter { $0.subgroupId == subgroup.id }.count)", label: "Members", color: .green)
+                        FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.subgroupAchievementStore.achievements.filter { $0.subgroupId == subgroup.id }.count)", label: "Achievements", color: .accentColor)
                     }
                     .padding(.horizontal)
                     
-                    if let socials = club.socials, !socials.isEmpty {
+                    if let socials = subgroup.socials, !socials.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Socials")
                                 .font(.headline)

@@ -45,7 +45,7 @@ struct CreateAchievementView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        let newAchievement = Achievement(id: UUID(), clubId: appSession.clubStore.club.id,
+                        let newAchievement = Achievement(id: UUID(), subgroupId: appSession.subgroupStore.subgroup.id,
                             title: title,
                             description: description,
                             type: selectedType,
@@ -53,7 +53,7 @@ struct CreateAchievementView: View {
                         )
                         Task {
                             do {
-                                try await appSession.clubAchievementStore.addAchievement(newAchievement)
+                                try await appSession.subgroupAchievementStore.addAchievement(newAchievement)
                                 await MainActor.run {
                                     dismiss()
                                 }
