@@ -73,11 +73,11 @@ private struct AnnouncementCard: View {
             
             HStack(alignment: .top, spacing: 12) {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(announcement.isHighPriority == true ? Color.accentColor.opacity(0.2) : Color(.systemGray5))
+                    .fill(Color(.systemGray5))
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: "megaphone.fill")
-                            .foregroundStyle(announcement.isHighPriority == true ? Color.accentColor : Color.secondary)
+                            .foregroundStyle(Color.secondary)
                     )
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -93,7 +93,7 @@ private struct AnnouncementCard: View {
                         + Text("Superadmin")
                             .font(.subheadline)
                             .fontWeight(.bold)
-                            .foregroundColor(.accentColor))
+                            .foregroundColor(.primary))
                     } else if let subgroupId = announcement.groupId,
                        let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == subgroupId }) {
                         (Text("Posted by ")
@@ -121,9 +121,14 @@ private struct AnnouncementCard: View {
                 Spacer()
                 
                 if announcement.isHighPriority == true {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.caption)
+                    Text("OFFICIAL")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.accentColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule().stroke(Color.accentColor, lineWidth: 1)
+                        )
                 }
             }
             
@@ -151,11 +156,11 @@ private struct AnnouncementCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(announcement.isHighPriority == true ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(announcement.isHighPriority == true ? Color.accentColor.opacity(0.3) : Color(.systemGray4), lineWidth: 1)
+                .stroke(Color(.systemGray4), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
         .clipShape(RoundedRectangle(cornerRadius: 20))
