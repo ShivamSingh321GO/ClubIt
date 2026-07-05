@@ -22,7 +22,7 @@ struct LeadMySubgroupView: View {
             .refreshable {
                 await appSession.refreshData()
             }
-            .navigationTitle("My Subgroup")
+            .navigationTitle("My \(appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup"))")
             .toolbarTitleDisplayMode(.inlineLarge)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

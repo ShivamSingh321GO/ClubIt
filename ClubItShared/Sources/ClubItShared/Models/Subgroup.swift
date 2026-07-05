@@ -105,6 +105,117 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         self.imageData = imageData
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // id
+        self.id = try container.decode(UUID.self, forKey: .id)
+        
+        // name
+        self.name = try container.decode(String.self, forKey: .name)
+        
+        // tagLine (check both "tag_line" and "tagline")
+        if let directTag = try? container.decode(String.self, forKey: .tagLine) {
+            self.tagLine = directTag
+        } else {
+            struct TaglineDecoderKey: CodingKey {
+                var stringValue: String
+                init?(stringValue: String) { self.stringValue = stringValue }
+                var intValue: Int? { nil }
+                init?(intValue: Int) { nil }
+            }
+            let key = TaglineDecoderKey(stringValue: "tagline")!
+            let dynamicContainer = try decoder.container(keyedBy: TaglineDecoderKey.self)
+            self.tagLine = try? dynamicContainer.decode(String.self, forKey: key)
+        }
+        
+        // description
+        self.description = try? container.decode(String.self, forKey: .description)
+        
+        // category (flexible case-insensitive decoding)
+        if let catEnum = try? container.decode(SubgroupCategory.self, forKey: .category) {
+            self.category = catEnum
+        } else if let catString = try? container.decode(String.self, forKey: .category) {
+            switch catString.lowercased() {
+            case "tech", "technical": self.category = .technical
+            case "cultural": self.category = .cultural
+            case "sports": self.category = .sports
+            case "music": self.category = .music
+            case "dance": self.category = .dance
+            case "photography": self.category = .photography
+            case "literary", "literature": self.category = .literary
+            case "entrepreneurship": self.category = .entrepreneurship
+            case "ai": self.category = .ai
+            case "wellness": self.category = .wellness
+            default: self.category = .technical
+            }
+        } else {
+            self.category = .technical
+        }
+        
+        // logo / logo_url
+        if let directLogo = try? container.decode(String.self, forKey: .logo) {
+            self.logo = directLogo
+        } else {
+            struct LogoUrlDecoderKey: CodingKey {
+                var stringValue: String
+                init?(stringValue: String) { self.stringValue = stringValue }
+                var intValue: Int? { nil }
+                init?(intValue: Int) { nil }
+            }
+            let key = LogoUrlDecoderKey(stringValue: "logo_url")!
+            let dynamicContainer = try decoder.container(keyedBy: LogoUrlDecoderKey.self)
+            self.logo = (try? dynamicContainer.decode(String.self, forKey: key)) ?? ""
+        }
+        
+        // subgroupLeadId
+        self.subgroupLeadId = (try? container.decode(UUID.self, forKey: .subgroupLeadId)) ?? UUID()
+        
+        // facultyId
+        self.facultyId = (try? container.decode(UUID.self, forKey: .facultyId)) ?? UUID()
+        
+        // vicePresidentId
+        self.vicePresidentId = try? container.decode(UUID.self, forKey: .vicePresidentId)
+        
+        // instituteId
+        self.instituteId = (try? container.decode(UUID.self, forKey: .instituteId)) ?? UUID()
+        
+        // status
+        self.status = (try? container.decode(SubgroupStatus.self, forKey: .status)) ?? .active
+        
+        // createdAt
+        self.createdAt = (try? container.decode(Date.self, forKey: .createdAt)) ?? Date()
+        
+        // memberCount
+        self.memberCount = (try? container.decode(Int.self, forKey: .memberCount)) ?? 0
+        
+        // eventCount
+        self.eventCount = (try? container.decode(Int.self, forKey: .eventCount)) ?? 0
+        
+        // socials
+        self.socials = (try? container.decode([String: String].self, forKey: .socials)) ?? [:]
+        
+        self.imageData = nil
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(tagLine, forKey: .tagLine)
+        try container.encode(description, forKey: .description)
+        try container.encode(category, forKey: .category)
+        try container.encode(logo, forKey: .logo)
+        try container.encode(subgroupLeadId, forKey: .subgroupLeadId)
+        try container.encode(facultyId, forKey: .facultyId)
+        try container.encode(vicePresidentId, forKey: .vicePresidentId)
+        try container.encode(instituteId, forKey: .instituteId)
+        try container.encode(status, forKey: .status)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(memberCount, forKey: .memberCount)
+        try container.encode(eventCount, forKey: .eventCount)
+        try container.encode(socials, forKey: .socials)
+    }
 }
 
 public struct SubgroupFollower: Identifiable, Codable {

@@ -12,6 +12,7 @@ public final class SubgroupStore {
     
     public var followedSubgroupIds: Set<UUID> = []
     public var requestedSubgroupIds: Set<UUID> = []
+    public var hierarchyLevels: [HierarchyLevelModel] = []
     
     public init() {
         // Provide a temporary placeholder until data is loaded
@@ -54,11 +55,62 @@ public final class SubgroupStore {
     
     @MainActor
     public func fetchAllUsers() async throws {
-        self.allUsers = try await client
+        var fetchedUsers: [User] = try await client
             .from("users")
             .select()
             .execute()
             .value
+        
+        struct UserRoleRow: Decodable {
+            let user_id: UUID
+            let role_name: String
+            let subgroup_id: UUID?
+        }
+        
+        let roles: [UserRoleRow] = (try? await client
+            .from("user_roles")
+            .select("user_id, role_name, subgroup_id")
+            .execute()
+            .value) ?? []
+            
+        for i in 0..<fetchedUsers.count {
+            if let userRole = roles.first(where: { $0.user_id == fetchedUsers[i].id }) {
+                fetchedUsers[i].role = AppRole(rawValue: userRole.role_name) ?? .guest
+                fetchedUsers[i].subgroupId = userRole.subgroup_id
+            }
+        }
+        
+        self.allUsers = fetchedUsers
+    }
+    
+    @MainActor
+    public func fetchHierarchyLevels() async throws {
+        do {
+            self.hierarchyLevels = try await client
+                .from("hierarchy_levels")
+                .select()
+                .order("level_number", ascending: true)
+                .execute()
+                .value
+            print("DEBUG: Fetched \(hierarchyLevels.count) hierarchy levels from Supabase")
+        } catch {
+            print("DEBUG ERROR: Failed to fetch hierarchy levels: \(error)")
+        }
+        
+        if self.hierarchyLevels.isEmpty {
+            let dummyOrgId = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+            self.hierarchyLevels = [
+                HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 1, levelName: "Groups", isEnabled: true),
+                HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 2, levelName: "Subgroups", isEnabled: true),
+                HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 3, levelName: "Nested Subgroups", isEnabled: true),
+                HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 4, levelName: "Teams", isEnabled: false),
+                HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 5, levelName: "Level 5", isEnabled: false)
+            ]
+        }
+    }
+    
+    public func levelName(for levelNumber: Int, defaultName: String) -> String {
+        return hierarchyLevels.first(where: { $0.levelNumber == levelNumber })?.levelName ?? defaultName
     }
     
     @MainActor

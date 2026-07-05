@@ -44,16 +44,37 @@ public struct SupabaseAuthService {
             .value
         
         // Live RBAC Lookup in user_roles table
-        struct RoleRow: Decodable { let role_name: String }
+        struct RoleRow: Decodable {
+            let role_name: String
+            let subgroup_id: UUID?
+        }
         if let roleRows: [RoleRow] = try? await client
             .from("user_roles")
-            .select("role_name")
+            .select("role_name, subgroup_id")
             .eq("user_id", value: userId)
             .execute()
             .value,
-           let firstRoleStr = roleRows.first?.role_name,
-           let mappedRole = AppRole(rawValue: firstRoleStr) {
+           let firstRow = roleRows.first,
+           let mappedRole = AppRole(rawValue: firstRow.role_name) {
             user.role = mappedRole
+            user.subgroupId = firstRow.subgroup_id
+        }
+        
+        // If the user is a Subgroup Lead and subgroupId is still nil,
+        // resolve it by looking up lead_email in subgroups table
+        if user.role == .subGroupLead && user.subgroupId == nil {
+            struct SubgroupLookup: Decodable {
+                let id: UUID
+            }
+            if let subgroups: [SubgroupLookup] = try? await client
+                .from("subgroups")
+                .select("id")
+                .eq("lead_email", value: user.email)
+                .execute()
+                .value,
+               let firstSubgroup = subgroups.first {
+                user.subgroupId = firstSubgroup.id
+            }
         }
         
         return user

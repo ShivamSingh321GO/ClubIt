@@ -176,23 +176,36 @@ public final class AppSession {
         
         print("DEBUG: Starting Data Refresh for \(user.name)...")
         
+        // Refresh User profile to pick up any DB updates (like subgroup_id or role changes)
+        do {
+            let authService = SupabaseAuthService()
+            let refreshedUser = try await authService.fetchUserProfile(userId: user.id)
+            self.currentUser = refreshedUser
+        } catch {
+            print("DEBUG ERROR: Refreshed user profile failed: \(error)")
+        }
+        
+        guard let activeUser = currentUser else {
+            isRefreshing = false
+            return
+        }
+        
         // 1. Fetch User's specific Subgroup Details FIRST
-        if let subgroupId = user.subgroupId {
+        if let subgroupId = activeUser.subgroupId {
             do {
                 print("DEBUG: Loading personal subgroup data for \(subgroupId)")
                 try await subgroupStore.fetchSubgroupDetails(id: subgroupId)
-                
-                // Fetch achievements from Supabase
-                try await subgroupAchievementStore.fetchAchievements(subgroupId: subgroupId)
-                
-                try await activityStore.fetchActivities(subgroupId: subgroupId)
-                try await subgroupFileStore.fetchFiles(subgroupId: subgroupId)
-                try await subgroupLinkStore.fetchLinks(subgroupId: subgroupId)
-                try await subgroupImageStore.fetchImages(subgroupId: subgroupId)
                 print("DEBUG: Personal subgroup data loaded: \(subgroupStore.subgroup.name)")
             } catch {
                 print("DEBUG ERROR: Personal subgroup data failed: \(error.localizedDescription)")
             }
+            
+            // Secondary fetches should not block main subgroup details
+            do { try await subgroupAchievementStore.fetchAchievements(subgroupId: subgroupId) } catch { print("DEBUG ERROR: Fetch achievements failed: \(error)") }
+            do { try await activityStore.fetchActivities(subgroupId: subgroupId) } catch { print("DEBUG ERROR: Fetch activities failed: \(error)") }
+            do { try await subgroupFileStore.fetchFiles(subgroupId: subgroupId) } catch { print("DEBUG ERROR: Fetch files failed: \(error)") }
+            do { try await subgroupLinkStore.fetchLinks(subgroupId: subgroupId) } catch { print("DEBUG ERROR: Fetch links failed: \(error)") }
+            do { try await subgroupImageStore.fetchImages(subgroupId: subgroupId) } catch { print("DEBUG ERROR: Fetch images failed: \(error)") }
         }
 
         // 2. Load Global Data in parallel (Non-blocking)
@@ -207,6 +220,7 @@ public final class AppSession {
         async let announcementsTask: Void = { try? await announcementStore.fetchAnnouncements() }()
         async let venuesTask: Void = { try? await venueStore.fetchVenues() }()
         async let chatsTask: Void = { await chatStore.fetchChatsIfNeeded() }()
+        async let hierarchyTask: Void = { try? await subgroupStore.fetchHierarchyLevels() }()
         
         await subgroupsTask
         await usersTask
@@ -219,6 +233,7 @@ public final class AppSession {
         await announcementsTask
         await venuesTask
         await chatsTask
+        await hierarchyTask
         
         await chatStore.autoArchiveExpiredEventChats(events: eventStore.events)
         

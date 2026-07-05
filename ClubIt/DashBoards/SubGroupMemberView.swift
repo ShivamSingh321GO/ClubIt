@@ -17,7 +17,7 @@ struct SubGroupMemberView: View {
                 SubgroupMemberHomeView()
             }
             
-            Tab("My Subgroup", systemImage: "person.3") {
+            Tab("My \(appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup"))", systemImage: "person.3") {
                 LeadMySubgroupView()
             }
             
