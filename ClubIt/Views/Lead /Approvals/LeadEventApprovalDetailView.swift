@@ -21,10 +21,8 @@ struct LeadEventApprovalDetailView: View {
     }
 
     private var allSubgroupEventApprovals: [Approval] {
-        if let vpApp = vpApproval {
-            return [vpApp]
-        }
-        return []
+        guard let event = event else { return [] }
+        return appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .event }
     }
 
     private var allSubgroupResources: [Resource] {
@@ -415,14 +413,18 @@ struct LeadEventApprovalDetailView: View {
         VStack(spacing: 16) {
             ForEach(approvals.sorted(by: { $0.createdAt > $1.createdAt })) { approval in
                 VStack(alignment: .leading, spacing: 4) {
+                    let isVpDraft = (approval.id == vpApproval?.id)
+                    let title = isVpDraft ? "VP Draft Review" : "Event Approval"
+                    let reviewerName = isVpDraft ? (vpUser?.name ?? "N/A") : (appSession.subgroupStore.allUsers.first(where: { $0.id == approval.receiverId })?.name ?? "N/A")
+
                     LeadItemApprovalCard(
-                        title: "VP Draft Review",
+                        title: title,
                         icon: "doc.text.fill",
                         iconColor: .accentColor,
                         status: approval.status.rawValue,
                         details: [
-                            (icon: nil, label: "Category", value: event?.category.rawValue ?? "N/A"),
-                            (icon: nil, label: "Reviewer", value: vpUser?.name ?? "N/A")
+                            (icon: nil, label: "Category", value: event?.category.rawValue.capitalized ?? "N/A"),
+                            (icon: nil, label: "Reviewer", value: reviewerName)
                         ],
                         approvalId: approval.id,
                         onReply: {
