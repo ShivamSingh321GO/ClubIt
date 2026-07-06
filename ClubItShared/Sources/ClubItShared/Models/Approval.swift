@@ -88,6 +88,21 @@ public struct Approval: Identifiable, Codable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        type = try container.decode(ApprovalType.self, forKey: .type)
+        senderId = try? container.decode(UUID.self, forKey: .senderId)
+        receiverId = try? container.decode(UUID.self, forKey: .receiverId)
+        eventId = try? container.decode(UUID.self, forKey: .eventId)
+        approvalRelatedId = try? container.decode(UUID.self, forKey: .approvalRelatedId)
+        status = (try? container.decode(ApprovalStatus.self, forKey: .status)) ?? .pending
+        // Gracefully handle remarks — if it can't decode as [Remark], use empty array
+        remarks = (try? container.decode([Remark].self, forKey: .remarks)) ?? []
+        createdAt = (try? container.decode(Date.self, forKey: .createdAt)) ?? Date()
+        updatedAt = try? container.decode(Date.self, forKey: .updatedAt)
+    }
 }
 
 public struct Budget: Identifiable, Codable {
@@ -134,5 +149,27 @@ public struct Budget: Identifiable, Codable {
         self.remarks = remarks ?? []
         self.createdAt = createdAt
         self.approvedAt = approvedAt
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        eventId = try? container.decode(UUID.self, forKey: .eventId)
+        itemName = (try? container.decode(String.self, forKey: .itemName)) ?? ""
+        // Handle unit_price as either Double or String
+        if let price = try? container.decode(Double.self, forKey: .unitPrice) {
+            unitPrice = price
+        } else if let priceStr = try? container.decode(String.self, forKey: .unitPrice),
+                  let price = Double(priceStr) {
+            unitPrice = price
+        } else {
+            unitPrice = 0
+        }
+        quantity = (try? container.decode(Int.self, forKey: .quantity)) ?? 1
+        status = (try? container.decode(ApprovalStatus.self, forKey: .status)) ?? .pending
+        addedBy = try? container.decode(UUID.self, forKey: .addedBy)
+        remarks = (try? container.decode([Remark].self, forKey: .remarks)) ?? []
+        createdAt = (try? container.decode(Date.self, forKey: .createdAt)) ?? Date()
+        approvedAt = try? container.decode(Date.self, forKey: .approvedAt)
     }
 }

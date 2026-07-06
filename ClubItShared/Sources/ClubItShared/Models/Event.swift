@@ -455,6 +455,32 @@ public struct Resource: Identifiable, Codable {
         self.createdAt = createdAt
         self.approvedAt = approvedAt
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        eventId = try? container.decode(UUID.self, forKey: .eventId)
+        name = (try? container.decode(String.self, forKey: .name)) ?? ""
+        quantity = (try? container.decode(Int.self, forKey: .quantity)) ?? 1
+        type = (try? container.decode(ResourceType.self, forKey: .type)) ?? .external
+        status = (try? container.decode(ResourceStatus.self, forKey: .status)) ?? .pending
+        // Handle cost as either Double or String
+        if let c = try? container.decode(Double.self, forKey: .cost) {
+            cost = c
+        } else if let cStr = try? container.decode(String.self, forKey: .cost),
+                  let c = Double(cStr) {
+            cost = c
+        } else {
+            cost = nil
+        }
+        vendorName = try? container.decode(String.self, forKey: .vendorName)
+        issuedAt = try? container.decode(Date.self, forKey: .issuedAt)
+        returnedAt = try? container.decode(Date.self, forKey: .returnedAt)
+        addedBy = try? container.decode(UUID.self, forKey: .addedBy)
+        remarks = (try? container.decode([Remark].self, forKey: .remarks)) ?? []
+        createdAt = (try? container.decode(Date.self, forKey: .createdAt)) ?? Date()
+        approvedAt = try? container.decode(Date.self, forKey: .approvedAt)
+    }
 }
 
 

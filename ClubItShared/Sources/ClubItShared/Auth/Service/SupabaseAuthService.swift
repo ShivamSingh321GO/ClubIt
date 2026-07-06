@@ -43,21 +43,30 @@ public struct SupabaseAuthService {
             .execute()
             .value
         
-        // Live RBAC Lookup in user_roles table
         struct RoleRow: Decodable {
             let role_name: String
             let subgroup_id: UUID?
+            let group_id: UUID?
         }
         if let roleRows: [RoleRow] = try? await client
             .from("user_roles")
-            .select("role_name, subgroup_id")
+            .select("role_name, subgroup_id, group_id")
             .eq("user_id", value: userId)
             .execute()
-            .value,
-           let firstRow = roleRows.first,
-           let mappedRole = AppRole(rawValue: firstRow.role_name) {
-            user.role = mappedRole
-            user.subgroupId = firstRow.subgroup_id
+            .value {
+            
+            for row in roleRows {
+                if let mappedRole = mapRoleName(row.role_name) {
+                    user.role = mappedRole
+                    if let subId = row.subgroup_id {
+                        user.subgroupId = subId
+                    }
+                    if let grpId = row.group_id {
+                        user.groupId = grpId
+                    }
+                    break
+                }
+            }
         }
         
         // If the user is a Subgroup Lead and subgroupId is still nil,
@@ -78,6 +87,56 @@ public struct SupabaseAuthService {
         }
         
         return user
+    }
+    
+    private func mapRoleName(_ roleName: String) -> AppRole? {
+        let name = roleName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 1. Exact / Case-insensitive match to AppRole raw values
+        for role in AppRole.allCases {
+            if role.rawValue.lowercased() == name {
+                return role
+            }
+        }
+        
+        // 2. Custom case-insensitive mapping fallbacks
+        if name == "group lead" || name == "grouplead" {
+            return .groupLead
+        }
+        if name == "group sublead" || name == "groupsublead" {
+            return .groupSubLead
+        }
+        if name == "subgroup lead" || name == "subgrouplead" {
+            return .subGroupLead
+        }
+        if name == "subgroup member" || name == "subgroupmember" {
+            return .subGroupMember
+        }
+        if name == "superadmin" {
+            return .superAdmin
+        }
+        if name == "admin" {
+            return .admin
+        }
+        
+        // 3. Hierarchical custom levels mapping
+        // Level 1 represents Group
+        if name.contains("level_1_lead") || name == "level_1_lead" {
+            return .groupLead
+        }
+        if name.contains("level_1_sublead") || name == "level_1_sublead" {
+            return .groupSubLead
+        }
+        
+        // Level 2 represents SubGroup
+        if name.contains("level_2_lead") || name == "level_2_lead" {
+            return .subGroupLead
+        }
+        if name.contains("level_2_sublead") || name.contains("level_2_member") {
+            return .subGroupMember
+        }
+        
+        return nil
     }
     
     public enum AuthError: LocalizedError {

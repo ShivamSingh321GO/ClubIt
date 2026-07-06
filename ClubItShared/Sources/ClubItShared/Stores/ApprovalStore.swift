@@ -19,12 +19,57 @@ public final class ApprovalStore {
     
     @MainActor
     public func fetchApprovals() async throws {
-        self.approvals = try await client
-            .from("approvals")
-            .select()
-            .order("created_at", ascending: false)
-            .execute()
-            .value
+        do {
+            let fetched: [Approval] = try await client
+                .from("approvals")
+                .select()
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            self.approvals = fetched
+            print("DEBUG ApprovalStore: Successfully fetched \(fetched.count) approvals")
+        } catch {
+            print("DEBUG ApprovalStore ERROR: fetchApprovals batch decode failed: \(error)")
+            // Fallback: fetch raw JSON and decode individually to avoid one bad row killing all data
+            do {
+                let response = try await client
+                    .from("approvals")
+                    .select()
+                    .order("created_at", ascending: false)
+                    .execute()
+                
+                let jsonArray = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]] ?? []
+                var decoded: [Approval] = []
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .custom { decoder in
+                    let container = try decoder.singleValueContainer()
+                    let dateStr = try container.decode(String.self)
+                    // Try ISO8601 with fractional seconds
+                    let iso = ISO8601DateFormatter()
+                    iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                    if let date = iso.date(from: dateStr) { return date }
+                    // Try without fractional seconds
+                    iso.formatOptions = [.withInternetDateTime]
+                    if let date = iso.date(from: dateStr) { return date }
+                    return Date()
+                }
+                
+                for item in jsonArray {
+                    do {
+                        let itemData = try JSONSerialization.data(withJSONObject: item)
+                        let approval = try decoder.decode(Approval.self, from: itemData)
+                        decoded.append(approval)
+                    } catch {
+                        print("DEBUG ApprovalStore: Skipped malformed approval row: \(item["id"] ?? "unknown") — \(error)")
+                    }
+                }
+                self.approvals = decoded
+                print("DEBUG ApprovalStore: Fallback decoded \(decoded.count)/\(jsonArray.count) approvals")
+            } catch {
+                print("DEBUG ApprovalStore ERROR: Fallback also failed: \(error)")
+                throw error
+            }
+        }
     }
     
     @MainActor

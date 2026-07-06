@@ -94,7 +94,7 @@ struct ApprovalsListView: View {
                 return approval.type == .budget
             } else {
                 // Leads see their sent approvals
-                return approval.senderId == user.id && approval.type == .event
+                return approval.senderId == user.id
             }
         }
 

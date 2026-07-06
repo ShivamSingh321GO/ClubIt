@@ -63,8 +63,7 @@ struct EventManagementApprovalDetailView: View {
                 if let resource = resourceToApprove {
                     Task {
                         do {
-                            try await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .approved)
-                            await appSession.checkAndAutoApproveEvent(eventId: event.id)
+                            try await appSession.approveResourceAndCheckForwarding(resource: resource, status: .approved)
                         } catch {
                             print("DEBUG ERROR: Resource approval failed: \(error)")
                         }
@@ -83,8 +82,7 @@ struct EventManagementApprovalDetailView: View {
                 if let approval = venueToApprove {
                     Task {
                         do {
-                            try await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
-                            await appSession.checkAndAutoApproveEvent(eventId: event.id)
+                            try await appSession.processApprovalDecision(approval: approval, status: .approved)
                         } catch {
                             print("DEBUG ERROR: Venue approval failed: \(error)")
                         }
@@ -105,7 +103,6 @@ struct EventManagementApprovalDetailView: View {
                     Task {
                         do {
                             try await appSession.approveBudgetAndCheckForwarding(budget: budget, status: .approved)
-                            await appSession.checkAndAutoApproveEvent(eventId: event.id)
                         } catch {
                             print("DEBUG ERROR: Budget approval failed: \(error)")
                         }
@@ -126,28 +123,7 @@ struct EventManagementApprovalDetailView: View {
                         isProcessingApproval = true
                         defer { isProcessingApproval = false }
                         
-                        if appSession.currentRole == .groupSubLead {
-                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
-                            if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
-                                await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
-                            }
-                            if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }),
-                               let subgroup = appSession.subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
-                                try? await appSession.forwardToPresidentBudgetApproval(
-                                    eventId: event.id,
-                                    subgroup: subgroup,
-                                    senderId: appSession.currentUser?.id ?? UUID()
-                                )
-                            }
-                        } else {
-                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
-                            // Sync event status
-                            try? await appSession.eventStore.updateEventStatus(id: approval.eventId ?? UUID(), status: .approved)
-                            
-                            if let event = appSession.eventStore.events.first(where: { $0.id == approval.eventId }) {
-                                await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
-                            }
-                        }
+                        try? await appSession.processApprovalDecision(approval: approval, status: .approved)
                     }
                 }
             }
@@ -781,7 +757,7 @@ struct EventManagementApprovalDetailView: View {
                         
                         // Approve / Reject buttons flow naturally here
                         VStack(spacing: 0) {
-                            if approval.status == .pending {
+                            if approval.status == .pending && approval.receiverId == appSession.currentUser?.id {
                                 HStack(spacing: 12) {
                                     Button(role: .destructive, action: {
                                         selectedEventApprovalForRemark = approval
@@ -895,7 +871,7 @@ struct EventApprovalRequestCard: View {
             }
             .padding(.top, 4)
             
-            if approval.status == .pending {
+            if approval.status == .pending && approval.receiverId == appSession.currentUser?.id {
                 HStack(spacing: 12) {
                     Button(role: .destructive, action: onReject) {
                         Text("Reject")

@@ -54,13 +54,43 @@ public final class VenueStore {
         return venues
     }
     
+    public var bookedSlots: [DBBookedSlot] = []
+    
+    @MainActor
+    public func fetchBookedSlots() async throws {
+        self.bookedSlots = try await client
+            .from("booked_slots")
+            .select()
+            .execute()
+            .value
+        print("DEBUG: Fetched \(bookedSlots.count) booked slots from Supabase")
+    }
+    
     public func getBookingInfo(for venue: Venue, events: [Event], subgroups: [Subgroup]) -> [BookedSlot] {
-        // Find future events at this location
-        let futureEvents = events.filter { $0.location == venue.name && $0.startDate > Date() }
-            .sorted { $0.startDate < $1.startDate }
-        
-        return futureEvents.map { event in
-            BookedSlot(event: event, subgroup: subgroups.first { $0.id == event.subgroupId })
+        let slots = bookedSlots.filter { $0.venueId == venue.id }
+        return slots.compactMap { slot in
+            guard let event = events.first(where: { $0.id == slot.eventId }) else { return nil }
+            return BookedSlot(event: event, subgroup: subgroups.first { $0.id == event.subgroupId })
         }
+    }
+}
+
+public struct DBBookedSlot: Codable, Identifiable, Sendable {
+    public var id: UUID
+    public var venueId: UUID
+    public var eventId: UUID
+    public var subgroupId: UUID?
+    public var startTime: Date
+    public var endTime: Date
+    public var createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case venueId = "venue_id"
+        case eventId = "event_id"
+        case subgroupId = "subgroup_id"
+        case startTime = "start_time"
+        case endTime = "end_time"
+        case createdAt = "created_at"
     }
 }

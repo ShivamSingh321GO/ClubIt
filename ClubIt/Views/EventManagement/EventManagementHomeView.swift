@@ -23,14 +23,12 @@ struct EventManagementHomeView: View {
                             .font(.title2)
                             .bold()
                             
-                            if user.role == .groupSubLead {
-                                if user.email == "emt" {
-                                    EMTApprovalsModule(user: user)
-                                } else {
-                                    FacultyApprovalsModule(user: user)
-                                }
-                            } else {
+                            if user.role == .groupLead {
                                 PresidentApprovalsModule(user: user)
+                            } else if user.role == .groupSubLead && user.email == "emt" {
+                                EMTApprovalsModule(user: user)
+                            } else {
+                                FacultyApprovalsModule(user: user)
                             }
                         }
                         

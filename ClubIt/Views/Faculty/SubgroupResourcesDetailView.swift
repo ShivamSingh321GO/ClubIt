@@ -114,7 +114,7 @@ struct SubgroupResourcesDetailView: View {
             Button("Approve") {
                 if let resource = resourceToApprove {
                     Task {
-                        try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .approved)
+                        try? await appSession.approveResourceAndCheckForwarding(resource: resource, status: .approved)
                     }
                 }
             }
@@ -128,7 +128,7 @@ struct SubgroupResourcesDetailView: View {
             Button("Approve") {
                 if let approval = venueToApprove {
                     Task {
-                        try? await appSession.approvalStore.updateApproval(id: approval.id, status: .approved)
+                        try? await appSession.processApprovalDecision(approval: approval, status: .approved)
                     }
                 }
             }
@@ -353,7 +353,9 @@ struct FacultyResourceRequestCard: View {
             }
             
             // MARK: - Action Buttons
-            if resource.status == .pending && appSession.currentUser?.role == .groupSubLead {
+            if resource.status == .pending,
+               let resourceApproval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id && $0.type == .resource }),
+               resourceApproval.receiverId == appSession.currentUser?.id {
                 HStack(spacing: 12) {
                     Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
@@ -450,7 +452,7 @@ struct FacultyVenueApprovalCard: View {
                 .padding(.top, 4)
             }
             
-            if approval.status == .pending && appSession.currentUser?.role == .groupSubLead {
+            if approval.status == .pending && approval.receiverId == appSession.currentUser?.id {
                 HStack(spacing: 12) {
                     Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")
@@ -590,7 +592,7 @@ struct FacultyVenueRemarkSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Task {
-                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected)
+                            try? await appSession.processApprovalDecision(approval: approval, status: .rejected)
                             try? await appSession.approvalStore.addRemark(
                                 approvalId: approval.id,
                                 authorId: appSession.currentUser?.id ?? UUID(),
@@ -708,7 +710,7 @@ struct FacultyRemarkSheet: View {
                         if let approvalId = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id })?.id {
                             let finalRemark = remark
                             Task {
-                                try? await appSession.approvalStore.updateResourceStatus(id: resource.id, status: .rejected)
+                                try? await appSession.approveResourceAndCheckForwarding(resource: resource, status: .rejected)
                                 try? await appSession.approvalStore.addRemark(
                                     approvalId: approvalId,
                                     authorId: appSession.currentUser?.id ?? UUID(),

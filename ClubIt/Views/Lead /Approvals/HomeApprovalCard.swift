@@ -43,7 +43,7 @@ struct HomeApprovalCard: View {
             if showTrack {
                 ApprovalStatusTrack(approval: approval)
                 
-                if appSession.currentRole == .groupLead && approval.type == .budget && approval.status == .pending {
+                if appSession.currentRole == .groupLead && approval.type == .budget && approval.status == .pending && approval.receiverId == appSession.currentUser?.id {
                     HStack(spacing: 12) {
                         Button {
                             Task {

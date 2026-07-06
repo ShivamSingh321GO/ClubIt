@@ -112,7 +112,6 @@ struct HomeApprovalsModule: View {
     var body: some View {
         let allSent = appSession.approvalStore.approvals.filter { approval in
             approval.senderId == user.id &&
-            approval.type == .event &&
             appSession.eventStore.events.contains(where: { $0.id == approval.eventId })
         }.sorted(by: { $0.createdAt > $1.createdAt })
         

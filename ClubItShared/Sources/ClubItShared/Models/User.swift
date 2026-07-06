@@ -20,6 +20,7 @@ public struct User: Identifiable, Codable {
     public var instituteId: UUID?
     public var role: AppRole
     public var subgroupId: UUID?
+    public var groupId: UUID?
     public var profileImg: String?
     public var phoneNumber: String?
     public var course: String?
@@ -38,6 +39,7 @@ public struct User: Identifiable, Codable {
         case instituteId = "institute_id"
         case role
         case subgroupId = "subgroup_id"
+        case groupId = "group_id"
         case profileImg = "profile_img"
         case phoneNumber = "phone_number"
         case course
@@ -56,6 +58,7 @@ public struct User: Identifiable, Codable {
         instituteId: UUID? = nil,
         role: AppRole,
         subgroupId: UUID? = nil,
+        groupId: UUID? = nil,
         profileImg: String? = nil,
         phoneNumber: String? = nil,
         course: String? = nil,
@@ -73,6 +76,7 @@ public struct User: Identifiable, Codable {
         self.instituteId = instituteId
         self.role = role
         self.subgroupId = subgroupId
+        self.groupId = groupId
         self.profileImg = profileImg
         self.phoneNumber = phoneNumber
         self.course = course
@@ -93,6 +97,7 @@ public struct User: Identifiable, Codable {
         instituteId = try? container.decode(UUID.self, forKey: .instituteId)
         role = (try? container.decode(AppRole.self, forKey: .role)) ?? .guest
         subgroupId = try? container.decode(UUID.self, forKey: .subgroupId)
+        groupId = try? container.decode(UUID.self, forKey: .groupId)
         profileImg = try? container.decode(String.self, forKey: .profileImg)
         phoneNumber = try? container.decode(String.self, forKey: .phoneNumber)
         course = try? container.decode(String.self, forKey: .course)

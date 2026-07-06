@@ -82,7 +82,7 @@ struct FacultyApprovalDetailView: View {
             Button(targetStatus == .approved ? "Approve" : "Reject", role: targetStatus == .approved ? .none : .destructive) {
                 let contentToSave = remark // Capture here
                 Task {
-                    try? await appSession.approvalStore.updateApproval(id: approval.id, status: targetStatus)
+                    try? await appSession.processApprovalDecision(approval: approval, status: targetStatus)
                     
                     if !contentToSave.isEmpty {
                         try? await appSession.approvalStore.addRemark(
@@ -90,10 +90,6 @@ struct FacultyApprovalDetailView: View {
                             authorId: appSession.currentUser?.id ?? UUID(),
                             content: contentToSave
                         )
-                    }
-                    
-                    if targetStatus == .approved {
-                        await appSession.checkAndAutoApproveEvent(eventId: approval.eventId ?? UUID())
                     }
                     
                     dismiss()
@@ -128,7 +124,7 @@ struct FacultyApprovalDetailView: View {
                     Button("Submit Rejection") {
                         let contentToSave = remark // Capture here
                         Task {
-                            try? await appSession.approvalStore.updateApproval(id: approval.id, status: .rejected)
+                            try? await appSession.processApprovalDecision(approval: approval, status: .rejected)
                             try? await appSession.approvalStore.addRemark(
                                 approvalId: approval.id,
                                 authorId: appSession.currentUser?.id ?? UUID(),

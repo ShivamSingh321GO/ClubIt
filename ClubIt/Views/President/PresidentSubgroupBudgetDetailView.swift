@@ -329,7 +329,9 @@ struct PresidentBudgetRequestCard: View {
                 .padding(.top, 4)
             }
             
-            if budget.status == .pending && appSession.currentUser?.role == .groupLead {
+            if budget.status == .pending,
+               let budgetApproval = appSession.approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id && $0.type == .budget }),
+               budgetApproval.receiverId == appSession.currentUser?.id {
                 HStack(spacing: 12) {
                     Button(role: .destructive, action: onReject) {
                         Label("Reject", systemImage: "xmark.circle")

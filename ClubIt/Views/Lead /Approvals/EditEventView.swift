@@ -165,15 +165,14 @@ struct EditEventView: View {
             
             Section {
                 let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
-                let conflictingEvents = appSession.eventStore.events.filter { e in
-                    e.id != event.id && // Don't check against self
-                    (e.status == .pending || e.status == .approved) &&
-                    (startDate < e.endDate) && (e.startDate < endDate)
+                let conflictingVenues = appSession.venueStore.bookedSlots.filter { slot in
+                    slot.eventId != event.id &&
+                    (startDate < slot.endTime) && (slot.startTime < endDate)
                 }
                 
                 Picker("Location", selection: $venue) {
                     ForEach(sortedVenues) { v in
-                        let isBooked = conflictingEvents.contains { $0.location == v.name }
+                        let isBooked = conflictingVenues.contains { $0.venueId == v.id }
                         HStack {
                             Text(v.name)
                             if isBooked {
@@ -322,11 +321,11 @@ struct EditEventView: View {
     }
     
     private var isVenueBooked: Bool {
-        appSession.eventStore.events.contains { e in
-            e.id != event.id &&
-            (e.status == .pending || e.status == .approved) &&
-            e.location == venue &&
-            (startDate < e.endDate) && (e.startDate < endDate)
+        appSession.venueStore.bookedSlots.contains { slot in
+            let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
+            return slot.venueId == selectedVenue?.id &&
+            slot.eventId != event.id &&
+            (startDate < slot.endTime) && (slot.startTime < endDate)
         }
     }
     

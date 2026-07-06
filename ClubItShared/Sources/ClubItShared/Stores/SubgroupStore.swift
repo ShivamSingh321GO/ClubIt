@@ -65,11 +65,12 @@ public final class SubgroupStore {
             let user_id: UUID
             let role_name: String
             let subgroup_id: UUID?
+            let group_id: UUID?
         }
         
         let roles: [UserRoleRow] = (try? await client
             .from("user_roles")
-            .select("user_id, role_name, subgroup_id")
+            .select("user_id, role_name, subgroup_id, group_id")
             .execute()
             .value) ?? []
             
@@ -77,6 +78,7 @@ public final class SubgroupStore {
             if let userRole = roles.first(where: { $0.user_id == fetchedUsers[i].id }) {
                 fetchedUsers[i].role = AppRole(rawValue: userRole.role_name) ?? .guest
                 fetchedUsers[i].subgroupId = userRole.subgroup_id
+                fetchedUsers[i].groupId = userRole.group_id
             }
         }
         

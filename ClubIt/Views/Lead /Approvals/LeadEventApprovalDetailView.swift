@@ -5,6 +5,7 @@ struct LeadEventApprovalDetailView: View {
     @Environment(AppSession.self) var appSession
     let eventId: UUID
     
+    @State private var dynamicSteps: [ApprovalFlowStep] = []
     @State private var selectedTab: String = "Event"
     @State private var replyText: String = ""
     @State private var replyingToItemId: UUID? = nil
@@ -123,7 +124,10 @@ struct LeadEventApprovalDetailView: View {
     }
     
     private var presidentUser: User? {
-        appSession.subgroupStore.allUsers.first(where: { $0.role == .groupLead })
+        guard let subgroup = subgroup else { return nil }
+        return appSession.subgroupStore.allUsers.first(where: { 
+            $0.role == .groupLead && $0.groupId == subgroup.groupId 
+        })
     }
     
     private var facultyUser: User? {
@@ -278,143 +282,59 @@ struct LeadEventApprovalDetailView: View {
                             .padding(.horizontal)
                         
                         VStack(alignment: .leading, spacing: 20) {
-                            // Step 1: Vice President Draft Approval
-                            HStack(alignment: .top, spacing: 12) {
-                                VStack {
-                                    Circle()
-                                        .fill(statusColor(for: vpStepStatus))
-                                        .frame(width: 24, height: 24)
-                                        .overlay(
-                                            Image(systemName: statusIcon(for: vpStepStatus))
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.white)
-                                        )
-                                    
-                                    Rectangle()
-                                        .fill(statusColor(for: presidentStepStatus).opacity(0.3))
-                                        .frame(width: 2, height: 30)
+                            if dynamicSteps.isEmpty {
+                                HStack {
+                                    Spacer()
+                                    ProgressView("Loading flow steps...")
+                                    Spacer()
                                 }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Step 1: Vice President Draft Approval")
-                                        .font(.subheadline.bold())
-                                    
-                                    if hasVP, let vp = vpUser {
-                                        Text("Reviewer: \(vp.name)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    } else {
-                                        Text("Reviewer: N/A")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    HStack(spacing: 4) {
-                                        Text("Status:")
-                                            .foregroundColor(.secondary)
-                                        Text(statusText(for: vpStepStatus))
-                                            .foregroundColor(statusColor(for: vpStepStatus))
-                                    }
-                                    .font(.caption.bold())
-                                    
-                                    if vpStepStatus == .rejected, let remark = vpRejectionRemark {
-                                        Text("Remark: \"\(remark)\"")
-                                            .font(.caption.italic())
-                                            .foregroundColor(.red)
-                                            .padding(.top, 4)
-                                    }
-                                }
-                                Spacer()
-                            }
-                            
-                            // Step 2: President Budget Approval
-                            HStack(alignment: .top, spacing: 12) {
-                                VStack {
-                                    Circle()
-                                        .fill(statusColor(for: presidentStepStatus))
-                                        .frame(width: 24, height: 24)
-                                        .overlay(
-                                            Image(systemName: statusIcon(for: presidentStepStatus))
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.white)
-                                        )
-                                    
-                                    Rectangle()
-                                        .fill(statusColor(for: emtStepStatus).opacity(0.3))
-                                        .frame(width: 2, height: 30)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Step 2: President Budget Approval")
-                                        .font(.subheadline.bold())
-                                    
-                                    if let president = presidentUser {
-                                        Text("Reviewer: \(president.name)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    HStack(spacing: 4) {
-                                        Text("Status:")
-                                            .foregroundColor(.secondary)
-                                        Text(statusText(for: presidentStepStatus))
-                                            .foregroundColor(statusColor(for: presidentStepStatus))
-                                    }
-                                    .font(.caption.bold())
-                                    
-                                    if presidentStepStatus == .rejected, let remark = presidentRejectionRemark {
-                                        Text("Remark: \"\(remark)\"")
-                                            .font(.caption.italic())
-                                            .foregroundColor(.red)
-                                            .padding(.top, 4)
+                            } else {
+                                ForEach(dynamicSteps) { step in
+                                    HStack(alignment: .top, spacing: 12) {
+                                        VStack {
+                                            Circle()
+                                                .fill(statusColor(for: step.status))
+                                                .frame(width: 24, height: 24)
+                                                .overlay(
+                                                    Image(systemName: statusIcon(for: step.status))
+                                                        .font(.system(size: 10, weight: .bold))
+                                                        .foregroundColor(.white)
+                                                )
+                                            
+                                            if step.stepNumber < dynamicSteps.count {
+                                                let nextStep = dynamicSteps[step.stepNumber]
+                                                Rectangle()
+                                                    .fill(statusColor(for: nextStep.status).opacity(0.3))
+                                                    .frame(width: 2, height: 30)
+                                            }
+                                        }
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Step \(step.stepNumber): \(step.title)")
+                                                .font(.subheadline.bold())
+                                            
+                                            Text("Reviewer: \(step.reviewerName)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                            
+                                            HStack(spacing: 4) {
+                                                Text("Status:")
+                                                    .foregroundColor(.secondary)
+                                                Text(statusText(for: step.status))
+                                                    .foregroundColor(statusColor(for: step.status))
+                                            }
+                                            .font(.caption.bold())
+                                            
+                                            if step.status == .rejected, let remark = step.remark {
+                                                Text("Remark: \"\(remark)\"")
+                                                    .font(.caption.italic())
+                                                    .foregroundColor(.red)
+                                                    .padding(.top, 4)
+                                            }
+                                        }
+                                        Spacer()
                                     }
                                 }
-                                Spacer()
-                            }
-                            
-                            // Step 3: Faculty (EMT) Final Review
-                            HStack(alignment: .top, spacing: 12) {
-                                VStack {
-                                    Circle()
-                                        .fill(statusColor(for: emtStepStatus))
-                                        .frame(width: 24, height: 24)
-                                        .overlay(
-                                            Image(systemName: statusIcon(for: emtStepStatus))
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.white)
-                                        )
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Step 3: Faculty (EMT) Final Review")
-                                        .font(.subheadline.bold())
-                                    
-                                    if let faculty = facultyUser {
-                                        Text("Reviewer: \(faculty.name)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    } else {
-                                        Text("Reviewers: Event Management Team & Faculty")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    HStack(spacing: 4) {
-                                        Text("Status:")
-                                            .foregroundColor(.secondary)
-                                        Text(statusText(for: emtStepStatus))
-                                            .foregroundColor(statusColor(for: emtStepStatus))
-                                    }
-                                    .font(.caption.bold())
-                                    
-                                    if emtStepStatus == .rejected, let remark = emtRejectionRemark {
-                                        Text("Remark: \"\(remark)\"")
-                                            .font(.caption.italic())
-                                            .foregroundColor(.red)
-                                            .padding(.top, 4)
-                                    }
-                                }
-                                Spacer()
                             }
                         }
                         .padding()
@@ -473,6 +393,10 @@ struct LeadEventApprovalDetailView: View {
                 for approval in relevantApprovals {
                     try? await appSession.approvalStore.fetchRemarks(for: approval.id)
                 }
+                await loadDynamicSteps()
+            }
+            .task {
+                await loadDynamicSteps()
             }
             .navigationTitle("Approval Management")
             .navigationBarTitleDisplayMode(.inline)
@@ -663,6 +587,162 @@ struct LeadEventApprovalDetailView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
+    }
+    
+    struct ApprovalFlowStep: Identifiable, Hashable {
+        let id = UUID()
+        let stepNumber: Int
+        let title: String
+        let reviewerName: String
+        let status: StepStatus
+        let remark: String?
+        
+        static func == (lhs: ApprovalFlowStep, rhs: ApprovalFlowStep) -> Bool {
+            lhs.id == rhs.id
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+        }
+    }
+    
+    private func loadDynamicSteps() async {
+        guard let event = event, let subgroup = subgroup else { return }
+        let orgId = appSession.currentUser?.organizationId ?? appSession.currentUser?.instituteId ?? UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+        
+        var steps: [ApprovalFlowStep] = []
+        var stepNum = 1
+        
+        // Step 1: Vice President Draft Approval (if configured/hasVP)
+        if hasVP {
+            let vpName = vpUser?.name ?? "Vice President"
+            steps.append(ApprovalFlowStep(
+                stepNumber: stepNum,
+                title: "Vice President Draft Approval",
+                reviewerName: vpName,
+                status: vpStepStatus,
+                remark: vpRejectionRemark
+            ))
+            stepNum += 1
+        }
+        
+        let categories = ["Events", "Budget", "Resources", "Venue"]
+        var isPrecedingApproved = hasVP ? (vpStepStatus == .approved) : true
+        
+        for category in categories {
+            let approverIds = await appSession.routingService.resolveApprovers(
+                category: category,
+                subgroupId: subgroup.id,
+                groupId: subgroup.groupId,
+                orgId: orgId
+            )
+            
+            let categoryType: ApprovalType
+            switch category {
+            case "Events": categoryType = .event
+            case "Budget": categoryType = .budget
+            case "Resources": categoryType = .resource
+            case "Venue": categoryType = .venue
+            default: continue
+            }
+            
+            // If no approvers configured, this step is skipped
+            if approverIds.isEmpty {
+                steps.append(ApprovalFlowStep(
+                    stepNumber: stepNum,
+                    title: "\(category) Approval",
+                    reviewerName: "N/A",
+                    status: .skipped,
+                    remark: nil
+                ))
+                stepNum += 1
+                continue
+            }
+            
+            // Check if there are no items for this category (e.g. no budgets or no resources requested)
+            if category == "Budget" && allSubgroupBudgets.isEmpty {
+                steps.append(ApprovalFlowStep(
+                    stepNumber: stepNum,
+                    title: "\(category) Approval",
+                    reviewerName: "N/A",
+                    status: .skipped,
+                    remark: nil
+                ))
+                stepNum += 1
+                continue
+            }
+            if category == "Resources" && allSubgroupResources.isEmpty {
+                steps.append(ApprovalFlowStep(
+                    stepNumber: stepNum,
+                    title: "\(category) Approval",
+                    reviewerName: "N/A",
+                    status: .skipped,
+                    remark: nil
+                ))
+                stepNum += 1
+                continue
+            }
+            if category == "Venue" && event.location.isEmpty {
+                steps.append(ApprovalFlowStep(
+                    stepNumber: stepNum,
+                    title: "\(category) Approval",
+                    reviewerName: "N/A",
+                    status: .skipped,
+                    remark: nil
+                ))
+                stepNum += 1
+                continue
+            }
+            
+            // Now resolve status for each sequential approver in this category
+            for approverId in approverIds {
+                let matchedUser = appSession.subgroupStore.allUsers.first(where: { $0.id == approverId })
+                let reviewerName = matchedUser?.name ?? "Approver"
+                
+                // Find approval request for this type & receiverId
+                let relevantApprovals = appSession.approvalStore.approvals.filter {
+                    $0.eventId == event.id &&
+                    $0.type == categoryType &&
+                    $0.receiverId == approverId
+                }
+                
+                let stepStatus: StepStatus
+                let remark: String?
+                
+                if let approval = relevantApprovals.first {
+                    remark = approval.remarks?.last?.content ?? appSession.approvalStore.remarkMessages[approval.id]?.last?.content
+                    switch approval.status {
+                    case .pending:
+                        stepStatus = .pending
+                        isPrecedingApproved = false
+                    case .approved:
+                        stepStatus = .approved
+                    case .rejected:
+                        stepStatus = .rejected
+                        isPrecedingApproved = false
+                    }
+                } else {
+                    remark = nil
+                    if isPrecedingApproved {
+                        stepStatus = .pending
+                        isPrecedingApproved = false
+                    } else {
+                        stepStatus = .locked
+                    }
+                }
+                
+                steps.append(ApprovalFlowStep(
+                    stepNumber: stepNum,
+                    title: "\(category) Approval",
+                    reviewerName: reviewerName,
+                    status: stepStatus,
+                    remark: remark
+                ))
+                stepNum += 1
+            }
+        }
+        
+        self.dynamicSteps = steps
     }
 }
 

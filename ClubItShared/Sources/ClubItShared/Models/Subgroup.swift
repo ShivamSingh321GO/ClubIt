@@ -42,6 +42,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
     public var facultyId: UUID
     public var vicePresidentId: UUID?
     public var instituteId: UUID
+    public var groupId: UUID
     public var status: SubgroupStatus
     public var createdAt: Date
     
@@ -62,6 +63,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         case facultyId = "faculty_id"
         case vicePresidentId = "vice_president_id"
         case instituteId = "institute_id"
+        case groupId = "group_id"
         case status
         case createdAt = "created_at"
         case memberCount = "member_count"
@@ -80,6 +82,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         facultyId: UUID,
         vicePresidentId: UUID? = nil,
         instituteId: UUID,
+        groupId: UUID = UUID(),
         status: SubgroupStatus,
         createdAt: Date,
         memberCount: Int? = 0,
@@ -97,6 +100,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         self.facultyId = facultyId
         self.vicePresidentId = vicePresidentId
         self.instituteId = instituteId
+        self.groupId = groupId
         self.status = status
         self.createdAt = createdAt
         self.memberCount = memberCount
@@ -180,6 +184,21 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         // instituteId
         self.instituteId = (try? container.decode(UUID.self, forKey: .instituteId)) ?? UUID()
         
+        // groupId
+        if let gid = try? container.decode(UUID.self, forKey: .groupId) {
+            self.groupId = gid
+        } else {
+            struct GroupIdDecoderKey: CodingKey {
+                var stringValue: String
+                init?(stringValue: String) { self.stringValue = stringValue }
+                var intValue: Int? { nil }
+                init?(intValue: Int) { nil }
+            }
+            let key = GroupIdDecoderKey(stringValue: "group_id")!
+            let dynamicContainer = try decoder.container(keyedBy: GroupIdDecoderKey.self)
+            self.groupId = (try? dynamicContainer.decode(UUID.self, forKey: key)) ?? UUID()
+        }
+        
         // status
         self.status = (try? container.decode(SubgroupStatus.self, forKey: .status)) ?? .active
         
@@ -207,9 +226,9 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         try container.encode(category, forKey: .category)
         try container.encode(logo, forKey: .logo)
         try container.encode(subgroupLeadId, forKey: .subgroupLeadId)
-        try container.encode(facultyId, forKey: .facultyId)
         try container.encode(vicePresidentId, forKey: .vicePresidentId)
         try container.encode(instituteId, forKey: .instituteId)
+        try container.encode(groupId, forKey: .groupId)
         try container.encode(status, forKey: .status)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(memberCount, forKey: .memberCount)

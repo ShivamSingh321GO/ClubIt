@@ -38,6 +38,8 @@ public final class AppSession {
     public var activityStore: ActivityStore
     public var registrationStore: RegistrationStore
     public var attendanceStore: AttendanceStore
+    public var routingService: ApprovalFlowRoutingService
+    
     
     public var registeredEventIds: Set<UUID> = []
     public var favouritedEventIds: Set<UUID> = []
@@ -80,6 +82,7 @@ public final class AppSession {
         self.activityStore = ActivityStore()
         self.registrationStore = RegistrationStore()
         self.attendanceStore = AttendanceStore()
+        self.routingService = ApprovalFlowRoutingService()
         
         self.chatStore.eventStore = eventStore
         
@@ -209,18 +212,19 @@ public final class AppSession {
         }
 
         // 2. Load Global Data in parallel (Non-blocking)
-        async let subgroupsTask: Void = { try? await subgroupStore.fetchAllSubgroups() }()
-        async let usersTask: Void = { try? await subgroupStore.fetchAllUsers() }()
-        async let eventsTask: Void = { try? await eventStore.fetchAllEvents() }()
-        async let approvalsTask: Void = { try? await approvalStore.fetchApprovals() }()
-        async let budgetsTask: Void = { try? await approvalStore.fetchBudgets() }()
-        async let resourcesTask: Void = { try? await approvalStore.fetchResources() }()
-        async let registrationsTask: Void = { try? await registrationStore.fetchRegistrations() }()
-        async let tasksTask: Void = { try? await taskStore.fetchTasks() }()
-        async let announcementsTask: Void = { try? await announcementStore.fetchAnnouncements() }()
-        async let venuesTask: Void = { try? await venueStore.fetchVenues() }()
+        async let subgroupsTask: Void = { do { try await subgroupStore.fetchAllSubgroups() } catch { print("DEBUG REFRESH ERROR: fetchAllSubgroups failed: \(error)") } }()
+        async let usersTask: Void = { do { try await subgroupStore.fetchAllUsers() } catch { print("DEBUG REFRESH ERROR: fetchAllUsers failed: \(error)") } }()
+        async let eventsTask: Void = { do { try await eventStore.fetchAllEvents() } catch { print("DEBUG REFRESH ERROR: fetchAllEvents failed: \(error)") } }()
+        async let approvalsTask: Void = { do { try await approvalStore.fetchApprovals() } catch { print("DEBUG REFRESH ERROR: fetchApprovals failed: \(error)") } }()
+        async let budgetsTask: Void = { do { try await approvalStore.fetchBudgets() } catch { print("DEBUG REFRESH ERROR: fetchBudgets failed: \(error)") } }()
+        async let resourcesTask: Void = { do { try await approvalStore.fetchResources() } catch { print("DEBUG REFRESH ERROR: fetchResources failed: \(error)") } }()
+        async let registrationsTask: Void = { do { try await registrationStore.fetchRegistrations() } catch { print("DEBUG REFRESH ERROR: fetchRegistrations failed: \(error)") } }()
+        async let tasksTask: Void = { do { try await taskStore.fetchTasks() } catch { print("DEBUG REFRESH ERROR: fetchTasks failed: \(error)") } }()
+        async let announcementsTask: Void = { do { try await announcementStore.fetchAnnouncements() } catch { print("DEBUG REFRESH ERROR: fetchAnnouncements failed: \(error)") } }()
+        async let venuesTask: Void = { do { try await venueStore.fetchVenues() } catch { print("DEBUG REFRESH ERROR: fetchVenues failed: \(error)") } }()
+        async let bookedSlotsTask: Void = { do { try await venueStore.fetchBookedSlots() } catch { print("DEBUG REFRESH ERROR: fetchBookedSlots failed: \(error)") } }()
         async let chatsTask: Void = { await chatStore.fetchChatsIfNeeded() }()
-        async let hierarchyTask: Void = { try? await subgroupStore.fetchHierarchyLevels() }()
+        async let hierarchyTask: Void = { do { try await subgroupStore.fetchHierarchyLevels() } catch { print("DEBUG REFRESH ERROR: fetchHierarchyLevels failed: \(error)") } }()
         
         await subgroupsTask
         await usersTask
@@ -232,10 +236,12 @@ public final class AppSession {
         await tasksTask
         await announcementsTask
         await venuesTask
+        await bookedSlotsTask
         await chatsTask
         await hierarchyTask
         
         await chatStore.autoArchiveExpiredEventChats(events: eventStore.events)
+        await syncBookedSlotsForApprovedEvents()
         
         // 3. Sync registrations
         let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
@@ -243,6 +249,19 @@ public final class AppSession {
         self.studentDashboardStore.registeredEventIds = self.registeredEventIds
         
         print("DEBUG: Data Sync Sequence Complete")
+        print("DEBUG COUNTS: approvals=\(approvalStore.approvals.count), events=\(eventStore.events.count), budgets=\(approvalStore.budgets.count), resources=\(approvalStore.resources.count), user=\(activeUser.name), role=\(activeUser.role.rawValue), activeUserId=\(activeUser.id)")
+        
+        print("DEBUG: ALL Fetched Approvals:")
+        for a in approvalStore.approvals {
+            print("  - Approval \(a.id): type=\(a.type.rawValue), sender=\(a.senderId?.uuidString ?? "nil"), receiver=\(a.receiverId?.uuidString ?? "nil"), event=\(a.eventId?.uuidString ?? "nil"), status=\(a.status.rawValue)")
+        }
+        
+        // Log pending approvals for this user specifically
+        let myPendingReceived = approvalStore.approvals.filter { $0.receiverId == activeUser.id && $0.status == .pending }
+        print("DEBUG: Pending approvals received by current user: \(myPendingReceived.count)")
+        for a in myPendingReceived {
+            print("  - Approval \(a.id): type=\(a.type.rawValue), sender=\(a.senderId?.uuidString ?? "nil"), event=\(a.eventId?.uuidString ?? "nil")")
+        }
         isRefreshing = false
     }
 
@@ -404,40 +423,101 @@ public final class AppSession {
     @MainActor
     public func checkAndAutoApproveEvent(eventId: UUID) async {
         let allResources = approvalStore.resources.filter { $0.eventId == eventId }
-        let allVenues = approvalStore.approvals.filter { $0.eventId == eventId && $0.type == .venue }
         let allBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
         
-        let isFullyApproved = allResources.allSatisfy { $0.status == .approved } &&
-                             allVenues.allSatisfy { $0.status == .approved } &&
-                             allBudgets.allSatisfy { $0.status == .approved }
+        let eventApprovals = approvalStore.approvals.filter { $0.eventId == eventId && $0.type == .event }
+        let isEventApproved = !eventApprovals.isEmpty && eventApprovals.allSatisfy { $0.status == .approved }
         
-        if isFullyApproved {
-            if let eventApproval = approvalStore.approvals.first(where: { $0.eventId == eventId && $0.type == .event && $0.status == .pending }) {
-                try? await approvalStore.updateApproval(id: eventApproval.id, status: .approved)
-            }
+        let isResourcesApproved = allResources.allSatisfy { $0.status == .approved }
+        let isBudgetsApproved = allBudgets.allSatisfy { $0.status == .approved }
+        
+        let venueApprovals = approvalStore.approvals.filter { $0.eventId == eventId && $0.type == .venue }
+        let isVenueApproved = venueApprovals.allSatisfy { $0.status == .approved }
+        
+        if isResourcesApproved && isBudgetsApproved && isVenueApproved && isEventApproved {
             try? await eventStore.updateEventStatus(id: eventId, status: .approved)
+            
+            if let event = eventStore.events.first(where: { $0.id == eventId }) {
+                await chatStore.createEventChatsForPublishedEvent(event: event)
+            }
+            
+            print("DEBUG Routing: Event \(eventId) is fully approved and live!")
         }
     }
     
     @MainActor
-    public func forwardToPresidentBudgetApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
-        let presidentUserId = subgroupStore.allUsers.first(where: { $0.role == .groupLead })?.id ?? MockData.presidentId
-        let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
+    public func forwardToEventsApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
+        let orgId = currentUser?.organizationId ?? currentUser?.instituteId ?? UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+        let approvers = await routingService.resolveApprovers(
+            category: "Events",
+            subgroupId: subgroup.id,
+            groupId: subgroup.groupId,
+            orgId: orgId
+        )
         
-        if eventBudgets.isEmpty {
-            // No budgets to approve, skip to EMT directly!
-            try await forwardToEMTApproval(eventId: eventId, subgroup: subgroup, senderId: senderId)
+        if approvers.isEmpty {
+            // No Events approver configured, auto-approve and proceed to Budget
+            let approvedEvent = Approval(
+                id: UUID(),
+                type: .event,
+                senderId: senderId,
+                receiverId: senderId,
+                eventId: eventId,
+                approvalRelatedId: eventId,
+                status: .approved,
+                remarks: [],
+                createdAt: Date(),
+                updatedAt: nil
+            )
+            try await approvalStore.submitApprovalRequests([approvedEvent])
+            try await forwardToPresidentBudgetApproval(eventId: eventId, subgroup: subgroup, senderId: senderId)
             return
         }
         
-        var approvalsToSave: [Approval] = []
+        let firstApproverId = approvers.first!
+        let eventApproval = Approval(
+            id: UUID(),
+            type: .event,
+            senderId: senderId,
+            receiverId: firstApproverId,
+            eventId: eventId,
+            approvalRelatedId: eventId,
+            status: .pending,
+            remarks: [],
+            createdAt: Date(),
+            updatedAt: nil
+        )
+        try await approvalStore.submitApprovalRequests([eventApproval])
+    }
+    
+    @MainActor
+    public func forwardToPresidentBudgetApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
+        let orgId = currentUser?.organizationId ?? currentUser?.instituteId ?? UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+        let approvers = await routingService.resolveApprovers(
+            category: "Budget",
+            subgroupId: subgroup.id,
+            groupId: subgroup.groupId,
+            orgId: orgId
+        )
         
+        let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
+        
+        if eventBudgets.isEmpty || approvers.isEmpty {
+            for budget in eventBudgets {
+                try? await approvalStore.updateBudgetStatus(id: budget.id, status: .approved)
+            }
+            try await forwardToResourcesApproval(eventId: eventId, subgroup: subgroup, senderId: senderId)
+            return
+        }
+        
+        let firstApproverId = approvers.first!
+        var approvalsToSave: [Approval] = []
         for budget in eventBudgets {
             let budgetApproval = Approval(
                 id: UUID(),
                 type: .budget,
                 senderId: senderId,
-                receiverId: presidentUserId,
+                receiverId: firstApproverId,
                 eventId: eventId,
                 approvalRelatedId: budget.id,
                 status: .pending,
@@ -454,19 +534,33 @@ public final class AppSession {
     }
     
     @MainActor
-    public func forwardToEMTApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
-        let facultyId = subgroup.facultyId
+    public func forwardToResourcesApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
+        let orgId = currentUser?.organizationId ?? currentUser?.instituteId ?? UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
         let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
         
-        var approvalsToSave: [Approval] = []
+        let resourceApprovers = await routingService.resolveApprovers(
+            category: "Resources",
+            subgroupId: subgroup.id,
+            groupId: subgroup.groupId,
+            orgId: orgId
+        )
         
-        // 1. Resource Approvals
+        if eventResources.isEmpty || resourceApprovers.isEmpty {
+            for resource in eventResources {
+                try? await approvalStore.updateResourceStatus(id: resource.id, status: .approved)
+            }
+            try await forwardToVenueApproval(eventId: eventId, subgroup: subgroup, senderId: senderId)
+            return
+        }
+        
+        let firstApproverId = resourceApprovers.first!
+        var approvalsToSave: [Approval] = []
         for resource in eventResources {
             let resApproval = Approval(
                 id: UUID(),
                 type: .resource,
                 senderId: senderId,
-                receiverId: facultyId,
+                receiverId: firstApproverId,
                 eventId: eventId,
                 approvalRelatedId: resource.id,
                 status: .pending,
@@ -477,68 +571,267 @@ public final class AppSession {
             approvalsToSave.append(resApproval)
         }
         
-        // 2. Faculty Event Approval
-        let facultyEventApproval = Approval(
-            id: UUID(),
-            type: .event,
-            senderId: senderId,
-            receiverId: facultyId,
-            eventId: eventId,
-            approvalRelatedId: eventId,
-            status: .pending,
-            remarks: [],
-            createdAt: Date(),
-            updatedAt: nil
-        )
-        approvalsToSave.append(facultyEventApproval)
-        
-        // 3. Venue Booking Approval
-        if let event = eventStore.events.first(where: { $0.id == eventId }) {
-            let selectedVenue = venueStore.allVenues.first(where: { $0.name == event.location })
-            let venueApproval = Approval(
-                id: UUID(),
-                type: .venue,
-                senderId: senderId,
-                receiverId: facultyId,
-                eventId: eventId,
-                approvalRelatedId: selectedVenue?.id ?? eventId,
-                status: .pending,
-                remarks: [],
-                createdAt: Date(),
-                updatedAt: nil
-            )
-            approvalsToSave.append(venueApproval)
-        }
-        
         if !approvalsToSave.isEmpty {
             try await approvalStore.submitApprovalRequests(approvalsToSave)
         }
     }
     
     @MainActor
-    public func approveBudgetAndCheckForwarding(budget: Budget, status: ApprovalStatus) async throws {
-        // 1. Update in database via store
-        try await approvalStore.updateBudgetStatus(id: budget.id, status: status)
+    public func forwardToVenueApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
+        let orgId = currentUser?.organizationId ?? currentUser?.instituteId ?? UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
         
-        // 2. If approved, check if all budgets for this event are approved
-        if status == .approved {
-            guard let eventId = budget.eventId else { return }
-            
-            // Filter budgets locally to see if all are approved
+        guard let event = eventStore.events.first(where: { $0.id == eventId }) else {
+            await checkAndAutoApproveEvent(eventId: eventId)
+            return
+        }
+        
+        let venueApprovers = await routingService.resolveApprovers(
+            category: "Venue",
+            subgroupId: subgroup.id,
+            groupId: subgroup.groupId,
+            orgId: orgId
+        )
+        
+        let selectedVenue = venueStore.allVenues.first(where: { $0.name == event.location })
+        let relatedId = selectedVenue?.id ?? eventId
+        
+        if venueApprovers.isEmpty {
+            let approvedVenue = Approval(
+                id: UUID(),
+                type: .venue,
+                senderId: senderId,
+                receiverId: senderId,
+                eventId: eventId,
+                approvalRelatedId: relatedId,
+                status: .approved,
+                remarks: [],
+                createdAt: Date(),
+                updatedAt: nil
+            )
+            try await approvalStore.submitApprovalRequests([approvedVenue])
+            await recordBookedSlot(eventId: eventId)
+            await checkAndAutoApproveEvent(eventId: eventId)
+            return
+        }
+        
+        let firstApproverId = venueApprovers.first!
+        let venueApproval = Approval(
+            id: UUID(),
+            type: .venue,
+            senderId: senderId,
+            receiverId: firstApproverId,
+            eventId: eventId,
+            approvalRelatedId: relatedId,
+            status: .pending,
+            remarks: [],
+            createdAt: Date(),
+            updatedAt: nil
+        )
+        try await approvalStore.submitApprovalRequests([venueApproval])
+    }
+    
+    @MainActor
+    public func forwardToEMTApproval(eventId: UUID, subgroup: Subgroup, senderId: UUID) async throws {
+        // Kept for backward compatibility; routes straight to chronological sequential starting resource step
+        try await forwardToResourcesApproval(eventId: eventId, subgroup: subgroup, senderId: senderId)
+    }
+    
+    @MainActor
+    public func processApprovalDecision(approval: Approval, status: ApprovalStatus) async throws {
+        try await approvalStore.updateApproval(id: approval.id, status: status)
+        
+        guard let eventId = approval.eventId,
+              let event = eventStore.events.first(where: { $0.id == eventId }),
+              let subgroup = subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) else {
+            return
+        }
+        
+        let orgId = currentUser?.organizationId ?? currentUser?.instituteId ?? UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+        
+        if status == .rejected {
+            if approval.type == .budget, let budgetId = approval.approvalRelatedId {
+                try? await approvalStore.updateBudgetStatus(id: budgetId, status: .rejected)
+            } else if approval.type == .resource, let resourceId = approval.approvalRelatedId {
+                try? await approvalStore.updateResourceStatus(id: resourceId, status: .rejected)
+            } else if approval.type == .event {
+                try? await eventStore.updateEventStatus(id: eventId, status: .pending)
+            }
+            return
+        }
+        
+        let category: String
+        switch approval.type {
+        case .event: category = "Events"
+        case .budget: category = "Budget"
+        case .resource: category = "Resources"
+        case .venue: category = "Venue"
+        }
+        
+        let approvers = await routingService.resolveApprovers(
+            category: category,
+            subgroupId: subgroup.id,
+            groupId: subgroup.groupId,
+            orgId: orgId
+        )
+        
+        if let receiverId = approval.receiverId,
+           let currentIndex = approvers.firstIndex(of: receiverId) {
+            if currentIndex + 1 < approvers.count {
+                let nextApproverId = approvers[currentIndex + 1]
+                let nextApproval = Approval(
+                    id: UUID(),
+                    type: approval.type,
+                    senderId: approval.senderId,
+                    receiverId: nextApproverId,
+                    eventId: eventId,
+                    approvalRelatedId: approval.approvalRelatedId ?? eventId,
+                    status: .pending,
+                    remarks: [],
+                    createdAt: Date(),
+                    updatedAt: nil
+                )
+                try await approvalStore.submitApprovalRequests([nextApproval])
+                print("DEBUG Routing: Forwarding \(approval.type.rawValue) approval to next level (approver: \(nextApproverId))")
+                return
+            }
+        }
+        
+        print("DEBUG Routing: Category \(category) fully approved by sequential configuration.")
+        
+        if approval.type == .event {
+            // Check if it is a VP draft approval
+            if let vicePresidentId = subgroup.vicePresidentId, approval.receiverId == vicePresidentId {
+                try await forwardToEventsApproval(
+                    eventId: eventId,
+                    subgroup: subgroup,
+                    senderId: approval.senderId ?? currentUser?.id ?? UUID()
+                )
+            } else {
+                // Configured Events category fully approved, forward to Budget
+                try await forwardToPresidentBudgetApproval(
+                    eventId: eventId,
+                    subgroup: subgroup,
+                    senderId: approval.senderId ?? currentUser?.id ?? UUID()
+                )
+            }
+        } else if approval.type == .budget, let budgetId = approval.approvalRelatedId {
+            try await approvalStore.updateBudgetStatus(id: budgetId, status: .approved)
             let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
-            let allApproved = eventBudgets.allSatisfy { $0.status == .approved }
-            
-            if allApproved {
-                // If all budgets are approved, forward venue/resource approvals to EMT
-                if let event = eventStore.events.first(where: { $0.id == eventId }),
-                   let subgroup = subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
-                    try await forwardToEMTApproval(
-                        eventId: eventId,
-                        subgroup: subgroup,
-                        senderId: currentUser?.id ?? UUID()
-                    )
+            let allBudgetsApproved = eventBudgets.allSatisfy { $0.status == .approved }
+            if allBudgetsApproved {
+                try await forwardToResourcesApproval(eventId: eventId, subgroup: subgroup, senderId: approval.senderId ?? currentUser?.id ?? UUID())
+            }
+        } else if approval.type == .resource, let resourceId = approval.approvalRelatedId {
+            try await approvalStore.updateResourceStatus(id: resourceId, status: .approved)
+            let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
+            let allResourcesApproved = eventResources.allSatisfy { $0.status == .approved }
+            if allResourcesApproved {
+                try await forwardToVenueApproval(eventId: eventId, subgroup: subgroup, senderId: approval.senderId ?? currentUser?.id ?? UUID())
+            }
+        } else if approval.type == .venue {
+            if status == .approved {
+                await recordBookedSlot(eventId: eventId)
+            }
+            await checkAndAutoApproveEvent(eventId: eventId)
+        }
+    }
+    
+    @MainActor
+    public func approveBudgetAndCheckForwarding(budget: Budget, status: ApprovalStatus) async throws {
+        if let approval = approvalStore.approvals.first(where: { $0.approvalRelatedId == budget.id && $0.status == .pending }) {
+            try await processApprovalDecision(approval: approval, status: status)
+        } else {
+            try await approvalStore.updateBudgetStatus(id: budget.id, status: status)
+            if status == .approved {
+                guard let eventId = budget.eventId else { return }
+                let eventBudgets = approvalStore.budgets.filter { $0.eventId == eventId }
+                let allApproved = eventBudgets.allSatisfy { $0.status == .approved }
+                if allApproved {
+                    if let event = eventStore.events.first(where: { $0.id == eventId }),
+                       let subgroup = subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
+                        try await forwardToResourcesApproval(eventId: eventId, subgroup: subgroup, senderId: currentUser?.id ?? UUID())
+                    }
                 }
             }
         }
+    }
+    
+    @MainActor
+    public func approveResourceAndCheckForwarding(resource: Resource, status: ApprovalStatus) async throws {
+        if let approval = approvalStore.approvals.first(where: { $0.approvalRelatedId == resource.id && $0.status == .pending }) {
+            try await processApprovalDecision(approval: approval, status: status)
+        } else {
+            try await approvalStore.updateResourceStatus(id: resource.id, status: ResourceStatus(rawValue: status.rawValue) ?? .pending)
+            if status == .approved {
+                guard let eventId = resource.eventId else { return }
+                let eventResources = approvalStore.resources.filter { $0.eventId == eventId }
+                let allApproved = eventResources.allSatisfy { $0.status == .approved }
+                if allApproved {
+                    if let event = eventStore.events.first(where: { $0.id == eventId }),
+                       let subgroup = subgroupStore.allSubgroups.first(where: { $0.id == event.subgroupId }) {
+                        try await forwardToVenueApproval(eventId: eventId, subgroup: subgroup, senderId: currentUser?.id ?? UUID())
+                    }
+                }
+            }
+        }
+    }
+    
+    @MainActor
+    public func recordBookedSlot(eventId: UUID) async {
+        guard let event = eventStore.events.first(where: { $0.id == eventId }) else { return }
+        guard let venue = venueStore.allVenues.first(where: { $0.name == event.location }) else { return }
+        
+        let newSlot = DBBookedSlot(
+            id: UUID(),
+            venueId: venue.id,
+            eventId: event.id,
+            subgroupId: event.subgroupId,
+            startTime: event.startDate,
+            endTime: event.endDate,
+            createdAt: Date()
+        )
+        
+        do {
+            try await SupabaseManager.shared.client
+                .from("booked_slots")
+                .insert(newSlot)
+                .execute()
+            print("DEBUG: Recorded booked slot successfully.")
+            try? await venueStore.fetchBookedSlots()
+        } catch {
+            print("DEBUG ERROR: Failed to record booked slot: \(error)")
+        }
+    }
+    
+    @MainActor
+    public func syncBookedSlotsForApprovedEvents() async {
+        let currentSlots = venueStore.bookedSlots
+        let approvedEvents = eventStore.events.filter { $0.status == .approved || $0.status == .published }
+        
+        for event in approvedEvents {
+            if !currentSlots.contains(where: { $0.eventId == event.id }) {
+                if let venue = venueStore.allVenues.first(where: { $0.name == event.location }) {
+                    let newSlot = DBBookedSlot(
+                        id: UUID(),
+                        venueId: venue.id,
+                        eventId: event.id,
+                        subgroupId: event.subgroupId,
+                        startTime: event.startDate,
+                        endTime: event.endDate,
+                        createdAt: Date()
+                    )
+                    do {
+                        try await SupabaseManager.shared.client
+                            .from("booked_slots")
+                            .insert(newSlot)
+                            .execute()
+                        print("DEBUG SYNC: Auto-recorded booked slot for event \(event.name)")
+                    } catch {
+                        print("DEBUG SYNC ERROR: Failed to auto-record: \(error)")
+                    }
+                }
+            }
+        }
+        try? await venueStore.fetchBookedSlots()
     }
 }

@@ -268,15 +268,14 @@ struct CreateNewEventView: View {
                 
                 Section {
                     let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
-                    let conflictingEvents = appSession.eventStore.events.filter { e in
-                        e.id != currentEventId &&
-                        (e.status == .pending || e.status == .approved || e.status == .published) &&
-                        (startDate < e.endDate) && (e.startDate < endDate)
+                    let conflictingVenues = appSession.venueStore.bookedSlots.filter { slot in
+                        slot.eventId != currentEventId &&
+                        (startDate < slot.endTime) && (slot.startTime < endDate)
                     }
                     
                     Picker("Location", selection: $venue) {
                         ForEach(sortedVenues) { v in
-                            let isBooked = conflictingEvents.contains { $0.location == v.name }
+                            let isBooked = conflictingVenues.contains { $0.venueId == v.id }
                             HStack {
                                 Text(v.name)
                                 if isBooked {
@@ -379,11 +378,11 @@ struct CreateNewEventView: View {
                 }
                 
                 Section {
-                    let isVenueBooked = appSession.eventStore.events.contains { e in
-                        e.id != currentEventId &&
-                        e.location == venue &&
-                        (e.status == .pending || e.status == .approved || e.status == .published) &&
-                        (startDate < e.endDate) && (e.startDate < endDate)
+                    let isVenueBooked = appSession.venueStore.bookedSlots.contains { slot in
+                        let selectedVenue = appSession.venueStore.allVenues.first(where: { $0.name == venue })
+                        return slot.venueId == selectedVenue?.id &&
+                        slot.eventId != currentEventId &&
+                        (startDate < slot.endTime) && (slot.startTime < endDate)
                     }
                     
                     let isInvalidTime = startDate >= endDate
@@ -676,34 +675,33 @@ struct CreateNewEventView: View {
                         try await appSession.approvalStore.addResources(resourcesToSave)
                     }
 
-                    // Check if Vice President exists for the subgroup
-                    if let vicePresidentUserId = subgroup?.vicePresidentId {
-                        // Send to Vice President first as a draft
-                        let eventApproval = Approval(
-                            id: UUID(),
-                            type: .event,
-                            senderId: currentUser.id,
-                            receiverId: vicePresidentUserId,
-                            eventId: newEvent.id,
-                            approvalRelatedId: newEvent.id,
-                            status: .pending,
-                            remarks: [],
-                            createdAt: Date(),
-                            updatedAt: nil
-                        )
-                        approvalsToSave.append(eventApproval)
-                    } else if let subgroup = subgroup {
-                        // Let AppSession handle the sequential forwarding:
-                        // First to President if budget exists, else straight to EMT.
-                        try await appSession.forwardToPresidentBudgetApproval(
-                            eventId: newEvent.id,
-                            subgroup: subgroup,
-                            senderId: currentUser.id
-                        )
-                    }
-                    
-                    if !approvalsToSave.isEmpty {
-                        try await appSession.approvalStore.submitApprovalRequests(approvalsToSave)
+                    if let subgroup = subgroup {
+                        if let vicePresidentUserId = subgroup.vicePresidentId,
+                           vicePresidentUserId != MockData.unassignedVPId,
+                           vicePresidentUserId != UUID(uuidString: "00000000-0000-0000-0000-000000000000")! {
+                            
+                            // Send to Vice President first as a draft
+                            let eventApproval = Approval(
+                                id: UUID(),
+                                type: .event,
+                                senderId: currentUser.id,
+                                receiverId: vicePresidentUserId,
+                                eventId: newEvent.id,
+                                approvalRelatedId: newEvent.id,
+                                status: .pending,
+                                remarks: [],
+                                createdAt: Date(),
+                                updatedAt: nil
+                            )
+                            try await appSession.approvalStore.submitApprovalRequests([eventApproval])
+                            print("DEBUG Event Creation: Sent VP draft approval request.")
+                        } else {
+                            try await appSession.forwardToEventsApproval(
+                                eventId: newEvent.id,
+                                subgroup: subgroup,
+                                senderId: currentUser.id
+                            )
+                        }
                     }
                 }
                 
