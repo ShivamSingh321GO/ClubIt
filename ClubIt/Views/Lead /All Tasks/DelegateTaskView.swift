@@ -15,7 +15,7 @@ struct DelegateTaskView: View {
     }
     
     private var availableSubgroups: [Subgroup] {
-        return appSession.subgroupStore.allSubgroups.filter { $0.id != appSession.currentUser?.subgroupId }
+        return appSession.subgroupStore.allSubgroups.filter { $0.id != appSession.currentUser?.subgroupId && $0.parentSubgroupId == nil }
     }
     
     private var availableSubgroupLeads: [User] {
@@ -34,12 +34,13 @@ struct DelegateTaskView: View {
             Group {
                 if isPresidentOrVP {
                     Form {
-                        Section("Delegate to Subgroup Lead") {
+                        let subgroupName = appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
+                        Section("Delegate to \(subgroupName) Lead") {
                             optionalNavigationRow(
-                                title: "Select Subgroup",
+                                title: "Select \(subgroupName)",
                                 selection: $selectedOtherSubgroupId,
                                 options: availableSubgroups.map { $0.id },
-                                noneLabel: "Select a subgroup",
+                                noneLabel: "Select a \(subgroupName.lowercased())",
                                 displayValue: { id in availableSubgroups.first(where: { $0.id == id })?.name ?? "Unknown" }
                             )
                             .onChange(of: selectedOtherSubgroupId) { _, newValue in
@@ -55,7 +56,7 @@ struct DelegateTaskView: View {
                             
                             if selectedOtherSubgroupId != nil {
                                 optionalNavigationRow(
-                                    title: "Select Subgroup Lead",
+                                    title: "Select \(subgroupName) Lead",
                                     selection: $selectedMemberId,
                                     options: availableSubgroupLeads.map { $0.id },
                                     noneLabel: "Select a lead",
@@ -66,8 +67,9 @@ struct DelegateTaskView: View {
                     }
                 } else {
                     List {
+                        let subgroupName = appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
                         if subgroupMembers.isEmpty {
-                            Text("No members found in your subgroup")
+                            Text("No members found in your \(subgroupName.lowercased())")
                                 .foregroundStyle(.secondary)
                         } else {
                             Section("Select Member to Delegate") {

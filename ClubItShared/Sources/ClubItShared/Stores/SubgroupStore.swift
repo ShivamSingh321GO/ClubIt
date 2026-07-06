@@ -69,14 +69,26 @@ public final class SubgroupStore {
         }
         
         let roles: [UserRoleRow] = (try? await client
-            .from("user_roles")
+            .from("admin_user_roles_view")
             .select("user_id, role_name, subgroup_id, group_id")
             .execute()
             .value) ?? []
             
         for i in 0..<fetchedUsers.count {
-            if let userRole = roles.first(where: { $0.user_id == fetchedUsers[i].id }) {
-                fetchedUsers[i].role = AppRole(rawValue: userRole.role_name) ?? .guest
+            let userRoles = roles.filter { $0.user_id == fetchedUsers[i].id }
+            
+            // Prioritize roles with subgroup_id, then group_id, then "level_" prefix
+            let bestRole = userRoles.sorted { r1, r2 in
+                if r1.subgroup_id != nil && r2.subgroup_id == nil { return true }
+                if r1.subgroup_id == nil && r2.subgroup_id != nil { return false }
+                if r1.group_id != nil && r2.group_id == nil { return true }
+                if r1.group_id == nil && r2.group_id != nil { return false }
+                if r1.role_name.starts(with: "level_") && !r2.role_name.starts(with: "level_") { return true }
+                return false
+            }.first
+            
+            if let userRole = bestRole {
+                fetchedUsers[i].role = AppRole.from(dbRole: userRole.role_name)
                 fetchedUsers[i].subgroupId = userRole.subgroup_id
                 fetchedUsers[i].groupId = userRole.group_id
             }

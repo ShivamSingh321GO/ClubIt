@@ -43,6 +43,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
     public var vicePresidentId: UUID?
     public var instituteId: UUID
     public var groupId: UUID
+    public var parentSubgroupId: UUID?
     public var status: SubgroupStatus
     public var createdAt: Date
     
@@ -64,6 +65,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         case vicePresidentId = "vice_president_id"
         case instituteId = "institute_id"
         case groupId = "group_id"
+        case parentSubgroupId = "parent_subgroup_id"
         case status
         case createdAt = "created_at"
         case memberCount = "member_count"
@@ -83,6 +85,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         vicePresidentId: UUID? = nil,
         instituteId: UUID,
         groupId: UUID = UUID(),
+        parentSubgroupId: UUID? = nil,
         status: SubgroupStatus,
         createdAt: Date,
         memberCount: Int? = 0,
@@ -101,6 +104,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         self.vicePresidentId = vicePresidentId
         self.instituteId = instituteId
         self.groupId = groupId
+        self.parentSubgroupId = parentSubgroupId
         self.status = status
         self.createdAt = createdAt
         self.memberCount = memberCount
@@ -199,6 +203,9 @@ public struct Subgroup: Identifiable, Hashable, Codable {
             self.groupId = (try? dynamicContainer.decode(UUID.self, forKey: key)) ?? UUID()
         }
         
+        // parentSubgroupId
+        self.parentSubgroupId = try? container.decode(UUID.self, forKey: .parentSubgroupId)
+        
         // status
         self.status = (try? container.decode(SubgroupStatus.self, forKey: .status)) ?? .active
         
@@ -229,6 +236,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         try container.encode(vicePresidentId, forKey: .vicePresidentId)
         try container.encode(instituteId, forKey: .instituteId)
         try container.encode(groupId, forKey: .groupId)
+        try container.encode(parentSubgroupId, forKey: .parentSubgroupId)
         try container.encode(status, forKey: .status)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(memberCount, forKey: .memberCount)

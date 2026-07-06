@@ -71,6 +71,21 @@ struct AddTaskView: View {
         }
     }
     
+    private func dynamicAssignmentName(for type: AssignmentType) -> String {
+        switch type {
+        case .myself:
+            return "Myself"
+        case .subGroupMember:
+            let level2Name = appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
+            return "\(level2Name) Member"
+        case .subgroup:
+            return appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
+        case .groupSubLead:
+            let level1Name = appSession.subgroupStore.levelName(for: 1, defaultName: "Group")
+            return "\(level1Name) SubLead"
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -110,15 +125,16 @@ struct AddTaskView: View {
                         title: "Assign To",
                         selection: $assignmentType,
                         options: availableAssignmentTypes,
-                        displayValue: { $0.rawValue }
+                        displayValue: dynamicAssignmentName(for:)
                     )
                     
                     if assignmentType == .subgroup {
+                        let subgroupName = appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
                         optionalNavigationRow(
-                            title: "Select Subgroup",
+                            title: "Select \(subgroupName)",
                             selection: $selectedOtherSubgroupId,
-                            options: appSession.subgroupStore.allSubgroups.filter { $0.id != appSession.currentUser?.subgroupId }.map { $0.id },
-                            noneLabel: "Select a subgroup",
+                            options: appSession.subgroupStore.allSubgroups.filter { $0.id != appSession.currentUser?.subgroupId && $0.parentSubgroupId == nil }.map { $0.id },
+                            noneLabel: "Select a \(subgroupName.lowercased())",
                             displayValue: { id in appSession.subgroupStore.allSubgroups.first(where: { $0.id == id })?.name ?? "Unknown" }
                         )
                         .onChange(of: selectedOtherSubgroupId) { _, newValue in
@@ -129,7 +145,7 @@ struct AddTaskView: View {
                         
                         if selectedOtherSubgroupId != nil {
                             optionalNavigationRow(
-                                title: "Select Subgroup Lead",
+                                title: "Select \(subgroupName) Lead",
                                 selection: $selectedSubgroupLeadId,
                                 options: availableSubgroupLeads.map { $0.id },
                                 noneLabel: "Select a lead",
@@ -149,11 +165,12 @@ struct AddTaskView: View {
                     }
                     
                     if assignmentType == .groupSubLead {
+                        let groupName = appSession.subgroupStore.levelName(for: 1, defaultName: "Group")
                         optionalNavigationRow(
-                            title: "Select Vice President",
+                            title: "Select \(groupName) SubLead",
                             selection: $selectedVicePresidentId,
                             options: vicePresidents.map { $0.id },
-                            noneLabel: "Select a VP",
+                            noneLabel: "Select a sublead",
                             displayValue: { id in vicePresidents.first(where: { $0.id == id })?.name ?? "Unknown" }
                         )
                     }
