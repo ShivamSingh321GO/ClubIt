@@ -238,7 +238,7 @@ struct StatusBadge: View {
     let status: Status
     
     var body: some View {
-        Text(status == .available ? "Available" : "Booked")
+        Text(status == .available ? "Available" : "Unavailable")
             .font(.caption2)
             .bold()
             .padding(.horizontal, 8)

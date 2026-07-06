@@ -267,29 +267,21 @@ struct CreateNewEventView: View {
                 }
                 
                 Section {
-                    let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
-                    let conflictingVenues = appSession.venueStore.bookedSlots.filter { slot in
-                        slot.eventId != currentEventId &&
-                        (startDate < slot.endTime) && (slot.startTime < endDate)
-                    }
-                    
-                    Picker("Location", selection: $venue) {
-                        ForEach(sortedVenues) { v in
-                            let isBooked = conflictingVenues.contains { $0.venueId == v.id }
-                            HStack {
-                                Text(v.name)
-                                if isBooked {
-                                    Spacer()
-                                    Text("Unavailable")
-                                        .font(.caption)
-                                        .foregroundStyle(.red)
-                                }
-                            }
-                            .tag(v.name)
-                            .disabled(isBooked)
+                    NavigationLink {
+                        VenueSelectionView(
+                            selectedVenue: $venue,
+                            startDate: startDate,
+                            endDate: endDate,
+                            currentEventId: currentEventId
+                        )
+                    } label: {
+                        HStack {
+                            Text("Location")
+                            Spacer()
+                            Text(venue)
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    .pickerStyle(.navigationLink)
                 } header: {
                     Text("Venue")
                 }
@@ -383,6 +375,10 @@ struct CreateNewEventView: View {
                         return slot.venueId == selectedVenue?.id &&
                         slot.eventId != currentEventId &&
                         (startDate < slot.endTime) && (slot.startTime < endDate)
+                    } || appSession.eventStore.events.contains { event in
+                        event.id != currentEventId &&
+                        event.location == venue &&
+                        (startDate < (event.endTime ?? event.endDate)) && ((event.startTime ?? event.startDate) < endDate)
                     }
                     
                     let isInvalidTime = startDate >= endDate
@@ -917,5 +913,67 @@ struct MultiSubgroupSelectionView: View {
             }
         }
         .navigationTitle("Select Subgroups")
+    }
+}
+
+struct VenueSelectionView: View {
+    @Environment(AppSession.self) var appSession
+    @Environment(\.dismiss) var dismiss
+    
+    @Binding var selectedVenue: String
+    let startDate: Date
+    let endDate: Date
+    let currentEventId: UUID
+    
+    var body: some View {
+        let sortedVenues = appSession.venueStore.allVenues.sorted { $0.name < $1.name }
+        let conflictingVenues = appSession.venueStore.bookedSlots.filter { slot in
+            slot.eventId != currentEventId &&
+            (startDate < slot.endTime) && (slot.startTime < endDate)
+        }
+        
+        let conflictingEvents = appSession.eventStore.events.filter { event in
+            event.id != currentEventId &&
+            (startDate < (event.endTime ?? event.endDate)) && ((event.startTime ?? event.startDate) < endDate)
+        }
+        
+        List {
+            ForEach(sortedVenues) { v in
+                let isBookedInSlots = conflictingVenues.contains { $0.venueId == v.id }
+                let isBookedInPending = conflictingEvents.contains { $0.location == v.name }
+                let isBooked = isBookedInSlots || isBookedInPending
+                
+                Button(action: {
+                    if !isBooked {
+                        selectedVenue = v.name
+                        dismiss()
+                    }
+                }) {
+                    HStack {
+                        Text(v.name)
+                            .foregroundStyle(isBooked ? .secondary : .primary)
+                        Spacer()
+                        if isBooked {
+                            Text("Unavailable")
+                                .font(.caption2)
+                                .bold()
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.red.opacity(0.15))
+                                )
+                                .foregroundColor(.red)
+                        } else if selectedVenue == v.name {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.accentColor)
+                        }
+                    }
+                }
+                .disabled(isBooked)
+            }
+        }
+        .navigationTitle("Location")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

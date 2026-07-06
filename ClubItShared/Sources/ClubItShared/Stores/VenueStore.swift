@@ -68,10 +68,20 @@ public final class VenueStore {
     
     public func getBookingInfo(for venue: Venue, events: [Event], subgroups: [Subgroup]) -> [BookedSlot] {
         let slots = bookedSlots.filter { $0.venueId == venue.id }
-        return slots.compactMap { slot in
+        var result = slots.compactMap { slot -> BookedSlot? in
             guard let event = events.first(where: { $0.id == slot.eventId }) else { return nil }
             return BookedSlot(event: event, subgroup: subgroups.first { $0.id == event.subgroupId })
         }
+        
+        let pendingEvents = events.filter { event in event.location == venue.name && !result.contains(where: { bs in bs.event.id == event.id }) }
+        
+        for pEvent in pendingEvents {
+            result.append(BookedSlot(event: pEvent, subgroup: subgroups.first { $0.id == pEvent.subgroupId }))
+        }
+        
+        result.sort { ($0.event.startTime ?? $0.event.startDate) < ($1.event.startTime ?? $1.event.startDate) }
+        
+        return result
     }
 }
 
