@@ -6,6 +6,7 @@ struct SignInView: View {
     @State private var viewModel = SignInViewModel()
     @Environment(AppSession.self) private var appSession
     
+    @State private var showingResetPasswordAlert = false
     @FocusState private var focusedField: Field?
     
     private enum Field {
@@ -27,7 +28,7 @@ struct SignInView: View {
                         }
                 }
                 
-                Section("Password") {
+                Section {
                     HStack {
                         Group {
                             if viewModel.isPasswordVisible {
@@ -54,17 +55,23 @@ struct SignInView: View {
                                 .foregroundStyle(.accentColor)
                         }
                     }
+                } header: {
+                    Text("Password")
+                } footer: {
+                    HStack {
+                        Spacer()
+                        Button("Forgot Password?") {
+                            showingResetPasswordAlert = true
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 4)
+                    }
                 }
                 
                 Toggle("Remember me", isOn: $viewModel.rememberMe)
                     .tint(.accentColor)
-
-                
-//                Button("Forgot Password?") {
-//                    // Action
-//                }
-//                .font(.subheadline)
-//                .foregroundStyle(.secondary)
+                    .listRowBackground(Color.clear)
                 
                 if let error = viewModel.errorMessage {
                     Section {
@@ -100,6 +107,11 @@ struct SignInView: View {
                 
             }
             .navigationTitle("Sign in")
+            .alert("Reset Password", isPresented: $showingResetPasswordAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Reset Password functionality is not available.")
+            }
             
 //            Button {
 //                // Guest Action

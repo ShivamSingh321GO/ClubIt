@@ -10,6 +10,7 @@ struct AddImageSectionView: View {
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var pickedImagesData: [Data] = []
     @State private var isUploading: Bool = false
+    @State private var showPhotosPicker: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -20,11 +21,11 @@ struct AddImageSectionView: View {
                 }
                 
                 Section(header: Text("IMAGES")) {
-                    PhotosPicker(selection: $selectedItems, maxSelectionCount: 15, matching: .images) {
+                    Button(action: { showPhotosPicker = true }) {
                         HStack {
                             Image(systemName: "photo.on.rectangle.angled")
                                 .foregroundColor(.accentColor)
-                            Text("Select Images")
+                            Text(selectedItems.isEmpty ? "Select Images" : "Change Selection")
                                 .foregroundColor(.primary)
                             Spacer()
                             if !selectedItems.isEmpty {
@@ -95,6 +96,7 @@ struct AddImageSectionView: View {
                     }
                 }
             }
+            .photosPicker(isPresented: $showPhotosPicker, selection: $selectedItems, maxSelectionCount: 15, matching: .images)
         }
         .disabled(isUploading)
     }

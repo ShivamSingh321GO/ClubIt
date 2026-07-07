@@ -34,7 +34,7 @@ struct StatBadge: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(color.opacity(0.1))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
     }
 }
@@ -57,7 +57,7 @@ struct SocialCircle: View {
         HStack {
             Image(iconName)
                 .resizable()
-                .frame(width: 50, height: 50)
+                .frame(width: 60, height: 60)
                 .font(.headline)
         }
     }
@@ -129,21 +129,26 @@ struct MediaButton: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(color.opacity(0.1))
-                    .frame(width: 64, height: 64)
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
-            }
+        VStack(spacing: 12) {
+            Image(systemName: icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 28, height: 28)
+                .foregroundColor(color)
+            
             Text(label)
                 .font(.caption2)
                 .fontWeight(.medium)
                 .foregroundColor(.primary)
         }
-        .padding(5)
-        .frame(width: 80)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity)
+        .background(Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+        )
+        .contentShape(Rectangle())
     }
 }

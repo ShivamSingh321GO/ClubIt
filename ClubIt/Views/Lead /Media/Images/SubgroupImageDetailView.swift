@@ -4,6 +4,7 @@ import PhotosUI
 
 struct SubgroupImageDetailView: View {
     let section: SubgroupImageSection
+    let isArchive: Bool
     
     @Environment(AppSession.self) var appSession
     
@@ -12,7 +13,18 @@ struct SubgroupImageDetailView: View {
     @State private var selectedItems: [PhotosPickerItem] = []
 
     private var liveSection: SubgroupImageSection {
-        appSession.subgroupImageStore.sections.first(where: { $0.id == section.id }) ?? section
+        let storeSection = appSession.subgroupImageStore.sections.first(where: { $0.id == section.id }) ?? section
+        let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: Date()) ?? Date()
+        let filteredImages = storeSection.images.filter { image in
+            let isImageArchived = image.createdAt < oneYearAgo
+            return isArchive ? isImageArchived : !isImageArchived
+        }
+        return SubgroupImageSection(
+            id: storeSection.id,
+            title: storeSection.title,
+            images: filteredImages,
+            remainingCount: max(0, filteredImages.count - 6)
+        )
     }
     
     let columns = [
@@ -118,7 +130,7 @@ struct SubgroupImageDetailView: View {
     let session = AppSession()
     
     NavigationStack {
-        SubgroupImageDetailView(section: section)
+        SubgroupImageDetailView(section: section, isArchive: false)
             .environment(session)
     }
 }

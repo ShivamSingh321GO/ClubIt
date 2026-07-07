@@ -41,7 +41,7 @@ struct LeadMySubgroupView: View {
         .sheet(item: Bindable(appSession).selectedActivity) { activity in
             ActivityDetailView(activity: activity)
                 .environment(appSession)
-                .presentationDetents([.large])
+                .presentationDetents([.medium, .large])
         }
         .task {
             await appSession.refreshData()

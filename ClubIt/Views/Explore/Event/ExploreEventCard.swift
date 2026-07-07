@@ -5,7 +5,6 @@
 //  Created by Ansh Srivastava on 3/20/26.
 //
 
-
 import SwiftUI
 import ClubItShared
 
@@ -17,161 +16,138 @@ struct ExploreEventCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Full-bleed Banner Section
             bannerSection
-            
-            VStack(alignment: .leading, spacing: 16) {
-                // Title Section
-                HStack(alignment: .center, spacing: 10) {
-                    Text(event.title)
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .lineLimit(1)
-                        .foregroundStyle(.primary)
-                    
-                    Spacer()
-                    
-                    // Action/Status Badge area
+                .frame(height: 200)
+                .frame(maxWidth: .infinity)
+                .clipped()
+                .overlay(
+                    LinearGradient(gradient: Gradient(colors: [.clear, .black.opacity(0.8)]), startPoint: .center, endPoint: .bottom)
+                )
+                .overlay(alignment: .topTrailing) {
+                    // Status Badge overlay
                     if isMyEvent || event.status == .pending {
-                        // Show status label for my events or any pending event
                         statusBadge
+                            .padding(12)
                     } else if appSession.registeredEventIds.contains(event.id) {
-                        // Show 'Registered' label for events user has joined
                         statusLabel(text: "Registered", color: .green)
+                            .padding(12)
+                    }
+                }
+                .overlay(alignment: .topLeading) {
+                    categoryBadge
+                        .padding(12)
+                }
+                .overlay(alignment: .bottomLeading) {
+                    // Title
+                    Text(event.title)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                        .padding(16)
+                }
+            
+            // Content Section
+            VStack(alignment: .leading, spacing: 16) {
+                // Date, Time & Venue
+                VStack(alignment: .leading, spacing: 16) {
+                    // Date & Time
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.accentColor)
+                            .padding(.top, 2)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(formattedShortDate)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                            Text(formattedTimeRange)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    
+                    // Venue
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "mappin.and.ellipse")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.accentColor)
+                            .padding(.top, 2)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(event.location)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                                .lineLimit(2)
+                        }
                     }
                 }
                 
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack(alignment: .top, spacing: 16) {
-                        // Date & Time Section
-                        HStack(spacing: 10) {
-                            ZStack {
-                                Circle()
-                                    .fill(.blue.opacity(0.1))
-                                    .frame(width: 32, height: 32)
-                                Image(systemName: "calendar")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.blue)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text("DATE & TIME")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.secondary)
-                                Text(formattedShortDate)
-                                    .font(.footnote.bold())
-                                    .foregroundStyle(.primary)
-                                Text(formattedTimeRange)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        // Venue Section
-                        HStack(spacing: 10) {
-                            ZStack {
-                                Circle()
-                                    .fill(.accentColor.opacity(0.15))
-                                    .frame(width: 32, height: 32)
-                                Image(systemName: "mappin.and.ellipse")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.accentColor)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text("VENUE")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.secondary)
-                                Text(event.location)
-                                    .font(.footnote.bold())
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(2)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
+                // Registration Info
+                if event.isRegistrationOpen ?? true {
+                    Divider()
                     
-                    // Registration & Status Row
-                    HStack(alignment: .center, spacing: 10) {
-                        if event.isRegistrationOpen ?? true {
-                            HStack(spacing: 10) {
-                                ZStack {
-                                    Circle()
-                                        .fill(.blue.opacity(0.1))
-                                        .frame(width: 32, height: 32)
-                                    Image(systemName: "person.2.fill")
-                                        .font(.caption2)
-                                        .foregroundStyle(.blue)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text("REGISTRATIONS")
-                                        .font(.caption2.bold())
-                                        .foregroundStyle(.secondary)
-                                    let registeredCount = event.status == .pending ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count
-                                    Text(event.maxParticipants >= 999999 ? "\(registeredCount)" : "\(registeredCount) / \(event.maxParticipants)")
-                                        .font(.footnote.bold())
-                                        .foregroundStyle(.primary)
-                                }
-                            }
-                        }
+                    HStack(spacing: 8) {
+                        Image(systemName: "person.2.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                         
-                        Spacer()
+                        let registeredCount = event.status == .pending ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count
+                        let maxParticipantsText = event.maxParticipants >= 999999 ? "\(registeredCount)" : "\(registeredCount) / \(event.maxParticipants)"
+                        
+                        Text("\(maxParticipantsText) Registrations")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
             .padding(16)
         }
-        .background(Color(.secondarySystemBackground).opacity(0.4))
-        .glassEffect(in: .rect(cornerRadius: 24))
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .background(Color.clear)
+        .glassEffect(in: .rect(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .padding(.vertical, 8)
     }
     
+    @ViewBuilder
     private var bannerSection: some View {
-        ZStack(alignment: .top) {
-            Color.clear
-                .overlay(
-                    Group {
-                        if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
+        Group {
+            if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+            } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if bannerImage.hasPrefix("http") {
+                    AsyncImage(url: URL(string: bannerImage)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
                                 .resizable()
                                 .scaledToFill()
-                        } else if let bannerImage = event.bannerImage, !bannerImage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            if bannerImage.hasPrefix("http") {
-                                AsyncImage(url: URL(string: bannerImage)) { phase in
-                                    switch phase {
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                    case .failure:
-                                        placeholderBanner
-                                    case .empty:
-                                        ProgressView()
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                            .background(Color.accentColor.opacity(0.05))
-                                    @unknown default:
-                                        placeholderBanner
-                                    }
-                                }
-                            } else {
-                                Image(bannerImage)
-                                    .resizable()
-                                    .scaledToFill()
-                            }
-                        } else {
+                        case .failure:
+                            placeholderBanner
+                        case .empty:
+                            ProgressView()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .background(Color.accentColor.opacity(0.1))
+                        @unknown default:
                             placeholderBanner
                         }
                     }
-                )
-                .frame(height: 200)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 22))
-            
-            // Calendar & Time Badge removed
+                } else {
+                    Image(bannerImage)
+                        .resizable()
+                        .scaledToFill()
+                }
+            } else {
+                placeholderBanner
+            }
         }
-        .padding(6)
     }
     
     private var placeholderBanner: some View {
@@ -186,12 +162,12 @@ struct ExploreEventCard: View {
     private func statusLabel(text: String, color: Color) -> some View {
         Text(text)
             .font(.caption2.bold())
-            .foregroundStyle(color)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(color.opacity(0.12))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(color)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.3), lineWidth: 0.5))
+            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
     
     @ViewBuilder
@@ -215,6 +191,36 @@ struct ExploreEventCard: View {
         
         statusLabel(text: text, color: color)
     }
+    
+    private var categoryBadge: some View {
+        HStack(spacing: 4) {
+            Image(systemName: categoryIcon)
+                .font(.system(size: 10, weight: .bold))
+            Text(event.category.displayName)
+                .font(.caption2.bold())
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.accentColor.opacity(0.8))
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+    }
+    
+    private var categoryIcon: String {
+        switch event.category {
+        case .workshop: return "wrench.and.screwdriver.fill"
+        case .technical: return "desktopcomputer"
+        case .entertainment: return "theatermasks.fill"
+        case .sports: return "sportscourt.fill"
+        case .ai: return "brain.head.profile.fill"
+        case .wellness: return "heart.fill"
+        case .literary: return "book.fill"
+        case .entrepreneurship: return "lightbulb.fill"
+        }
+    }
+    
+    // MARK: - Formatters
     
     private var hostName: String {
         if let subgroupIds = event.subgroupIds, !subgroupIds.isEmpty {
@@ -242,7 +248,14 @@ struct ExploreEventCard: View {
     private var formattedShortDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
-        return formatter.string(from: event.startDate)
+        let start = formatter.string(from: event.startDate)
+        let end = formatter.string(from: event.endDate)
+        
+        if start == end {
+            return start
+        } else {
+            return "\(start) - \(end)"
+        }
     }
     
     private var formattedMonth: String {
@@ -259,7 +272,7 @@ struct ExploreEventCard: View {
     
     private var formattedTimeRange: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "h a" // "12 PM"
+        formatter.dateFormat = "h a"
         
         let start = formatter.string(from: event.startTime ?? event.startDate).replacingOccurrences(of: ":00", with: "")
         let end = formatter.string(from: event.endTime ?? event.endDate).replacingOccurrences(of: ":00", with: "")
@@ -294,6 +307,7 @@ struct ExploreEventCard: View {
             isMyEvent: true
         )
         .padding()
+        .background(Color.black)
     }
     .environment(AppSession())
 }

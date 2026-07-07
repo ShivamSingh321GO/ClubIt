@@ -44,8 +44,7 @@ struct SubgroupProfileBody: View {
                         Image(systemName: isAboutExpanded ? "chevron.up" : "chevron.down")
                             .font(.headline)
                             .bold()
-                            .padding()
-                            .glassEffect(in: .circle)
+                            .foregroundColor(.secondary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -53,11 +52,9 @@ struct SubgroupProfileBody: View {
                 
                 if isAboutExpanded {
                     VStack(alignment: .leading, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Divider()
-                                .padding(.bottom, 4)
+                        VStack(alignment: .leading, spacing: 4) {
                                 
-                            Text("ABOUT THE SUBGROUP")
+                            Text("ABOUT")
                                 .font(.caption.bold())
                                 .foregroundColor(.secondary)
                             
@@ -65,9 +62,6 @@ struct SubgroupProfileBody: View {
                                 .font(.subheadline)
                                 .foregroundColor(.primary)
                                 .lineSpacing(4)
-                            
-                            Divider()
-                                .padding(.top, 4)
                         }
                         
                         HStack(spacing: 12) {
@@ -92,12 +86,12 @@ struct SubgroupProfileBody: View {
                             .buttonStyle(.plain)
                         }
                         
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text("SOCIALS")
                                 .font(.caption.bold())
                                 .foregroundColor(.secondary)
                             
-                            HStack(spacing: 20) {
+                            HStack(spacing: 0) {
                                 let platforms = ["whatsapp", "instagram", "facebook", "linkedin", "discord"]
                                 let available = platforms.filter { (subgroup.socials ?? [:]).keys.contains($0) }
                                 
@@ -112,10 +106,14 @@ struct SubgroupProfileBody: View {
                                             Link(destination: url) {
                                                 SocialCircle(platform: platform)
                                             }
+                                            if platform != available.last {
+                                                Spacer()
+                                            }
                                         }
                                     }
                                 }
                             }
+                            .frame(maxWidth: .infinity)
                         }
                         .padding(.top, 8)
                         
@@ -207,14 +205,10 @@ struct SubgroupProfileBody: View {
                         }
                         .buttonStyle(.plain)
                         
-                        Spacer()
-                        
                         NavigationLink(destination: SubgroupFilesView()) {
                             MediaButton(icon: "doc.text.fill", label: "Files", color: .brown)
                         }
                         .buttonStyle(.plain)
-                        
-                        Spacer()
                         
                         NavigationLink(destination: SubgroupLinksView()) {
                             MediaButton(icon: "link", label: "Links", color: .green)

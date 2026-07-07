@@ -29,23 +29,16 @@ struct ActivityDetailView: View {
                             .bold()
                             .foregroundStyle(.primary)
                             
-                        Divider().padding(.top, 12)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    
-                    // Description Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        sectionHeader(title: "Description", icon: "doc.text.fill")
-                        
                         Text(activity.description)
                             .font(.body)
                             .lineSpacing(4)
+                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
                         Divider().padding(.top, 12)
                     }
                     .padding(.horizontal, 20)
+                    .padding(.top, 20)
                     
                     // Location Section
                     if let location = activity.location {
@@ -87,6 +80,7 @@ struct ActivityDetailView: View {
                 }
             }
             .background(Color(.systemBackground))
+            .presentationDragIndicator(.visible)
             .alert("Delete Activity", isPresented: $showingDeleteAlert) {
                 Button("Delete", role: .destructive) {
                     Task {
@@ -113,6 +107,7 @@ struct ActivityDetailView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .foregroundStyle(activity.type.color)
+            .background(activity.type.color.opacity(0.1))
             .clipShape(Capsule())
     }
     

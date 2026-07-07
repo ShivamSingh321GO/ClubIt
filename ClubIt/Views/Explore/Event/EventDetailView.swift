@@ -1,6 +1,13 @@
 import SwiftUI
 import ClubItShared
 
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = .zero
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value += nextValue()
+    }
+}
+
 struct EventDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSession.self) private var appSession
@@ -26,59 +33,106 @@ struct EventDetailView: View {
     @State private var isShowingWithdrawConfirmAlert = false
     @State private var isShowingAttendanceQR = false
     @State private var isShowingScanner = false
+    @State private var scrollOffset: CGFloat = 0
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(spacing: 0) {
                     
                     // 1. Hero Banner
-                    headerSection
+                    heroBanner
+                        .zIndex(0)
                     
-                    // Content sections
+                    // 2. Overlapping Content Sheet
                     VStack(alignment: .leading, spacing: 0) {
-                        // 2. Quick Details
-                        quickDetailsRow
-                            .padding(.top, 22)
                         
-                        thinDivider
-                            .padding(.vertical, 18)
-                        
-                        // 3. Organizer
-                        organizerRow
-                        
-                        thinDivider
-                            .padding(.vertical, 18)
-                        
-                        // 4. About
-                        aboutSection
-                        
-                        // 5. Agenda
-                        if let agenda = event.agenda, !agenda.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            thinDivider
-                                .padding(.vertical, 20)
+                        // Title & Status
+                        HStack(alignment: .top) {
+                            Text(event.title)
+                                .font(.title.bold())
+                                .foregroundColor(.primary)
                             
+                            Spacer()
+                            
+                            if isMyEvent || event.status == .pending {
+                                statusBadge
+                            } else if appSession.registeredEventIds.contains(event.id) {
+                                statusLabel(text: "Registered", color: .green)
+                            }
+                        }
+                        .padding(.bottom, 12)
+                        
+                        // Description (About)
+                        Text(event.description)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .lineSpacing(4)
+                            .padding(.bottom, 24)
+                        
+                        Divider()
+                        
+                        // Quick Details
+                        quickDetailsSection
+                        
+                        Divider()
+                        
+                        // Organizer
+                        organizerSection
+                        
+                        // Agenda
+                        if let agenda = event.agenda, !agenda.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Divider()
                             agendaSection(agenda)
                         }
                         
-                        // 6. Registration Progress
+                        // Registration Progress
                         if event.status != .pending && (event.isRegistrationOpen ?? true) {
-                            thinDivider
-                                .padding(.vertical, 18)
-                            
+                            Divider()
                             registrationSection
                         }
                         
-                        // 7. CTA
-                        nativePremiumButton
-                            .padding(.top, 24)
-                            .padding(.bottom, 30)
+                        // Pending Approval Button
+                        if event.status == .pending {
+                            if let role = appSession.currentUser?.role, role != .groupSubLead && role != .groupLead && role != .groupSubLead {
+                                Divider()
+                                Button(action: {}) {
+                                    Label("Pending Approval", systemImage: "clock.fill")
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                .buttonBorderShape(.capsule)
+                                .controlSize(.large)
+                                .tint(.secondary)
+                                .disabled(true)
+                                .padding(.top, 24)
+                            }
+                        }
+                        
+                        // Action Buttons (Publish, Manage, Register Now) inside scroll view
+                        if shouldShowStickyBottomBar {
+                            Divider()
+                            ctaButtonsSection
+                                .padding(.top, 24)
+                        }
+                        
+                        Spacer().frame(height: 24)
                     }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+                    .background(Color(.systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .offset(y: -20)
+                    .padding(.bottom, -20)
+                    .zIndex(1)
                 }
-                .padding(.vertical, 12)
+            }
+            .coordinateSpace(name: "scroll")
+            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                self.scrollOffset = value
             }
         }
-        .padding(.horizontal, 16)
         .navigationBarTitleDisplayMode(.inline)
         .alert("Ready to Go Live?", isPresented: $isShowingPublishAlert) {
             Button("Publish Now", role: .none) {
@@ -138,164 +192,125 @@ struct EventDetailView: View {
         }
     }
     
-    // MARK: - Header
+    // MARK: - Hero Banner
     
-    private var headerSection: some View {
-        ZStack(alignment: .bottomLeading) {
-            Group {
-                if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage).resizable()
-                } else if let banner = event.bannerImage, !banner.isEmpty {
-                    if banner.hasPrefix("http") {
-                        AsyncImage(url: URL(string: banner)) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image.resizable()
-                            case .failure:
-                                ZStack {
-                                    Color.accentColor.opacity(0.1)
-                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.accentColor.opacity(0.5))
-                                }
-                            case .empty:
-                                ZStack {
-                                    Color.accentColor.opacity(0.05)
-                                    ProgressView()
-                                }
-                            @unknown default:
-                                ZStack {
-                                    Color.accentColor.opacity(0.1)
-                                    Image(systemName: "photo").font(.largeTitle).foregroundColor(.accentColor.opacity(0.5))
-                                }
+    private var heroBanner: some View {
+        Group {
+            if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage).resizable().scaledToFit()
+            } else if let banner = event.bannerImage, !banner.isEmpty {
+                if banner.hasPrefix("http") {
+                    AsyncImage(url: URL(string: banner)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image.resizable().scaledToFit()
+                        case .failure:
+                            placeholderBanner
+                        case .empty:
+                            ZStack {
+                                Color.accentColor.opacity(0.05)
+                                ProgressView()
                             }
+                        @unknown default:
+                            placeholderBanner
                         }
-                    } else {
-                        Image(banner).resizable()
                     }
                 } else {
-                    ZStack {
-                        Color.accentColor.opacity(0.1)
-                        Image(systemName: "photo").font(.largeTitle).foregroundColor(.accentColor.opacity(0.5))
-                    }
+                    Image(banner).resizable().scaledToFit()
                 }
+            } else {
+                placeholderBanner
             }
-            .aspectRatio(16/10, contentMode: .fill)
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            
-            VStack {
-                HStack {
-                    Spacer()
-                    
-                    HStack(spacing: 6) {
-                        Image(systemName: categoryIcon)
-                            .font(.system(size: 10, weight: .bold))
-                        Text(event.category.displayName)
-                            .font(.caption.bold())
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(.ultraThinMaterial)
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
-                    .shadow(color: .black.opacity(0.3), radius: 4)
-                }
-                .padding(20)
-                
-                Spacer()
-                
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(event.title)
-                            .font(.title2.bold())
-                            .foregroundColor(.white)
-                            .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-                            .lineLimit(2)
-                    }
-                    
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
+        }
+        .frame(maxWidth: .infinity)
+        .overlay(alignment: .top) {            // Subtle gradient to ensure the back button is readable
+            LinearGradient(colors: [.black.opacity(0.6), .clear, .clear], startPoint: .top, endPoint: .bottom)
+                .frame(height: 120)
+        }
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: ScrollOffsetPreferenceKey.self,
+                    value: proxy.frame(in: .named("scroll")).minY
                 )
             }
-            .clipShape(RoundedRectangle(cornerRadius: 24))
+        )
+        .scaleEffect(scrollOffset > 0 ? 1 + (scrollOffset / 500) : max(0.5, 1 + (scrollOffset / 500)), anchor: scrollOffset > 0 ? .top : .bottom)
+        .opacity(scrollOffset < 0 ? max(0, 1 + (scrollOffset / 300)) : 1)
+        .offset(y: scrollOffset > 0 ? -scrollOffset : 0) // Keep it pinned to the top when pulling down
+    }
+    
+    private var placeholderBanner: some View {
+        ZStack {
+            Color.accentColor.opacity(0.1)
+            Image(systemName: "photo")
+                .font(.system(size: 60))
+                .foregroundColor(.accentColor.opacity(0.5))
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+    
+    // MARK: - Row Builders (F1 Style)
+    
+    private func detailRow<Content: View>(icon: String, bottomText: String, @ViewBuilder topContent: () -> Content) -> some View {
+        HStack(alignment: .center, spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .frame(width: 24)
+                .foregroundColor(.primary)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                topContent()
+                Text(bottomText)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 16)
+    }
+
+    private func detailRow(icon: String, topText: String, bottomText: String) -> some View {
+        detailRow(icon: icon, bottomText: bottomText) {
+            Text(topText)
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func infoRow(icon: String, title: String, content: AnyView) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .frame(width: 24)
+                .foregroundColor(.primary)
+                .padding(.top, 2)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.primary)
+                content
+            }
+            Spacer()
+        }
+        .padding(.vertical, 16)
+    }
+    
+    // MARK: - Sections
+    
+    private var quickDetailsSection: some View {
+        VStack(spacing: 0) {
+            detailRow(icon: "calendar", bottomText: "Date & Time") {
+                dateAndTimeContentView
+            }
+            Divider()
+            detailRow(icon: "mappin.and.ellipse", topText: event.location, bottomText: "Venue")
         }
     }
     
-    // MARK: - Quick Details (Inline Row)
-    
-    private var quickDetailsRow: some View {
-        HStack(spacing: 0) {
-            // Date & Time
-            HStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.blue.opacity(0.1))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: "calendar")
-                        .font(.title3)
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundColor(.blue)
-                }
-                .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Date & Time")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(event.dashboardDateLine1)
-                            .font(.footnote.bold())
-                        Text(event.dashboardDateLine2)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            
-            // Vertical Divider
-            Rectangle()
-                .fill(Color.primary.opacity(0.08))
-                .frame(width: 1, height: 34)
-                .padding(.horizontal, 12)
-            
-            // Location
-            HStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.red.opacity(0.1))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: "mappin.and.ellipse")
-                        .font(.title3)
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundColor(.red)
-                }
-                .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Venue")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                    Text(event.location)
-                        .font(.footnote.bold())
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-    
-    // MARK: - Organizer (Inline Row)
-    
-    private var organizerRow: some View {
+    private var organizerSection: some View {
         let matchingSubgroup = appSession.subgroupStore.allSubgroups.first { subgroup in
             if let subgroupIds = event.subgroupIds {
                 return subgroupIds.contains(subgroup.id)
@@ -303,294 +318,102 @@ struct EventDetailView: View {
             return subgroup.id == event.subgroupId
         }
         
+        let label = event.subgroupId == nil ? "Associated Subgroups" : "Hosted by"
+        
         return Group {
             if let subgroup = matchingSubgroup {
                 NavigationLink(destination: SubgroupDetailView(subgroup: subgroup)) {
-                    organizerContent
-                }
-            } else {
-                organizerContent
-            }
-        }
-        .buttonStyle(.plain)
-    }
-    
-    private var organizerContent: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(Color.accentColor.gradient.opacity(0.15))
-                .frame(width: 40, height: 40)
-                .overlay(
-                    Text(String(organizerName.prefix(1)))
-                        .font(.subheadline.bold())
-                        .foregroundColor(.accentColor)
-                )
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(event.subgroupId == nil ? "Associated Subgroups" : "Hosted by")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
-                Text(organizerName)
-                    .font(.subheadline.bold())
-                    .foregroundColor(.primary)
-            }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .padding(.trailing, 10)
-            
-            if !isMyEvent {
-                Button(action: {}) {
-                    Image(systemName: "bubble.left.and.bubble.right.fill")
-                        .font(.caption)
-                        .foregroundColor(.accentColor)
-                        .padding(10)
-                        .background(Color.accentColor.opacity(0.1))
-                        .clipShape(Circle())
+                    detailRow(icon: "person.crop.rectangle", topText: organizerName, bottomText: label)
                 }
                 .buttonStyle(.plain)
-            }
-        }
-    }    
-    // MARK: - About
-    
-    private var aboutSection: some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.teal.opacity(0.1))
-                    .frame(width: 40, height: 40)
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.teal)
-                    .symbolRenderingMode(.hierarchical)
-                    .font(.title3)
-            }
-            .frame(width: 40)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("ABOUT THE EVENT")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
-                
-                Text(event.description)
-                    .font(.subheadline)
-                    .foregroundColor(.primary)
-                    .lineSpacing(4)
-                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                detailRow(icon: "person.crop.rectangle", topText: organizerName, bottomText: label)
             }
         }
     }
     
-    
     private func agendaSection(_ agenda: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.purple.opacity(0.1))
-                    .frame(width: 40, height: 40)
-                Image(systemName: "list.bullet.indent")
-                    .foregroundColor(.purple)
-                    .symbolRenderingMode(.hierarchical)
-                    .font(.title3)
-            }
-            .frame(width: 40)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("EVENT AGENDA")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
-                
-                let lines = agenda.components(separatedBy: .newlines).filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-                ForEach(lines, id: \.self) { line in
-                    Text(line)
+        let lines = agenda.components(separatedBy: .newlines).filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        
+        return infoRow(icon: "list.bullet.indent", title: "Agenda", content: AnyView(
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
+                    Text("• " + line)
                         .font(.subheadline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-        }
+        ))
     }
-    
-    // MARK: - Registration (Inline)
     
     private var registrationSection: some View {
         let registrations = appSession.registrationStore.getRegistrations(for: event.id)
+        let topText = event.maxParticipants >= 999999 ? "\(registrations.count) Registered" : "\(registrations.count) / \(event.maxParticipants)"
+        let bottomText = "Registrations"
         
-        return VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.indigo.opacity(0.1))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: "person.2.fill")
-                        .foregroundColor(.indigo)
-                        .symbolRenderingMode(.hierarchical)
-                        .font(.title3)
-                }
-                .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("REGISTRATIONS")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                    
-                    Group {
-                        if event.maxParticipants >= 999999 {
-                            Text("\(registrations.count) Registered")
-                                .font(.subheadline)
-                                .bold()
-                                .foregroundColor(.primary)
-                        } else {
-                            Text("\(registrations.count) Registered / ")
-                                .font(.subheadline)
-                                .bold()
-                                .foregroundColor(.primary)
-                            + Text("\(event.maxParticipants) total")
-                                .font(.subheadline)
-                                .foregroundColor(.primary)
-                        }
-                    }
-                }
-                
-                Spacer()
-                
-                if event.status != .approved {
-                    if !(event.isRegistrationOpen ?? true) {
-                        Text("Closed")
-                            .font(.system(size: 10, weight: .heavy))
-                            .foregroundColor(.red)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.red.opacity(0.1))
-                            .clipShape(Capsule())
-                    } else if event.maxParticipants > 0 && event.maxParticipants < 999999 && appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants {
-                        Text("Sold Out")
-                            .font(.system(size: 10, weight: .heavy))
-                            .foregroundColor(.red)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.red.opacity(0.1))
-                            .clipShape(Capsule())
-                    } else {
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(.blue)
-                                .frame(width: 4, height: 4)
-                            Text(event.maxParticipants >= 999999 ? "Unlimited slots" : "\(event.maxParticipants - appSession.registrationStore.getRegistrations(for: event.id).count) slots left")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.blue.opacity(0.12))
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.blue.opacity(0.2), lineWidth: 0.5))
-                    }
-                }
+        return HStack(alignment: .center, spacing: 16) {
+            Image(systemName: "person.2")
+                .font(.system(size: 20))
+                .frame(width: 24)
+                .foregroundColor(.primary)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(topText)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.primary)
+                Text(bottomText)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
             }
-            if event.status == .approved {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .font(.caption)
-                    Text("Registration will open after event is published")
-                        .font(.caption)
-                }
-                .foregroundColor(.secondary)
-                .padding(.leading, 52)
-            }
+            Spacer()
         }
+        .padding(.vertical, 16)
     }
     
-    // MARK: - Native Premium Action Button
+    // MARK: - Action Buttons Section
     
-    private var nativePremiumButton: some View {
+    private var ctaButtonsSection: some View {
         VStack(spacing: 12) {
-            if event.status == .pending {
-                if let role = appSession.currentUser?.role, role != .groupSubLead && role != .groupLead && role != .groupSubLead {
-                    Button(action: {}) {
-                        Label("Pending Approval", systemImage: "clock.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.secondary)
-                    .disabled(true)
-                }
-            } else if isMyEvent {
+            if isMyEvent {
                 if event.status == .approved {
                     Button {
                         isShowingPublishAlert = true
                     } label: {
-                        Label("Publish Event", systemImage: "paperplane.fill")
-                            .font(.headline)
+                        Text("Publish Event")
+                            .font(.headline.bold())
+                            .foregroundColor(Color(.systemBackground))
                             .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
                     }
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
-                    .tint(.accentColor)
-                    .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .tint(.primary)
                 } else {
-                    NavigationLink(destination: ManageParticipantsView(event: event)) {
-                        Label("View Participants", systemImage: "person.2.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.blue)
-                    .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
-                    
-                    Button {
-                        isShowingAttendanceQR = true
-                    } label: {
-                        Label("Show Attendance QR", systemImage: "qrcode")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.purple)
-                    .shadow(color: .purple.opacity(0.3), radius: 8, x: 0, y: 4)
-                    
-                    NavigationLink(destination: EventAttendeesListView(event: event)) {
-                        Label("View Attendees", systemImage: "person.crop.circle.badge.checkmark")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.teal)
-                    .shadow(color: .teal.opacity(0.3), radius: 8, x: 0, y: 4)
-                    
-                    let chatExists = appSession.chatStore.chats.contains(where: { $0.type == .event && $0.name == event.title && $0.parentChatId == nil })
-                    if !chatExists && event.status == .published {
+                    HStack(spacing: 12) {
                         Button {
-                            Task {
-                                await appSession.chatStore.createEventChatsForPublishedEvent(event: event)
-                            }
+                            isShowingAttendanceQR = true
                         } label: {
-                            Label("Create Event Chat", systemImage: "bubble.left.and.bubble.right.fill")
+                            Image(systemName: "qrcode")
                                 .font(.headline)
+                                .frame(width: 44, height: 44)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.circle)
+                        .tint(.purple)
+                        
+                        NavigationLink(destination: ManageParticipantsView(event: event)) {
+                            Text("Manage")
+                                .font(.headline.bold())
+                                .foregroundColor(Color(.systemBackground))
                                 .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
                         }
                         .buttonStyle(.borderedProminent)
                         .buttonBorderShape(.capsule)
                         .controlSize(.large)
-                        .tint(.indigo)
-                        .shadow(color: .indigo.opacity(0.3), radius: 8, x: 0, y: 4)
+                        .tint(.primary)
                     }
                 }
             } else if appSession.currentRole == .groupSubLead || appSession.currentRole == .admin || appSession.currentRole == .groupLead || appSession.currentRole == .groupSubLead {
@@ -600,124 +423,189 @@ struct EventDetailView: View {
                 let isFull = event.maxParticipants > 0 && event.maxParticipants < 999999 && appSession.registrationStore.getRegistrations(for: event.id).count >= event.maxParticipants
                 let isOpen = event.isRegistrationOpen ?? true
                 
-                if canScanAttendance {
-                    Button {
-                        isShowingScanner = true
-                    } label: {
-                        Label("Scan Attendance QR", systemImage: "qrcode.viewfinder")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.green)
-                    .shadow(color: .green.opacity(0.4), radius: 8, x: 0, y: 4)
-                }
-                
-                if isRegistered {
-                    Button {
-                        isShowingWithdrawConfirmAlert = true
-                    } label: {
-                        Text("Withdraw Registration")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.red)
-                } else if !isOpen {
-                    Button(action: {}) {
-                        Label("Registration Closed", systemImage: "lock.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.secondary)
-                    .disabled(true)
-                } else if isFull {
-                    Button(action: {}) {
-                        Label("Event Full", systemImage: "person.crop.circle.badge.xmark")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.secondary)
-                    .disabled(true)
-                } else {
-                    Button {
-                        if event.registrationType == .team {
-                            isShowingRegistrationForm = true
-                        } else {
-                            isShowingRegisterConfirmAlert = true
+                HStack(spacing: 12) {
+                    if canScanAttendance {
+                        Button {
+                            isShowingScanner = true
+                        } label: {
+                            Image(systemName: "qrcode.viewfinder")
+                                .font(.headline)
+                                .frame(width: 44, height: 44)
                         }
-                    } label: {
-                        Text("Register Now")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.circle)
+                        .tint(.green)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .tint(.accentColor)
-                    .shadow(color: .accentColor.opacity(0.4), radius: 8, x: 0, y: 4)
+                    
+                    if isRegistered {
+                        Button {
+                            isShowingWithdrawConfirmAlert = true
+                        } label: {
+                            Text("Withdraw")
+                                .font(.headline.bold())
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
+                        .tint(.red)
+                    } else if !isOpen {
+                        Button(action: {}) {
+                            Label("Registration Closed", systemImage: "lock.fill")
+                                .font(.headline.bold())
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
+                        .tint(.secondary)
+                        .disabled(true)
+                    } else if isFull {
+                        Button(action: {}) {
+                            Label("Event Full", systemImage: "person.crop.circle.badge.xmark")
+                                .font(.headline.bold())
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
+                        .tint(.secondary)
+                        .disabled(true)
+                    } else {
+                        Button {
+                            if event.registrationType == .team {
+                                isShowingRegistrationForm = true
+                            } else {
+                                isShowingRegisterConfirmAlert = true
+                            }
+                        } label: {
+                            Text("Register Now")
+                                .font(.headline.bold())
+                                .foregroundColor(Color(.systemBackground))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
+                        .tint(.primary)
+                    }
                 }
             }
         }
     }
     
+    // MARK: - Utilities
     
-    // MARK: - Utility
-    
-    private func sectionHeader(title: String, icon: String) -> some View {
-        Label(title.uppercased(), systemImage: icon)
-            .font(.system(size: 10, weight: .semibold))
-            .foregroundStyle(.secondary)
+    private var shouldShowStickyBottomBar: Bool {
+        if event.status == .pending {
+            return false
+        }
+        if isMyEvent {
+            return true
+        }
+        if appSession.currentRole == .groupSubLead || appSession.currentRole == .admin || appSession.currentRole == .groupLead || appSession.currentRole == .groupSubLead {
+            return false
+        }
+        return true
     }
     
-    private var thinDivider: some View {
-        Rectangle()
-            .fill(Color.primary.opacity(0.06))
-            .frame(height: 1)
+    private func statusLabel(text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption.bold())
+            .foregroundColor(color)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(color.opacity(0.15))
+            .clipShape(Capsule())
     }
     
-    // MARK: - Helpers
+    @ViewBuilder
+    private var statusBadge: some View {
+        let status = event.status
+        let color: Color = {
+            switch status {
+            case .pending: return .accentColor
+            case .approved: return .green
+            default: return .blue
+            }
+        }()
+        
+        let text: String = {
+            switch status {
+            case .pending: return "Pending"
+            case .approved: return "Approved"
+            default: return status.rawValue.capitalized
+            }
+        }()
+        
+        statusLabel(text: text, color: color)
+    }
     
-    private var formattedDateTime: String {
+    private var dateAndTimeContentView: some View {
+        let calendar = Calendar.current
+        let isSameDay = calendar.isDate(event.startDate, inSameDayAs: event.endDate)
+        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM d, yyyy"
         
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "h:mm a"
         
-        let startDateStr = dateFormatter.string(from: event.startDate)
-        let endDateStr = dateFormatter.string(from: event.endDate)
-        
-        let startTimeStr = timeFormatter.string(from: event.startTime ?? event.startDate)
-        let endTimeStr = event.endTime != nil ? timeFormatter.string(from: event.endTime!) : timeFormatter.string(from: event.endDate)
-        
-        if startDateStr == endDateStr {
-            return "\(startDateStr) • \(startTimeStr) - \(endTimeStr)"
+        return Group {
+            if isSameDay {
+            let dateStr = dateFormatter.string(from: event.startDate)
+            let startTimeStr = timeFormatter.string(from: event.startTime ?? event.startDate)
+            let endTimeStr = event.endTime != nil ? timeFormatter.string(from: event.endTime!) : timeFormatter.string(from: event.endDate)
+            
+            Text("\(dateStr) • \(startTimeStr) - \(endTimeStr)")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.primary)
+                .fixedSize(horizontal: false, vertical: true)
         } else {
-            return "\(startDateStr) (\(startTimeStr)) - \(endDateStr) (\(endTimeStr))"
+            let startDateStr = dateFormatter.string(from: event.startDate)
+            let endDateStr = dateFormatter.string(from: event.endDate)
+            let startTimeStr = timeFormatter.string(from: event.startTime ?? event.startDate)
+            let endTimeStr = event.endTime != nil ? timeFormatter.string(from: event.endTime!) : timeFormatter.string(from: event.endDate)
+            
+            let components = calendar.dateComponents([.day], from: calendar.startOfDay(for: event.startDate), to: calendar.startOfDay(for: event.endDate))
+            let days = (components.day ?? 0) + 1
+            
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(startDateStr)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.primary)
+                    Text(startTimeStr)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack(spacing: 4) {
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.secondary.opacity(0.3))
+                    Text("\(days) Days")
+                        .font(.caption2.weight(.medium))
+                        .foregroundColor(.secondary)
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.secondary.opacity(0.3))
+                }
+                
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(endDateStr)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.primary)
+                    Text(endTimeStr)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
         }
-    }
-    
-    private var categoryIcon: String {
-        switch event.category {
-        case .workshop: return "wrench.and.screwdriver.fill"
-        case .technical: return "desktopcomputer"
-        case .entertainment: return "theatermasks.fill"
-        case .sports: return "sportscourt.fill"
-        case .ai: return "brain.head.profile.fill"
-        case .wellness: return "heart.fill"
-        case .literary: return "book.fill"
-        case .entrepreneurship: return "lightbulb.fill"
         }
     }
     
@@ -730,16 +618,6 @@ struct EventDetailView: View {
             return appSession.subgroupStore.allSubgroups.first { $0.id == subgroupId }?.name ?? "Event Organizer"
         }
         return "Group Event"
-    }
-    
-    private var registrationProgress: Double {
-        guard event.maxParticipants > 0 && event.maxParticipants < 999999 else { return 0 }
-        return min(Double(event.numberOfRegistrations ?? 0) / Double(event.maxParticipants), 1.0)
-    }
-    
-    private var buttonColor: Color {
-        if isMyEvent { return .blue }
-        return appSession.registeredEventIds.contains(event.id) ? .green : .accentColor
     }
     
     private var canScanAttendance: Bool {
