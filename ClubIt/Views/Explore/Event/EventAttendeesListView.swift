@@ -73,7 +73,7 @@ struct EventAttendeesListView: View {
     }
     
     private func exportToCSV() {
-        var csvString = "Name,Admission Number,Entry Time,Exit Time\n"
+        var csvString = "Name,Admission Number,Entry Time,Timing Status,Exit Time\n"
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         formatter.dateStyle = .short
@@ -83,12 +83,13 @@ struct EventAttendeesListView: View {
             let name = user?.name ?? "Unknown User"
             let admission = user?.admissionNumber ?? "N/A"
             let entry = attendance.entryTime.map { formatter.string(from: $0) } ?? "-"
+            let timing = attendance.timingStatus?.capitalized ?? "Unknown"
             let exit = attendance.exitTime.map { formatter.string(from: $0) } ?? "-"
             
             // Escape commas
             let escapedName = name.contains(",") ? "\"\(name)\"" : name
             let escapedAdmission = admission.contains(",") ? "\"\(admission)\"" : admission
-            csvString += "\(escapedName),\(escapedAdmission),\(entry),\(exit)\n"
+            csvString += "\(escapedName),\(escapedAdmission),\(entry),\(timing),\(exit)\n"
         }
         
         let tempDir = FileManager.default.temporaryDirectory
@@ -134,6 +135,19 @@ struct EventAttendeesListView: View {
         }
     }
     
+    private func badgeColor(for timing: String) -> Color {
+        switch timing.lowercased() {
+        case "before":
+            return .orange
+        case "during":
+            return .green
+        case "after":
+            return .red
+        default:
+            return .secondary
+        }
+    }
+    
     private func attendanceRow(user: User?, attendance: EventAttendance) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(user?.name ?? "Unknown User")
@@ -141,9 +155,20 @@ struct EventAttendeesListView: View {
             
             HStack {
                 VStack(alignment: .leading) {
-                    Text("Entry")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 6) {
+                        Text("Entry")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        if let timing = attendance.timingStatus {
+                            Text(timing.uppercased())
+                                .font(.system(size: 8, weight: .bold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(badgeColor(for: timing).opacity(0.15), in: Capsule())
+                                .foregroundColor(badgeColor(for: timing))
+                        }
+                    }
                     if let entryTime = attendance.entryTime {
                         Text(entryTime, style: .time)
                             .font(.subheadline)

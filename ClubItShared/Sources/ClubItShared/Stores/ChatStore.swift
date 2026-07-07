@@ -840,20 +840,57 @@ public final class ChatStore {
         let parentChatId = event.id
         let generalChatId = UUID()
         let leadId = event.createdBy
-        guard let subgroupId = event.subgroupId else { return }
         
-        // Fetch subgroup members to populate initial participant list
+        // Fetch members to populate initial participant list
         var memberIdsToAdd: [UUID] = []
-        do {
-            let subgroupMembers: [User] = try await client
-                .from("users")
-                .select()
-                .eq("subgroup_id", value: subgroupId)
-                .execute()
-                .value
-            memberIdsToAdd = subgroupMembers.map { $0.id }.filter { $0 != leadId }
-        } catch {
-            print("DEBUG ERROR: [ChatStore] Failed to fetch subgroup members: \(error)")
+        if let subgroupId = event.subgroupId {
+            // Regular subgroup event
+            do {
+                let subgroupMembers: [User] = try await client
+                    .from("users")
+                    .select()
+                    .eq("subgroup_id", value: subgroupId)
+                    .execute()
+                    .value
+                memberIdsToAdd = subgroupMembers.map { $0.id }.filter { $0 != leadId }
+            } catch {
+                print("DEBUG ERROR: [ChatStore] Failed to fetch subgroup members: \(error)")
+            }
+        } else if let subgroupIds = event.subgroupIds, !subgroupIds.isEmpty {
+            // Group/Council event targeting multiple subgroups
+            do {
+                let subgroupMembers: [User] = try await client
+                    .from("users")
+                    .select()
+                    .in("subgroup_id", values: subgroupIds)
+                    .execute()
+                    .value
+                memberIdsToAdd = subgroupMembers.map { $0.id }.filter { $0 != leadId }
+            } catch {
+                print("DEBUG ERROR: [ChatStore] Failed to fetch members for subgroups: \(error)")
+            }
+        } else {
+            // Group/Council event with no specific subgroups (fallback: fetch everyone in lead's organization)
+            do {
+                let leadUsers: [User] = try await client
+                    .from("users")
+                    .select()
+                    .eq("id", value: leadId)
+                    .execute()
+                    .value
+                if let leadUser = leadUsers.first,
+                   let orgId = leadUser.organizationId {
+                    let orgUsers: [User] = try await client
+                        .from("users")
+                        .select()
+                        .eq("organization_id", value: orgId)
+                        .execute()
+                        .value
+                    memberIdsToAdd = orgUsers.map { $0.id }.filter { $0 != leadId }
+                }
+            } catch {
+                print("DEBUG ERROR: [ChatStore] Failed to fetch organization members: \(error)")
+            }
         }
         
         let allParticipantIds = [leadId] + memberIdsToAdd
@@ -863,7 +900,7 @@ public final class ChatStore {
             type: .event,
             name: event.title,
             icon: "calendar",
-            subgroupId: subgroupId,
+            subgroupId: event.subgroupId,
             createdBy: leadId,
             createdAt: Date(),
             participantIds: allParticipantIds
@@ -874,7 +911,7 @@ public final class ChatStore {
             type: .event,
             name: "General",
             icon: nil,
-            subgroupId: subgroupId,
+            subgroupId: event.subgroupId,
             parentChatId: parentChatId,
             createdBy: leadId,
             createdAt: Date(),
@@ -895,7 +932,7 @@ public final class ChatStore {
                 name: event.title,
                 description: nil,
                 icon: "calendar",
-                subgroup_id: subgroupId,
+                subgroup_id: event.subgroupId,
                 parent_chat_id: nil,
                 created_by: leadId,
                 created_at: istDateString(from: parentChat.createdAt)
@@ -916,7 +953,7 @@ public final class ChatStore {
                 name: "General",
                 description: nil,
                 icon: nil,
-                subgroup_id: subgroupId,
+                subgroup_id: event.subgroupId,
                 parent_chat_id: parentChatId,
                 created_by: leadId,
                 created_at: istDateString(from: generalChat.createdAt)

@@ -6,6 +6,7 @@ public struct EventAttendance: Identifiable, Codable, Hashable {
     public var userId: UUID
     public var entryTime: Date?
     public var exitTime: Date?
+    public var timingStatus: String?
     public var createdAt: Date
 
     public enum CodingKeys: String, CodingKey {
@@ -14,15 +15,17 @@ public struct EventAttendance: Identifiable, Codable, Hashable {
         case userId = "user_id"
         case entryTime = "entry_time"
         case exitTime = "exit_time"
+        case timingStatus = "timing_status"
         case createdAt = "created_at"
     }
 
-    public init(id: UUID = UUID(), eventId: UUID, userId: UUID, entryTime: Date? = nil, exitTime: Date? = nil, createdAt: Date = Date()) {
+    public init(id: UUID = UUID(), eventId: UUID, userId: UUID, entryTime: Date? = nil, exitTime: Date? = nil, timingStatus: String? = nil, createdAt: Date = Date()) {
         self.id = id
         self.eventId = eventId
         self.userId = userId
         self.entryTime = entryTime
         self.exitTime = exitTime
+        self.timingStatus = timingStatus
         self.createdAt = createdAt
     }
 
@@ -31,6 +34,7 @@ public struct EventAttendance: Identifiable, Codable, Hashable {
         id = try container.decode(UUID.self, forKey: .id)
         eventId = try container.decode(UUID.self, forKey: .eventId)
         userId = try container.decode(UUID.self, forKey: .userId)
+        timingStatus = try? container.decodeIfPresent(String.self, forKey: .timingStatus)
         
         // Custom date parsing to handle potentially varying formats from Supabase
         let dateStringDecoder = { (key: CodingKeys) -> Date? in
