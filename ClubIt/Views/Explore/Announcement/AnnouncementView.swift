@@ -58,14 +58,25 @@ private struct AnnouncementCard: View {
     }
     
     private var posterName: String {
-        let posterRole = appSession.subgroupStore.allUsers.first(where: { $0.id == announcement.postedBy })?.role
-        if posterRole == .groupLead {
-            return "President"
-        } else if posterRole == .groupSubLead {
-            return "Vice President"
-        } else {
-            return "Event Management Team"
+        let poster = appSession.subgroupStore.allUsers.first(where: { $0.id == announcement.postedBy })
+        let posterRole = poster?.role
+        
+        let roleName: String = {
+            if posterRole == .groupLead {
+                return "President"
+            } else if posterRole == .groupSubLead {
+                return "Vice President"
+            } else {
+                return "Event Management Team"
+            }
+        }()
+        
+        if let groupId = poster?.groupId,
+           let group = appSession.subgroupStore.allGroups.first(where: { $0.id == groupId }) {
+            return "\(roleName), \(group.name)"
         }
+        
+        return roleName
     }
     
     var body: some View {
