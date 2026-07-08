@@ -47,6 +47,8 @@ struct LaunchScreenView: View {
                     .font(.headline)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
                     .opacity(textOpacity)
             }
             .offset(y: 60)
