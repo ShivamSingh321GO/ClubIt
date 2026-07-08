@@ -8,6 +8,13 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
     }
 }
 
+struct BannerHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 250
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct EventDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSession.self) private var appSession
@@ -34,17 +41,49 @@ struct EventDetailView: View {
     @State private var isShowingAttendanceQR = false
     @State private var isShowingScanner = false
     @State private var scrollOffset: CGFloat = 0
+    @State private var bannerHeight: CGFloat = 250
+    @State private var isDescriptionExpanded = false
+    
+    private var safeAreaTop: CGFloat {
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+            ?? scenes.first as? UIWindowScene
+        let window = windowScene?.windows.first(where: { $0.isKeyWindow }) ?? windowScene?.windows.first
+        return window?.safeAreaInsets.top ?? 59
+    }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .top) {
+            // 1. Background Fixed Poster Area
+            VStack(spacing: 0) {
+                // Spacer for the top status bar area to prevent overlap with status bar text
+                Color.clear
+                    .frame(height: safeAreaTop)
+                
+                // Fixed Poster banner (fully visible, scaled to fit)
+                heroBanner
+                    .scaledToFit()
+                    .background(
+                        GeometryReader { bannerGeo in
+                            Color.clear.preference(
+                                key: BannerHeightPreferenceKey.self,
+                                value: bannerGeo.size.height
+                            )
+                        }
+                    )
+                
+                Spacer()
+            }
+            .zIndex(0)
+            
+            // 2. ScrollView on top
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
+                    // Transparent Spacer of safeAreaTop + bannerHeight to push detail sheet under background poster
+                    Color.clear
+                        .frame(height: safeAreaTop + bannerHeight)
                     
-                    // 1. Hero Banner
-                    heroBanner
-                        .zIndex(0)
-                    
-                    // 2. Overlapping Content Sheet
+                    // Overlapping Content Sheet
                     VStack(alignment: .leading, spacing: 0) {
                         
                         // Title & Status
@@ -64,11 +103,27 @@ struct EventDetailView: View {
                         .padding(.bottom, 12)
                         
                         // Description (About)
-                        Text(event.description)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .lineSpacing(4)
-                            .padding(.bottom, 24)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(event.description)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .lineSpacing(4)
+                                .lineLimit(isDescriptionExpanded ? nil : 3)
+                            
+                            if event.description.count > 150 || event.description.contains("\n") {
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        isDescriptionExpanded.toggle()
+                                    }
+                                }) {
+                                    Text(isDescriptionExpanded ? "Read Less" : "Read More")
+                                        .font(.footnote.bold())
+                                        .foregroundColor(.accentColor)
+                                        .padding(.top, 2)
+                                }
+                            }
+                        }
+                        .padding(.bottom, 24)
                         
                         Divider()
                         
@@ -120,19 +175,20 @@ struct EventDetailView: View {
                         Spacer().frame(height: 24)
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 24)
+                    .padding(.top, 32)
                     .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .offset(y: -20)
-                    .padding(.bottom, -20)
+                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                     .zIndex(1)
                 }
             }
-            .coordinateSpace(name: "scroll")
-            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                self.scrollOffset = value
-            }
+            .zIndex(1)
         }
+        .ignoresSafeArea(edges: .top)
+        .onPreferenceChange(BannerHeightPreferenceKey.self) { value in
+            self.bannerHeight = value
+        }
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbarRole(.editor)
         .navigationBarTitleDisplayMode(.inline)
         .alert("Ready to Go Live?", isPresented: $isShowingPublishAlert) {
             Button("Publish Now", role: .none) {
@@ -197,13 +253,17 @@ struct EventDetailView: View {
     private var heroBanner: some View {
         Group {
             if let imageData = event.imageData, let uiImage = UIImage(data: imageData) {
-                Image(uiImage: uiImage).resizable().scaledToFit()
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
             } else if let banner = event.bannerImage, !banner.isEmpty {
                 if banner.hasPrefix("http") {
                     AsyncImage(url: URL(string: banner)) { phase in
                         switch phase {
                         case .success(let image):
-                            image.resizable().scaledToFit()
+                            image
+                                .resizable()
+                                .scaledToFit()
                         case .failure:
                             placeholderBanner
                         case .empty:
@@ -216,28 +276,15 @@ struct EventDetailView: View {
                         }
                     }
                 } else {
-                    Image(banner).resizable().scaledToFit()
+                    Image(banner)
+                        .resizable()
+                        .scaledToFit()
                 }
             } else {
                 placeholderBanner
             }
         }
         .frame(maxWidth: .infinity)
-        .overlay(alignment: .top) {            // Subtle gradient to ensure the back button is readable
-            LinearGradient(colors: [.black.opacity(0.6), .clear, .clear], startPoint: .top, endPoint: .bottom)
-                .frame(height: 120)
-        }
-        .background(
-            GeometryReader { proxy in
-                Color.clear.preference(
-                    key: ScrollOffsetPreferenceKey.self,
-                    value: proxy.frame(in: .named("scroll")).minY
-                )
-            }
-        )
-        .scaleEffect(scrollOffset > 0 ? 1 + (scrollOffset / 500) : max(0.5, 1 + (scrollOffset / 500)), anchor: scrollOffset > 0 ? .top : .bottom)
-        .opacity(scrollOffset < 0 ? max(0, 1 + (scrollOffset / 300)) : 1)
-        .offset(y: scrollOffset > 0 ? -scrollOffset : 0) // Keep it pinned to the top when pulling down
     }
     
     private var placeholderBanner: some View {
@@ -247,7 +294,8 @@ struct EventDetailView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.accentColor.opacity(0.5))
         }
-        .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: .infinity)
+        .aspectRatio(16/9, contentMode: .fit)
     }
     
     // MARK: - Row Builders (F1 Style)

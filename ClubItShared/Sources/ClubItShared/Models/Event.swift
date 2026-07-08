@@ -233,7 +233,8 @@ public struct Event: Identifiable, Hashable, Codable {
         try container.encode(description, forKey: .description)
         
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
         formatter.timeZone = TimeZone.current
         
         try container.encode(formatter.string(from: startDate), forKey: .startDate)
