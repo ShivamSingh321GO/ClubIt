@@ -51,7 +51,7 @@ struct LaunchScreenView: View {
                     .padding(.horizontal, 40)
                     .opacity(textOpacity)
             }
-            .offset(y: 60)
+            .offset(y: 70)
         }
         .onAppear {
             // 1. Icon grows from small to big
@@ -62,7 +62,7 @@ struct LaunchScreenView: View {
             
             // 2. Icon moves up, App Name appears
             withAnimation(.easeOut(duration: 0.5).delay(0.8)) {
-                iconYOffset = -60
+                iconYOffset = -70
                 appNameOpacity = 1.0
             }
             
