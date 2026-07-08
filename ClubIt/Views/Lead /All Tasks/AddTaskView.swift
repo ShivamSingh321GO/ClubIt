@@ -79,7 +79,8 @@ struct AddTaskView: View {
             let level2Name = appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
             return "\(level2Name) Member"
         case .subgroup:
-            return appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
+            let level2Name = appSession.subgroupStore.levelName(for: 2, defaultName: "Subgroup")
+            return "Other \(level2Name)"
         case .groupSubLead:
             let level1Name = appSession.subgroupStore.levelName(for: 1, defaultName: "Group")
             return "\(level1Name) SubLead"
@@ -347,6 +348,7 @@ struct SelectionListView<T: Hashable>: View {
                         }
                     }
                 }
+                .buttonStyle(.plain)
             }
         }
         .navigationTitle(title)
@@ -376,6 +378,7 @@ struct OptionalSelectionListView<T: Hashable>: View {
                     }
                 }
             }
+            .buttonStyle(.plain)
             ForEach(options, id: \.self) { option in
                 Button {
                     selection = option
@@ -389,6 +392,7 @@ struct OptionalSelectionListView<T: Hashable>: View {
                         }
                     }
                 }
+                .buttonStyle(.plain)
             }
         }
         .navigationTitle(title)

@@ -910,6 +910,7 @@ struct MultiSubgroupSelectionView: View {
                         }
                     }
                 }
+                .buttonStyle(.plain)
             }
         }
         .navigationTitle("Select Subgroups")
@@ -970,6 +971,7 @@ struct VenueSelectionView: View {
                         }
                     }
                 }
+                .buttonStyle(.plain)
                 .disabled(isBooked)
             }
         }

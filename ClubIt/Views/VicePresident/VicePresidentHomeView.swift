@@ -59,7 +59,7 @@ struct VicePresidentHomeView: View {
                                 NavigationLink {
                                     LeadProfileView()
                                 } label: {
-                                    Image(systemName: "person.circle")
+                                    ProfileHeaderImageView(user: appSession.currentUser, size: 28)
                                 }
                             }
                         }

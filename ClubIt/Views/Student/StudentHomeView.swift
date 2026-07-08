@@ -53,7 +53,7 @@ struct StudentHomeView: View {
                     NavigationLink {
                         StudentProfileView()
                     } label: {
-                        Image(systemName: "person.crop.circle")
+                        ProfileHeaderImageView(user: appSession.currentUser, size: 28)
                     }
                 }
             }

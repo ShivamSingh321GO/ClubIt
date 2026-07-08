@@ -71,7 +71,7 @@ struct SubgroupMemberHomeView: View {
                             NavigationLink {
                                 MemberProfileView()
                             } label: {
-                                Image(systemName: "person.circle")
+                                ProfileHeaderImageView(user: appSession.currentUser, size: 28)
                             }
                         }
                     }

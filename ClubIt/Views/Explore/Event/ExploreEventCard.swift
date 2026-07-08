@@ -111,6 +111,10 @@ struct ExploreEventCard: View {
         .background(Color.clear)
         .glassEffect(in: .rect(cornerRadius: 20))
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.primary.opacity(0.12), lineWidth: 1)
+        )
         .padding(.vertical, 8)
     }
     
