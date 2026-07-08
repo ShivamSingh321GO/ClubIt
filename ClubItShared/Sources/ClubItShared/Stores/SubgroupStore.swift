@@ -9,6 +9,7 @@ public final class SubgroupStore {
     public var subgroup: Subgroup
     public var allSubgroups: [Subgroup] = []
     public var allUsers: [User] = []
+    public var allGroups: [GroupModel] = []
     
     public var followedSubgroupIds: Set<UUID> = []
     public var requestedSubgroupIds: Set<UUID> = []
@@ -39,7 +40,12 @@ public final class SubgroupStore {
             .select()
             .execute()
             .value
-        print("DEBUG: Fetched \(allSubgroups.count) subgroups from Supabase")
+            
+        if let grps: [GroupModel] = try? await client.from("groups").select().execute().value {
+            self.allGroups = grps
+        }
+        
+        print("DEBUG: Fetched \(allSubgroups.count) subgroups and \(allGroups.count) groups from Supabase")
     }
 
     @MainActor
@@ -210,5 +216,23 @@ public final class SubgroupStore {
         if let index = allUsers.firstIndex(where: { $0.id == updatedUser.id }) {
             allUsers[index] = updatedUser
         }
+    }
+}
+
+public struct GroupModel: Codable, Identifiable, Hashable {
+    public var id: UUID
+    public var name: String
+    public var organizationId: UUID?
+    
+    public enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case organizationId = "organization_id"
+    }
+    
+    public init(id: UUID, name: String, organizationId: UUID? = nil) {
+        self.id = id
+        self.name = name
+        self.organizationId = organizationId
     }
 }
