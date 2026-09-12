@@ -23,6 +23,11 @@ public final class AppSession {
     public var activeDashboardTab: Int = 0
     public var activeExploreTab: Int = 0
     
+    public var organizationProfile: OrganizationProfile?
+    public var organizationFeatures: OrganizationFeatures? {
+        organizationProfile?.features
+    }
+    
     public var subgroupAchievementStore: AchievementStore
     public var announcementStore: AnnouncementStore
     public var subgroupLinkStore: SubgroupLinkStore
@@ -94,7 +99,7 @@ public final class AppSession {
     /// without requiring a manual pull-to-refresh or re-login.
     private func startBackgroundPolling() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             self?.currentTime = Date()
             guard let self = self, self.isLoggedIn else { return }
             Task { @MainActor in
@@ -103,6 +108,21 @@ public final class AppSession {
         }
     }
     
+    @MainActor
+    public func fetchOrganizationProfile() async {
+        do {
+            let fetchedOrgs: [OrganizationProfile] = try await SupabaseManager.shared.client
+                .from("organizations")
+                .select()
+                .limit(1)
+                .execute()
+                .value
+            self.organizationProfile = fetchedOrgs.first
+        } catch {
+            print("DEBUG ERROR: Failed to fetch organization profile: \(error)")
+        }
+    }
+
     /// Lightweight silent refresh that fetches only the frequently-changing tables
     /// (events, approvals, budgets, resources, tasks, chats) without showing any loading UI.
     @MainActor
@@ -110,6 +130,7 @@ public final class AppSession {
         guard isLoggedIn, let user = currentUser else { return }
         
         // Fetch key data in parallel including subgroups
+        async let orgProfileTask: Void = { await self.fetchOrganizationProfile() }()
         async let eventsTask: Void = { try? await self.eventStore.fetchAllEvents() }()
         async let approvalsTask: Void = { try? await self.approvalStore.fetchApprovals() }()
         async let budgetsTask: Void = { try? await self.approvalStore.fetchBudgets() }()
@@ -125,6 +146,7 @@ public final class AppSession {
             }
         }()
         
+        await orgProfileTask
         await eventsTask
         await approvalsTask
         await budgetsTask
@@ -212,6 +234,7 @@ public final class AppSession {
         }
 
         // 2. Load Global Data in parallel (Non-blocking)
+        async let orgProfileTask: Void = { await self.fetchOrganizationProfile() }()
         async let subgroupsTask: Void = { do { try await subgroupStore.fetchAllSubgroups() } catch { print("DEBUG REFRESH ERROR: fetchAllSubgroups failed: \(error)") } }()
         async let usersTask: Void = { do { try await subgroupStore.fetchAllUsers() } catch { print("DEBUG REFRESH ERROR: fetchAllUsers failed: \(error)") } }()
         async let eventsTask: Void = { do { try await eventStore.fetchAllEvents() } catch { print("DEBUG REFRESH ERROR: fetchAllEvents failed: \(error)") } }()
@@ -226,6 +249,7 @@ public final class AppSession {
         async let chatsTask: Void = { await chatStore.fetchChatsIfNeeded() }()
         async let hierarchyTask: Void = { do { try await subgroupStore.fetchHierarchyLevels() } catch { print("DEBUG REFRESH ERROR: fetchHierarchyLevels failed: \(error)") } }()
         
+        await orgProfileTask
         await subgroupsTask
         await usersTask
         await eventsTask

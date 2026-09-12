@@ -2,7 +2,6 @@ import SwiftUI
 import ClubItShared
 
 struct ExploreView: View {
-    
     @Environment(AppSession.self) private var appSession
     
     enum ExploreTab: Int, CaseIterable, Identifiable {
@@ -28,48 +27,68 @@ struct ExploreView: View {
         _selectedTab = State(initialValue: selectedTab)
     }
     
+    private var isEventsAvailable: Bool {
+        appSession.organizationFeatures?.events != true
+    }
+    
+    private var isAnnouncementsAvailable: Bool {
+        appSession.organizationFeatures?.announcements != true
+    }
+    
+    private var activeTab: ExploreTab {
+        if isEventsAvailable && isAnnouncementsAvailable {
+            return selectedTab
+        } else if isAnnouncementsAvailable && !isEventsAvailable {
+            return .announcement
+        } else {
+            return .events
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                
-                Picker("", selection: $selectedTab) {
-                    ForEach(ExploreTab.allCases) { tab in
-                        Text(tab.title).tag(tab)
+                // Only show segmented control picker if BOTH subtabs are available
+                if isEventsAvailable && isAnnouncementsAvailable {
+                    Picker("", selection: $selectedTab) {
+                        Text(ExploreTab.events.title).tag(ExploreTab.events)
+                        Text(ExploreTab.announcement.title).tag(ExploreTab.announcement)
                     }
+                    .pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
+                
+                let currentTab = activeTab
                 
                 ZStack(alignment: .bottomTrailing) {
                     VStack(spacing: 12) {
-                        Group {
-                            switch selectedTab {
-                            case .announcement:
-                                AnnouncementView(
-                                    announcements: appSession.announcementStore.announcements,
-                                    onEdit: { announcement in
-                                        print("DEBUG: [ExploreView] Requested edit for announcement: \(announcement.id)")
-                                        editingAnnouncement = announcement
-                                    },
-                                    onDelete: { announcement in
-                                        print("DEBUG: [ExploreView] Requested delete for announcement: \(announcement.id)")
-                                        Task {
-                                            do {
-                                                try await appSession.announcementStore.deleteAnnouncement(announcement)
-                                            } catch {
-                                                print("❌ ERROR DELETING ANNOUNCEMENT: \(error)")
-                                            }
+                        switch currentTab {
+                        case .announcement:
+                            AnnouncementView(
+                                announcements: appSession.announcementStore.announcements,
+                                onEdit: { announcement in
+                                    print("DEBUG: [ExploreView] Requested edit for announcement: \(announcement.id)")
+                                    editingAnnouncement = announcement
+                                },
+                                onDelete: { announcement in
+                                    print("DEBUG: [ExploreView] Requested delete for announcement: \(announcement.id)")
+                                    Task {
+                                        do {
+                                            try await appSession.announcementStore.deleteAnnouncement(announcement)
+                                        } catch {
+                                            print("❌ ERROR DELETING ANNOUNCEMENT: \(error)")
                                         }
                                     }
-                                )
-                            case .events:
-                                EventView(scope: $scope, eventStore: appSession.eventStore)
-                            }
+                                }
+                            )
+                        case .events:
+                            EventView(scope: $scope, eventStore: appSession.eventStore)
                         }
                     }
                     
-                    if (selectedTab == .announcement && canCreateAnnouncement) || (selectedTab == .events && canCreateEvent) {
+                    // Plus FAB button for creating announcements or events
+                    if (currentTab == .announcement && canCreateAnnouncement) || (currentTab == .events && canCreateEvent) {
                         Group {
-                            if selectedTab == .announcement {
+                            if currentTab == .announcement {
                                 Button {
                                     print("DEBUG: [ExploreView] Presenting create announcement sheet")
                                     showCreateAnnouncementSheet = true
@@ -103,9 +122,6 @@ struct ExploreView: View {
             .padding(.top, 8)
             .navigationTitle("Explore")
             .toolbarTitleDisplayMode(.inlineLarge)
-            .toolbar {
-                // Toolbar menu/buttons removed as they are now in the FAB
-            }
             .sheet(isPresented: $showCreateAnnouncementSheet) {
                 CreateAnnouncementView { title, content, url, postedBy, groupId, organizationId in
                     print("DEBUG: [ExploreView] Create announcement closure triggered with title='\(title)'")

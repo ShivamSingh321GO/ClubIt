@@ -19,38 +19,42 @@ struct SubgroupMemberHomeView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         
                         // All Tasks Section
-                        HStack {
-                            Text("All Tasks")
-                            NavigationLink(destination: TasksListView(user: user)) {
-                                Image(systemName: "chevron.right")
+                        if !(appSession.organizationFeatures?.isTasksDisabled ?? false) {
+                            HStack {
+                                Text("All Tasks")
+                                NavigationLink(destination: TasksListView(user: user)) {
+                                    Image(systemName: "chevron.right")
+                                }
                             }
+                            .font(.title2)
+                            .bold()
+                            
+                            HomeTasksModule(user: user)
                         }
-                        .font(.title2)
-                        .bold()
-                        
-                        HomeTasksModule(user: user)
                         
                         // Registered Events Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Events registered")
-                                .font(.title2)
-                                .bold()
-                            
-                            if appSession.studentDashboardStore.registeredEvents.isEmpty {
-                                Text("No registered events")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 32)
-                                    .glassEffect(in: .rect(cornerRadius: 20))
-                            } else {
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    LazyHStack(spacing: 16) {
-                                        ForEach(appSession.studentDashboardStore.registeredEvents) { event in
-                                            NavigationLink(value: event) {
-                                                EventCardView(event: event)
+                        if !(appSession.organizationFeatures?.isEventsDisabled ?? false) {
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Events registered")
+                                    .font(.title2)
+                                    .bold()
+                                
+                                if appSession.studentDashboardStore.registeredEvents.isEmpty {
+                                    Text("No registered events")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 32)
+                                        .glassEffect(in: .rect(cornerRadius: 20))
+                                } else {
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        LazyHStack(spacing: 16) {
+                                            ForEach(appSession.studentDashboardStore.registeredEvents) { event in
+                                                NavigationLink(value: event) {
+                                                    EventCardView(event: event)
+                                                }
+                                                .buttonStyle(.plain)
                                             }
-                                            .buttonStyle(.plain)
                                         }
                                     }
                                 }
@@ -84,15 +88,17 @@ struct SubgroupMemberHomeView: View {
                 await appSession.refreshData()
             }
             
-            NavigationLink(destination: ClubItCalendarView(standalone: true)) {
-                Image(systemName: "calendar")
-                    .font(.title2.bold())
-                    .foregroundStyle(.primary)
-                    .frame(width: 56, height: 56)
-                    .glassEffect(in: .circle)
-                    .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+            if !(appSession.organizationFeatures?.isEventsDisabled ?? false) {
+                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                    Image(systemName: "calendar")
+                        .font(.title2.bold())
+                        .foregroundStyle(.primary)
+                        .frame(width: 56, height: 56)
+                        .glassEffect(in: .circle)
+                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                }
+                .padding()
             }
-            .padding()
         } // Close ZStack
         }
         .task {

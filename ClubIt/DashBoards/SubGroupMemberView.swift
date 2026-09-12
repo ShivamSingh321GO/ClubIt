@@ -26,11 +26,12 @@ struct SubGroupMemberView: View {
             }
             
             
-            Tab("Chats", systemImage: "message") {
-                ChatsView()
+            if !(appSession.organizationFeatures?.isChatDisabled ?? false) {
+                Tab("Chats", systemImage: "message") {
+                    ChatsView()
+                }
+                .badge(appSession.chatStore.totalUnreadCount)
             }
-            .badge(appSession.chatStore.totalUnreadCount)
-            
         }
     }
 }
