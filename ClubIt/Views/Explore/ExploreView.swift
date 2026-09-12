@@ -120,7 +120,7 @@ struct ExploreView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
-            .navigationTitle("Explore")
+            .navigationTitle(appSession.exploreTabTitle)
             .toolbarTitleDisplayMode(.inlineLarge)
             .sheet(isPresented: $showCreateAnnouncementSheet) {
                 CreateAnnouncementView { title, content, url, postedBy, groupId, organizationId in

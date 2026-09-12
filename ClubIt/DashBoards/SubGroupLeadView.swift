@@ -22,8 +22,10 @@ struct SubGroupLeadView: View {
                 LeadMySubgroupView()
             }
             
-            Tab("Explore", systemImage: "globe") {
-                ExploreView()
+            if appSession.isExploreVisible {
+                Tab(appSession.exploreTabTitle, systemImage: appSession.exploreTabIcon) {
+                    ExploreView()
+                }
             }
             
             if !(appSession.organizationFeatures?.isChatDisabled ?? false) {

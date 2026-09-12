@@ -62,6 +62,18 @@ public final class AppSession {
         return nil
     }
 
+    public var isExploreVisible: Bool {
+        organizationFeatures?.isExploreVisible ?? true
+    }
+    
+    public var exploreTabTitle: String {
+        organizationFeatures?.exploreTabTitle ?? "Explore"
+    }
+    
+    public var exploreTabIcon: String {
+        organizationFeatures?.exploreTabIcon ?? "globe"
+    }
+
     public var currentTime: Date = Date()
     private var timer: Timer?
 

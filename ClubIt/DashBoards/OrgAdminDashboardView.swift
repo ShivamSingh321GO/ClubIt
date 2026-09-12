@@ -10,8 +10,10 @@ struct OrgAdminDashboardView: View {
                 EventManagementHomeView()
             }
             
-            Tab("Explore", systemImage: "globe") {
-                ExploreView()
+            if appSession.isExploreVisible {
+                Tab(appSession.exploreTabTitle, systemImage: appSession.exploreTabIcon) {
+                    ExploreView()
+                }
             }
             
             if !(appSession.organizationFeatures?.isChatDisabled ?? false) {

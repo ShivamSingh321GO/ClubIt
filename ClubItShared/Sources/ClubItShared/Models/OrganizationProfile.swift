@@ -61,6 +61,31 @@ public struct OrganizationFeatures: Codable, Hashable, Sendable {
     public var isAttendanceDisabled: Bool { attendance == true }
     public var isAchievementsDisabled: Bool { achievements == true }
     public var isVenueDisabled: Bool { venue == true }
+    
+    // MARK: - Explore Tab Helpers
+    public var isExploreVisible: Bool {
+        !isEventsDisabled || !isAnnouncementsDisabled
+    }
+    
+    public var exploreTabTitle: String {
+        if !isEventsDisabled && !isAnnouncementsDisabled {
+            return "Explore"
+        } else if !isAnnouncementsDisabled {
+            return "Announcements"
+        } else {
+            return "Events"
+        }
+    }
+    
+    public var exploreTabIcon: String {
+        if !isEventsDisabled && !isAnnouncementsDisabled {
+            return "globe"
+        } else if !isAnnouncementsDisabled {
+            return "megaphone"
+        } else {
+            return "calendar"
+        }
+    }
 }
 
 public struct OrganizationProfile: Codable, Identifiable, Hashable, Sendable {

@@ -16,8 +16,10 @@ struct GuestDashboardView: View {
             Tab("Home", systemImage: "house") {
                 StudentHomeView()
             }
-            Tab("Explore", systemImage: "globe") {
-                ExploreView()
+            if appSession.isExploreVisible {
+                Tab(appSession.exploreTabTitle, systemImage: appSession.exploreTabIcon) {
+                    ExploreView()
+                }
             }
             
             Tab("Chats", systemImage: "message") {
