@@ -266,27 +266,29 @@ struct CreateNewEventView: View {
                     Text("Date & Time")
                 }
                 
-                Section {
-                    NavigationLink {
-                        VenueSelectionView(
-                            selectedVenue: $venue,
-                            startDate: startDate,
-                            endDate: endDate,
-                            currentEventId: currentEventId
-                        )
-                    } label: {
-                        HStack {
-                            Text("Location")
-                            Spacer()
-                            Text(venue)
-                                .foregroundStyle(.secondary)
+                if !(appSession.organizationFeatures?.isVenueDisabled ?? false) {
+                    Section {
+                        NavigationLink {
+                            VenueSelectionView(
+                                selectedVenue: $venue,
+                                startDate: startDate,
+                                endDate: endDate,
+                                currentEventId: currentEventId
+                            )
+                        } label: {
+                            HStack {
+                                Text("Location")
+                                Spacer()
+                                Text(venue)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                    } header: {
+                        Text("Venue")
                     }
-                } header: {
-                    Text("Venue")
                 }
                 
-                if appSession.currentUser?.role != .groupLead {
+                if appSession.currentUser?.role != .groupLead && !(appSession.organizationFeatures?.isBudgetDisabled ?? false) {
                     Section {
                         Button {
                             isShowingAddResourcesItems = true

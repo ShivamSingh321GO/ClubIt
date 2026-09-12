@@ -75,15 +75,17 @@ struct SubgroupProfileBody: View {
                             }
                             .buttonStyle(.plain)
                             
-                            NavigationLink(destination: AchievementsListView()) {
-                                StatBadge(
-                                    icon: "trophy.fill",
-                                    count: "\(appSession.subgroupAchievementStore.achievements.filter { $0.subgroupId == subgroup.id }.count)",
-                                    label: "Achievements",
-                                    color: .accentColor
-                                )
+                            if !(appSession.organizationFeatures?.isAchievementsDisabled ?? false) {
+                                NavigationLink(destination: AchievementsListView()) {
+                                    StatBadge(
+                                        icon: "trophy.fill",
+                                        count: "\(appSession.subgroupAchievementStore.achievements.filter { $0.subgroupId == subgroup.id }.count)",
+                                        label: "Achievements",
+                                        color: .accentColor
+                                    )
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {

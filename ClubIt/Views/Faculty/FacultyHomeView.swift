@@ -13,31 +13,35 @@ struct FacultyHomeView: View {
                     VStack(alignment: .leading, spacing: 28) {
                         
                         // Today's Tasks Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Text("All Tasks")
-                                NavigationLink(destination: TasksListView(user: user)) {
-                                    Image(systemName: "chevron.right")
+                        if !(appSession.organizationFeatures?.isTasksDisabled ?? false) {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Text("All Tasks")
+                                    NavigationLink(destination: TasksListView(user: user)) {
+                                        Image(systemName: "chevron.right")
+                                    }
                                 }
+                                .font(.title2)
+                                .bold()
+                                
+                                HomeTasksModule(user: user)
                             }
-                            .font(.title2)
-                            .bold()
-                            
-                            HomeTasksModule(user: user)
                         }
                         
                         // Approval Request Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Text("Approval Management")
-                                NavigationLink(destination: FacultyResourceSubgroupsView()) {
-                                    Image(systemName: "chevron.right")
+                        if !(appSession.organizationFeatures?.isBudgetDisabled ?? false) {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Text("Approval Management")
+                                    NavigationLink(destination: FacultyResourceSubgroupsView()) {
+                                        Image(systemName: "chevron.right")
+                                    }
                                 }
+                                .font(.title2)
+                                .bold()
+                                
+                                FacultyApprovalsModule(user: user)
                             }
-                            .font(.title2)
-                            .bold()
-                            
-                            FacultyApprovalsModule(user: user)
                         }
                         
                         

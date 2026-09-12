@@ -440,16 +440,18 @@ struct EventDetailView: View {
                     .tint(.primary)
                 } else {
                     HStack(spacing: 12) {
-                        Button {
-                            isShowingAttendanceQR = true
-                        } label: {
-                            Image(systemName: "qrcode")
-                                .font(.headline)
-                                .frame(width: 44, height: 44)
+                        if !(appSession.organizationFeatures?.isAttendanceDisabled ?? false) {
+                            Button {
+                                isShowingAttendanceQR = true
+                            } label: {
+                                Image(systemName: "qrcode")
+                                    .font(.headline)
+                                    .frame(width: 44, height: 44)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.circle)
+                            .tint(.purple)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .buttonBorderShape(.circle)
-                        .tint(.purple)
                         
                         NavigationLink(destination: ManageParticipantsView(event: event)) {
                             Text("Manage")
@@ -472,7 +474,7 @@ struct EventDetailView: View {
                 let isOpen = event.isRegistrationOpen ?? true
                 
                 HStack(spacing: 12) {
-                    if canScanAttendance {
+                    if canScanAttendance && !(appSession.organizationFeatures?.isAttendanceDisabled ?? false) {
                         Button {
                             isShowingScanner = true
                         } label: {

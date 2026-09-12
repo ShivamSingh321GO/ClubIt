@@ -13,31 +13,35 @@ struct PresidentHomeView: View {
                             VStack(alignment: .leading, spacing: 28) {
                                 
                                 // Today's Tasks Section
-                                VStack(alignment: .leading, spacing: 16) {
-                                    HStack {
-                                        Text("All Tasks")
-                                        NavigationLink(destination: TasksListView(user: user)) {
-                                            Image(systemName: "chevron.right")
+                                if !(appSession.organizationFeatures?.isTasksDisabled ?? false) {
+                                    VStack(alignment: .leading, spacing: 16) {
+                                        HStack {
+                                            Text("All Tasks")
+                                            NavigationLink(destination: TasksListView(user: user)) {
+                                                Image(systemName: "chevron.right")
+                                            }
                                         }
+                                        .font(.title2)
+                                        .bold()
+                                        
+                                        HomeTasksModule(user: user)
                                     }
-                                    .font(.title2)
-                                    .bold()
-                                    
-                                    HomeTasksModule(user: user)
                                 }
                                 
                                 // Approval Management Section
-                                VStack(alignment: .leading, spacing: 16) {
-                                    HStack {
-                                        Text("Approval Management")
-                                        NavigationLink(destination: EventManagementApprovalSubgroupsView()) {
-                                            Image(systemName: "chevron.right")
+                                if !(appSession.organizationFeatures?.isBudgetDisabled ?? false) {
+                                    VStack(alignment: .leading, spacing: 16) {
+                                        HStack {
+                                            Text("Approval Management")
+                                            NavigationLink(destination: EventManagementApprovalSubgroupsView()) {
+                                                Image(systemName: "chevron.right")
+                                            }
                                         }
+                                        .font(.title2)
+                                        .bold()
+                                        
+                                        PresidentApprovalsModule(user: user)
                                     }
-                                    .font(.title2)
-                                    .bold()
-                                    
-                                    PresidentApprovalsModule(user: user)
                                 }
                             }
                             .padding(.horizontal)
@@ -82,15 +86,17 @@ struct PresidentHomeView: View {
                     .transition(.opacity)
                 }
                 
-                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
-                    Image(systemName: "calendar")
-                        .font(.title2.bold())
-                        .foregroundStyle(.primary)
-                        .frame(width: 56, height: 56)
-                        .glassEffect(in: .circle)
-                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                if !(appSession.organizationFeatures?.isEventsDisabled ?? false) {
+                    NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                        Image(systemName: "calendar")
+                            .font(.title2.bold())
+                            .foregroundStyle(.primary)
+                            .frame(width: 56, height: 56)
+                            .glassEffect(in: .circle)
+                            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    }
+                    .padding()
                 }
-                .padding()
             } // Close ZStack
         }
         .task {

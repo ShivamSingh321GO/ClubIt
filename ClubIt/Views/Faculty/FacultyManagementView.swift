@@ -38,13 +38,15 @@ struct FacultyManagementView: View {
                             }
                             .buttonStyle(.plain)
                             
-                            Divider().padding(.leading, 56)
-                            NavigationLink {
-                                FacultyVenueListView()
-                            } label: {
-                                QuickActionRow(icon: "building.2", title: "View Venues", color: .blue)
+                            if !(appSession.organizationFeatures?.isVenueDisabled ?? false) {
+                                Divider().padding(.leading, 56)
+                                NavigationLink {
+                                    FacultyVenueListView()
+                                } label: {
+                                    QuickActionRow(icon: "building.2", title: "View Venues", color: .blue)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                         .glassEffect(in: .rect(cornerRadius: 16))
                     }
@@ -146,7 +148,9 @@ struct FacultyExpandableSubgroupRow: View {
                     
                     HStack(spacing: 12) {
                         FacultyStatBadge(icon: "person.2.fill", count: "\(appSession.subgroupStore.allUsers.filter { $0.subgroupId == subgroup.id }.count)", label: "Members", color: .green)
-                        FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.subgroupAchievementStore.achievements.filter { $0.subgroupId == subgroup.id }.count)", label: "Achievements", color: .accentColor)
+                        if !(appSession.organizationFeatures?.isAchievementsDisabled ?? false) {
+                            FacultyStatBadge(icon: "trophy.fill", count: "\(appSession.subgroupAchievementStore.achievements.filter { $0.subgroupId == subgroup.id }.count)", label: "Achievements", color: .accentColor)
+                        }
                     }
                     .padding(.horizontal)
                     

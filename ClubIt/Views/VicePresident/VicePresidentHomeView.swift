@@ -14,29 +14,33 @@ struct VicePresidentHomeView: View {
                         VStack(alignment: .leading, spacing: 24) {
                             
                             // Tasks Section
-                            HStack {
-                                Text("Tasks")
-                                NavigationLink(destination: TasksListView(user: user)) {
-                                    Image(systemName: "chevron.right")
+                            if !(appSession.organizationFeatures?.isTasksDisabled ?? false) {
+                                HStack {
+                                    Text("Tasks")
+                                    NavigationLink(destination: TasksListView(user: user)) {
+                                        Image(systemName: "chevron.right")
+                                    }
                                 }
+                                .font(.title2)
+                                .bold()
+                                
+                                HomeTasksModule(user: user)
                             }
-                            .font(.title2)
-                            .bold()
-                            
-                            HomeTasksModule(user: user)
                             
                             // Approval Management Section
-                            HStack {
-                                Text("Approval Management")
-                                NavigationLink(destination: VPApprovalsListView(user: user)) {
-                                    Image(systemName: "chevron.right")
+                            if !(appSession.organizationFeatures?.isBudgetDisabled ?? false) {
+                                HStack {
+                                    Text("Approval Management")
+                                    NavigationLink(destination: VPApprovalsListView(user: user)) {
+                                        Image(systemName: "chevron.right")
+                                    }
                                 }
-                            }
-                            .font(.title2)
-                            .bold()
-                            
-                            VicePresidentApprovalsModule(user: user) { id in
-                                selectedEventId = id
+                                .font(.title2)
+                                .bold()
+                                
+                                VicePresidentApprovalsModule(user: user) { id in
+                                    selectedEventId = id
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -85,15 +89,17 @@ struct VicePresidentHomeView: View {
                 }
                 } // Close inner ZStack
                 
-                NavigationLink(destination: ClubItCalendarView(standalone: true)) {
-                    Image(systemName: "calendar")
-                        .font(.title2.bold())
-                        .foregroundStyle(.primary)
-                        .frame(width: 56, height: 56)
-                        .glassEffect(in: .circle)
-                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                if !(appSession.organizationFeatures?.isEventsDisabled ?? false) {
+                    NavigationLink(destination: ClubItCalendarView(standalone: true)) {
+                        Image(systemName: "calendar")
+                            .font(.title2.bold())
+                            .foregroundStyle(.primary)
+                            .frame(width: 56, height: 56)
+                            .glassEffect(in: .circle)
+                            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    }
+                    .padding()
                 }
-                .padding()
             }
         }
         .task {
