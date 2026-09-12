@@ -103,19 +103,24 @@ public final class AppSession {
         
         self.chatStore.eventStore = eventStore
         
+        Task { @MainActor in
+            await self.fetchOrganizationProfile()
+        }
+        
         startBackgroundPolling()
     }
     
-    /// Starts a 30-second polling timer that silently syncs key data from Supabase.
-    /// This ensures events, approvals, and tasks created by other users appear
-    /// without requiring a manual pull-to-refresh or re-login.
+    /// Starts a 5-second polling timer that silently syncs key data and feature flags from Supabase.
     private func startBackgroundPolling() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             self?.currentTime = Date()
-            guard let self = self, self.isLoggedIn else { return }
+            guard let self = self else { return }
             Task { @MainActor in
-                await self.silentRefreshKeyData()
+                await self.fetchOrganizationProfile()
+                if self.isLoggedIn {
+                    await self.silentRefreshKeyData()
+                }
             }
         }
     }
@@ -129,7 +134,10 @@ public final class AppSession {
                 .limit(1)
                 .execute()
                 .value
-            self.organizationProfile = fetchedOrgs.first
+            if let org = fetchedOrgs.first {
+                self.organizationProfile = org
+                print("DEBUG: [AppSession] Fetched org features from Supabase: \(String(describing: org.features))")
+            }
         } catch {
             print("DEBUG ERROR: Failed to fetch organization profile: \(error)")
         }

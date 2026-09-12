@@ -28,11 +28,11 @@ struct ExploreView: View {
     }
     
     private var isEventsAvailable: Bool {
-        appSession.organizationFeatures?.events != true
+        !(appSession.organizationFeatures?.isEventsDisabled ?? false)
     }
     
     private var isAnnouncementsAvailable: Bool {
-        appSession.organizationFeatures?.announcements != true
+        !(appSession.organizationFeatures?.isAnnouncementsDisabled ?? false)
     }
     
     private var activeTab: ExploreTab {
