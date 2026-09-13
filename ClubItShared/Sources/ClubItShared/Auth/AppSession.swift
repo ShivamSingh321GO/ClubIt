@@ -105,6 +105,7 @@ public final class AppSession {
         
         Task { @MainActor in
             await self.fetchOrganizationProfile()
+            self.startOrganizationRealtimeSubscription()
         }
         
         startBackgroundPolling()
@@ -125,12 +126,61 @@ public final class AppSession {
         }
     }
     
+    private var orgChannel: RealtimeChannelV2?
+    private var orgSubscriptionTask: Task<Void, Never>?
+
+    @MainActor
+    public func startOrganizationRealtimeSubscription() {
+        guard orgChannel == nil else { return }
+        orgSubscriptionTask?.cancel()
+        
+        let client = SupabaseManager.shared.client
+        let channel = client.realtimeV2.channel("public:organizations")
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "organizations"
+        )
+        
+        orgSubscriptionTask = Task {
+            await client.realtimeV2.connect()
+            try? await channel.subscribeWithError()
+            
+            for await _ in changes {
+                if Task.isCancelled { break }
+                print("DEBUG: [AppSession] Realtime update detected on organizations table! Refreshing features...")
+                await self.fetchOrganizationProfile()
+            }
+        }
+        
+        orgChannel = channel
+        print("DEBUG: [AppSession] Organizations realtime subscription started")
+    }
+
+    @MainActor
+    public func stopOrganizationRealtimeSubscription() {
+        orgSubscriptionTask?.cancel()
+        orgSubscriptionTask = nil
+        if let channel = orgChannel {
+            Task {
+                await SupabaseManager.shared.client.realtimeV2.removeChannel(channel)
+            }
+        }
+        orgChannel = nil
+    }
+
     @MainActor
     public func fetchOrganizationProfile() async {
         do {
-            let fetchedOrgs: [OrganizationProfile] = try await SupabaseManager.shared.client
+            var query = SupabaseManager.shared.client
                 .from("organizations")
                 .select()
+            
+            if let orgId = currentUser?.organizationId ?? currentUser?.instituteId {
+                query = query.eq("id", value: orgId)
+            }
+            
+            let fetchedOrgs: [OrganizationProfile] = try await query
                 .limit(1)
                 .execute()
                 .value
@@ -320,6 +370,7 @@ public final class AppSession {
         chatStore.stopRealtimeSubscription()
         chatStore.clearData()
         announcementStore.stopRealtimeSubscription()
+        stopOrganizationRealtimeSubscription()
     }
     
     @MainActor
