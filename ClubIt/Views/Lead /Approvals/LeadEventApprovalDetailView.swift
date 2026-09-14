@@ -262,140 +262,12 @@ struct LeadEventApprovalDetailView: View {
         }
     }
     
+    private var isEditedAfterApproval: Bool {
+        vpStepStatus == .pending && lastApprovedVpApproval != nil
+    }
+    
     var body: some View {
-        if let event = event, let subgroup = subgroup {
-
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    
-                    // Subgroup Header
-                    LeadDetailSubgroupHeaderView(subgroup: subgroup, event: event, canEdit: true, isEditedAfterApproval: vpStepStatus == .pending && lastApprovedVpApproval != nil)
-                        .padding(.horizontal)
-                    
-                    // Sequential Approval Status Tracker
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("APPROVAL FLOW STATUS")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal)
-                        
-                        VStack(alignment: .leading, spacing: 20) {
-                            if dynamicSteps.isEmpty {
-                                HStack {
-                                    Spacer()
-                                    ProgressView("Loading flow steps...")
-                                    Spacer()
-                                }
-                            } else {
-                                ForEach(dynamicSteps) { step in
-                                    HStack(alignment: .top, spacing: 12) {
-                                        VStack {
-                                            Circle()
-                                                .fill(statusColor(for: step.status))
-                                                .frame(width: 24, height: 24)
-                                                .overlay(
-                                                    Image(systemName: statusIcon(for: step.status))
-                                                        .font(.system(size: 10, weight: .bold))
-                                                        .foregroundColor(.white)
-                                                )
-                                            
-                                            if step.stepNumber < dynamicSteps.count {
-                                                let nextStep = dynamicSteps[step.stepNumber]
-                                                Rectangle()
-                                                    .fill(statusColor(for: nextStep.status).opacity(0.3))
-                                                    .frame(width: 2, height: 30)
-                                            }
-                                        }
-                                        
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Step \(step.stepNumber): \(step.title)")
-                                                .font(.subheadline.bold())
-                                            
-                                            Text("Reviewer: \(step.reviewerName)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                            
-                                            HStack(spacing: 4) {
-                                                Text("Status:")
-                                                    .foregroundColor(.secondary)
-                                                Text(statusText(for: step.status))
-                                                    .foregroundColor(statusColor(for: step.status))
-                                            }
-                                            .font(.caption.bold())
-                                            
-                                            if step.status == .rejected, let remark = step.remark {
-                                                Text("Remark: \"\(remark)\"")
-                                                    .font(.caption.italic())
-                                                    .foregroundColor(.red)
-                                                    .padding(.top, 4)
-                                            }
-                                        }
-                                        Spacer()
-                                    }
-                                }
-                            }
-                        }
-                        .padding()
-                        .background(Color.primary.opacity(0.03))
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                        )
-                        .padding(.horizontal)
-                    }
-
-
-                    
-                    // Segmented Filter
-                    Picker("Select Category", selection: $selectedTab) {
-                        Text("Event (\(allSubgroupEventApprovals.count))").tag("Event")
-                        Text("Venue (\(allSubgroupVenueApprovals.count))").tag("Venue")
-                        Text("Resource (\(allSubgroupResources.count))").tag("Resource")
-                        Text("Budget (\(allSubgroupBudgets.count))").tag("Budget")
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
-                    
-                    // Requested On
-                    if let firstRequest = allSubgroupResources.sorted(by: { $0.createdAt > $1.createdAt }).first {
-                        HStack {
-                            Image(systemName: "clock.fill")
-                            Text("Requested on \(formatDate(firstRequest.createdAt))")
-                        }
-                        .font(.caption.bold())
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal)
-                        .padding(.top, -8)
-                    }
-                    
-                    // Content List
-                    switch selectedTab {
-                    case "Event":
-                        eventSection(allSubgroupEventApprovals)
-                    case "Venue":
-                        venueSection(allSubgroupVenueApprovals)
-                    case "Resource":
-                        resourceSection(allSubgroupResources)
-                    case "Budget":
-                        budgetSection(allSubgroupBudgets)
-                    default:
-                        EmptyView()
-                    }
-                }
-                .padding(.vertical)
-            }
-            .refreshable {
-                await appSession.refreshData()
-                let relevantApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId }
-                for approval in relevantApprovals {
-                    try? await appSession.approvalStore.fetchRemarks(for: approval.id)
-                }
-                await loadDynamicSteps()
-            }
-            .task {
-                await loadDynamicSteps()
-            }
+        contentView
             .navigationTitle("Approval Management")
             .navigationBarTitleDisplayMode(.inline)
             .overlay(alignment: .bottom) {
@@ -403,8 +275,177 @@ struct LeadEventApprovalDetailView: View {
                     replyInputOverlay()
                 }
             }
+            .task {
+                await loadDynamicSteps()
+            }
+            .onChange(of: appSession.approvalStore.approvals) {
+                Task { await loadDynamicSteps() }
+            }
+            .onChange(of: appSession.approvalStore.budgets) {
+                Task { await loadDynamicSteps() }
+            }
+            .onChange(of: appSession.approvalStore.resources) {
+                Task { await loadDynamicSteps() }
+            }
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
+        if let event = event, let subgroup = subgroup {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 24) {
+                    LeadDetailSubgroupHeaderView(subgroup: subgroup, event: event, canEdit: true, isEditedAfterApproval: isEditedAfterApproval)
+                        .padding(.horizontal)
+                    
+                    approvalTrackerSection
+                    segmentedFilterSection
+                    requestedOnSection
+                    tabContentSection
+                }
+                .padding(.vertical)
+            }
+            .refreshable {
+                await handleRefresh()
+            }
         } else {
             ContentUnavailableView("Event Not Found", systemImage: "calendar.badge.exclamationmark")
+        }
+    }
+    
+    private func handleRefresh() async {
+        await appSession.refreshData()
+        let relevantApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId }
+        for approval in relevantApprovals {
+            try? await appSession.approvalStore.fetchRemarks(for: approval.id)
+        }
+        await loadDynamicSteps()
+    }
+    
+    @ViewBuilder
+    private var approvalTrackerSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("APPROVAL FLOW STATUS")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+            
+            VStack(alignment: .leading, spacing: 20) {
+                if dynamicSteps.isEmpty {
+                    HStack {
+                        Spacer()
+                        ProgressView("Loading flow steps...")
+                        Spacer()
+                    }
+                } else {
+                    ForEach(dynamicSteps) { step in
+                        stepRowView(step: step)
+                    }
+                }
+            }
+            .padding()
+            .background(Color.primary.opacity(0.03))
+            .cornerRadius(20)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            )
+            .padding(.horizontal)
+        }
+    }
+    
+    @ViewBuilder
+    private var segmentedFilterSection: some View {
+        let eventCount = allSubgroupEventApprovals.count
+        let venueCount = allSubgroupVenueApprovals.count
+        let resourceCount = allSubgroupResources.count
+        let budgetCount = allSubgroupBudgets.count
+        
+        Picker("Select Category", selection: $selectedTab) {
+            Text("Event (\(eventCount))").tag("Event")
+            Text("Venue (\(venueCount))").tag("Venue")
+            Text("Resource (\(resourceCount))").tag("Resource")
+            Text("Budget (\(budgetCount))").tag("Budget")
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+    }
+    
+    @ViewBuilder
+    private var tabContentSection: some View {
+        switch selectedTab {
+        case "Event":
+            eventSection(allSubgroupEventApprovals)
+        case "Venue":
+            venueSection(allSubgroupVenueApprovals)
+        case "Resource":
+            resourceSection(allSubgroupResources)
+        case "Budget":
+            budgetSection(allSubgroupBudgets)
+        default:
+            EmptyView()
+        }
+    }
+    
+    @ViewBuilder
+    private var requestedOnSection: some View {
+        if let firstRequest = allSubgroupResources.sorted(by: { $0.createdAt > $1.createdAt }).first {
+            let formattedDateText = formatDate(firstRequest.createdAt)
+            HStack {
+                Image(systemName: "clock.fill")
+                Text("Requested on \(formattedDateText)")
+            }
+            .font(.caption.bold())
+            .foregroundColor(.secondary)
+            .padding(.horizontal)
+            .padding(.top, -8)
+        }
+    }
+    
+    @ViewBuilder
+    private func stepRowView(step: ApprovalFlowStep) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack {
+                Circle()
+                    .fill(statusColor(for: step.status))
+                    .frame(width: 24, height: 24)
+                    .overlay(
+                        Image(systemName: statusIcon(for: step.status))
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white)
+                    )
+                
+                if step.stepNumber < dynamicSteps.count {
+                    let nextStep = dynamicSteps[step.stepNumber]
+                    Rectangle()
+                        .fill(statusColor(for: nextStep.status).opacity(0.3))
+                        .frame(width: 2, height: 30)
+                }
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Step \(step.stepNumber): \(step.title)")
+                    .font(.subheadline.bold())
+                
+                Text("Reviewer: \(step.reviewerName)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                HStack(spacing: 4) {
+                    Text("Status:")
+                        .foregroundColor(.secondary)
+                    Text(statusText(for: step.status))
+                        .foregroundColor(statusColor(for: step.status))
+                }
+                .font(.caption.bold())
+                
+                if step.status == .rejected, let remark = step.remark {
+                    Text("Remark: \"\(remark)\"")
+                        .font(.caption.italic())
+                        .foregroundColor(.red)
+                        .padding(.top, 4)
+                }
+            }
+            Spacer()
         }
     }
     
@@ -632,13 +673,6 @@ struct LeadEventApprovalDetailView: View {
         var isPrecedingApproved = hasVP ? (vpStepStatus == .approved) : true
         
         for category in categories {
-            let approverIds = await appSession.routingService.resolveApprovers(
-                category: category,
-                subgroupId: subgroup.id,
-                groupId: subgroup.groupId,
-                orgId: orgId
-            )
-            
             let categoryType: ApprovalType
             switch category {
             case "Events": categoryType = .event
@@ -646,19 +680,6 @@ struct LeadEventApprovalDetailView: View {
             case "Resources": categoryType = .resource
             case "Venue": categoryType = .venue
             default: continue
-            }
-            
-            // If no approvers configured, this step is skipped
-            if approverIds.isEmpty {
-                steps.append(ApprovalFlowStep(
-                    stepNumber: stepNum,
-                    title: "\(category) Approval",
-                    reviewerName: "N/A",
-                    status: .skipped,
-                    remark: nil
-                ))
-                stepNum += 1
-                continue
             }
             
             // Check if there are no items for this category (e.g. no budgets or no resources requested)
@@ -696,40 +717,114 @@ struct LeadEventApprovalDetailView: View {
                 continue
             }
             
+            var approverIds = await appSession.routingService.resolveApprovers(
+                category: category,
+                subgroupId: subgroup.id,
+                groupId: subgroup.groupId,
+                orgId: orgId
+            )
+            
+            // Find existing approvals for this event and category (excluding VP draft)
+            let existingCategoryApprovals = appSession.approvalStore.approvals.filter {
+                $0.eventId == event.id && $0.type == categoryType && ($0.receiverId != subgroup.vicePresidentId || !hasVP)
+            }
+            
+            if approverIds.isEmpty {
+                let receivers = existingCategoryApprovals.compactMap(\.receiverId)
+                if !receivers.isEmpty {
+                    approverIds = Array(NSOrderedSet(array: receivers)) as? [UUID] ?? receivers
+                } else if category == "Budget", let pId = presidentUser?.id {
+                    approverIds = [pId]
+                } else {
+                    approverIds = [subgroup.facultyId]
+                }
+            }
+            
             // Now resolve status for each sequential approver in this category
             for approverId in approverIds {
                 let matchedUser = appSession.subgroupStore.allUsers.first(where: { $0.id == approverId })
-                let reviewerName = matchedUser?.name ?? "Approver"
+                let reviewerName: String = {
+                    if let name = matchedUser?.name { return name }
+                    if approverId == presidentUser?.id { return presidentUser?.name ?? "President" }
+                    if approverId == subgroup.facultyId { return facultyUser?.name ?? "Faculty Lead" }
+                    if approverId == UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")! { return "Event Management Team" }
+                    return "Approver"
+                }()
                 
-                // Find approval request for this type & receiverId
-                let relevantApprovals = appSession.approvalStore.approvals.filter {
-                    $0.eventId == event.id &&
-                    $0.type == categoryType &&
-                    $0.receiverId == approverId
+                let relevantApprovals = existingCategoryApprovals.filter {
+                    $0.receiverId == approverId || approverIds.count == 1
                 }
                 
                 let stepStatus: StepStatus
                 let remark: String?
                 
-                if let approval = relevantApprovals.first {
-                    remark = approval.remarks?.last?.content ?? appSession.approvalStore.remarkMessages[approval.id]?.last?.content
-                    switch approval.status {
-                    case .pending:
-                        stepStatus = .pending
-                        isPrecedingApproved = false
-                    case .approved:
-                        stepStatus = .approved
-                    case .rejected:
+                if category == "Budget" {
+                    let isAnyRejected = allSubgroupBudgets.contains { $0.status == .rejected }
+                    let isAllApproved = !allSubgroupBudgets.isEmpty && allSubgroupBudgets.allSatisfy { $0.status == .approved }
+                    if isAnyRejected {
                         stepStatus = .rejected
+                        remark = presidentRejectionRemark
+                        isPrecedingApproved = false
+                    } else if isAllApproved {
+                        stepStatus = .approved
+                        remark = nil
+                    } else {
+                        stepStatus = isPrecedingApproved ? .pending : .locked
+                        remark = nil
+                        isPrecedingApproved = false
+                    }
+                } else if category == "Resources" {
+                    let isAnyRejected = allSubgroupResources.contains { $0.status == .rejected }
+                    let isAllApproved = !allSubgroupResources.isEmpty && allSubgroupResources.allSatisfy { $0.status == .approved }
+                    if isAnyRejected {
+                        stepStatus = .rejected
+                        remark = emtRejectionRemark
+                        isPrecedingApproved = false
+                    } else if isAllApproved {
+                        stepStatus = .approved
+                        remark = nil
+                    } else {
+                        stepStatus = isPrecedingApproved ? .pending : .locked
+                        remark = nil
+                        isPrecedingApproved = false
+                    }
+                } else if category == "Venue" {
+                    let isAnyRejected = allSubgroupVenueApprovals.contains { $0.status == .rejected }
+                    let isAllApproved = !allSubgroupVenueApprovals.isEmpty && allSubgroupVenueApprovals.allSatisfy { $0.status == .approved }
+                    if isAnyRejected {
+                        stepStatus = .rejected
+                        remark = emtRejectionRemark
+                        isPrecedingApproved = false
+                    } else if isAllApproved {
+                        stepStatus = .approved
+                        remark = nil
+                    } else {
+                        stepStatus = isPrecedingApproved ? .pending : .locked
+                        remark = nil
                         isPrecedingApproved = false
                     }
                 } else {
-                    remark = nil
-                    if isPrecedingApproved {
-                        stepStatus = .pending
-                        isPrecedingApproved = false
+                    // category == "Events"
+                    if let approval = relevantApprovals.first {
+                        remark = approval.remarks?.last?.content ?? appSession.approvalStore.remarkMessages[approval.id]?.last?.content
+                        switch approval.status {
+                        case .pending:
+                            stepStatus = isPrecedingApproved ? .pending : .locked
+                            isPrecedingApproved = false
+                        case .approved:
+                            stepStatus = .approved
+                        case .rejected:
+                            stepStatus = .rejected
+                            isPrecedingApproved = false
+                        }
                     } else {
-                        stepStatus = .locked
+                        remark = nil
+                        if isPrecedingApproved {
+                            stepStatus = .pending
+                            isPrecedingApproved = false
+                        } else {
+                            stepStatus = .locked
+                        }
                     }
                 }
                 

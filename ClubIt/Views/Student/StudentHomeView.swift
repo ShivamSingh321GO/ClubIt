@@ -131,42 +131,61 @@ struct StudentHomeView: View {
     
     private var subgroupsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Subgroups")
+            let subgroupLevelName = appSession.subgroupStore.levelName(for: 2, defaultName: "Clubs")
+            
+            Text(subgroupLevelName)
                 .font(.title2)
                 .bold()
                 .padding(.horizontal)
             
-            // Category Filters
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    categoryChip("All", isSelected: appSession.studentDashboardStore.selectedCategory == nil) {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                            appSession.studentDashboardStore.selectCategory(nil)
-                        }
-                    }
-                    
-                    ForEach(SubgroupCategory.allCases, id: \.self) { category in
-                        categoryChip(category.rawValue.capitalized, isSelected: appSession.studentDashboardStore.selectedCategory == category) {
+            // Category Filters from DB
+            if !appSession.studentDashboardStore.availableCategories.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        categoryChip("All", isSelected: appSession.studentDashboardStore.selectedCategory == nil) {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                appSession.studentDashboardStore.selectCategory(category)
+                                appSession.studentDashboardStore.selectCategory(nil as String?)
+                            }
+                        }
+                        
+                        ForEach(appSession.studentDashboardStore.availableCategories, id: \.self) { category in
+                            let isSelected = appSession.studentDashboardStore.selectedCategory?.localizedCaseInsensitiveCompare(category) == .orderedSame
+                            categoryChip(category, isSelected: isSelected) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    if isSelected {
+                                        appSession.studentDashboardStore.selectCategory(nil as String?)
+                                    } else {
+                                        appSession.studentDashboardStore.selectCategory(category)
+                                    }
+                                }
                             }
                         }
                     }
-                }
-                .padding(.horizontal)
-                .scrollTransition(.animated) { content, phase in
-                    content
-                        .opacity(phase.isIdentity ? 1 : 0.8)
+                    .padding(.horizontal)
+                    .scrollTransition(.animated) { content, phase in
+                        content
+                            .opacity(phase.isIdentity ? 1 : 0.8)
+                    }
                 }
             }
             
             // Subgroup List
             LazyVStack(spacing: 16) {
-                ForEach(appSession.studentDashboardStore.filteredSubgroups) { subgroup in
-                    NavigationLink(value: subgroup) {
-                        SubgroupCard(subgroup: subgroup)
+                if appSession.studentDashboardStore.filteredSubgroups.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("No \(subgroupLevelName.lowercased()) found")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.vertical, 20)
                     }
-                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity)
+                } else {
+                    ForEach(appSession.studentDashboardStore.filteredSubgroups) { subgroup in
+                        NavigationLink(value: subgroup) {
+                            SubgroupCard(subgroup: subgroup)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
             .padding(.horizontal)

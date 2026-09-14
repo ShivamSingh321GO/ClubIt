@@ -38,7 +38,48 @@ public final class ApprovalFlowRoutingService {
         }
         
         if resolvedIds.isEmpty {
-            print("DEBUG Routing: No approval flows configured for \(category). Auto-approve will occur.")
+            print("DEBUG Routing: No custom approval flows configured for \(category). Attempting role-based fallback.")
+            if category.lowercased() == "budget" {
+                struct UserRoleRow: Decodable {
+                    let user_id: UUID?
+                    let role_name: String
+                    let group_id: UUID?
+                }
+                let targetGroupLeadRows: [UserRoleRow] = (try? await client
+                    .from("user_roles")
+                    .select("user_id, role_name, group_id")
+                    .eq("group_id", value: groupId)
+                    .execute()
+                    .value) ?? []
+                
+                if let leadId = targetGroupLeadRows.first(where: { 
+                    let roleLower = $0.role_name.lowercased()
+                    return roleLower.contains("group lead") || roleLower == "level_1_lead" || roleLower == "group_lead" || roleLower.contains("president")
+                })?.user_id {
+                    resolvedIds = [leadId]
+                }
+            } else {
+                struct SubgroupRow: Decodable {
+                    let faculty_id: UUID?
+                }
+                let subRows: [SubgroupRow] = (try? await client
+                    .from("subgroups")
+                    .select("faculty_id")
+                    .eq("id", value: subgroupId)
+                    .execute()
+                    .value) ?? []
+                
+                if let facultyId = subRows.first?.faculty_id {
+                    resolvedIds = [facultyId]
+                } else {
+                    let emtId = UUID(uuidString: "b02ff9cf-dce8-4be9-8fc6-a0d15c03ddad")!
+                    resolvedIds = [emtId]
+                }
+            }
+        }
+        
+        if resolvedIds.isEmpty {
+            print("DEBUG Routing: No approval flows or default approvers resolved for \(category).")
             return []
         }
         

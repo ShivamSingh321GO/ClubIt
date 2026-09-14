@@ -112,7 +112,7 @@ struct AssociatedSubgroupRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(subgroup.name)
                     .font(.body.bold())
-                Text(subgroup.category.rawValue)
+                Text(subgroup.category.capitalized)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

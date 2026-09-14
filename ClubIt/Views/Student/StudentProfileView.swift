@@ -119,8 +119,9 @@ struct StudentProfileView: View {
     }
     
     private var requestedSubgroupsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Requested Subgroups")
+        let levelName = appSession.subgroupStore.levelName(for: 2, defaultName: "Clubs")
+        return VStack(alignment: .leading, spacing: 16) {
+            Text("Requested \(levelName)")
                 .font(.headline)
                 .padding(.leading, 4)
             
@@ -130,7 +131,7 @@ struct StudentProfileView: View {
                 if requested.isEmpty {
                     HStack {
                         Spacer()
-                        Text("No requested subgroups")
+                        Text("No requested \(levelName.lowercased())")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .padding()
@@ -152,8 +153,9 @@ struct StudentProfileView: View {
 
     
     private var subgroupsFollowedSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Subgroups Followed")
+        let levelName = appSession.subgroupStore.levelName(for: 2, defaultName: "Clubs")
+        return VStack(alignment: .leading, spacing: 16) {
+            Text("\(levelName) Followed")
                 .font(.headline)
                 .padding(.leading, 4)
             
@@ -163,7 +165,7 @@ struct StudentProfileView: View {
                 VStack {
                     HStack {
                         Spacer()
-                        Text("No subgroups followed")
+                        Text("No \(levelName.lowercased()) followed")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .padding()

@@ -40,7 +40,7 @@ struct SubgroupCard: View {
                 Spacer()
                 
                 // Top Right Category Badge
-                Text(subgroup.category.rawValue.capitalized)
+                Text(subgroup.category.capitalized)
                     .font(.system(size: 10, weight: .bold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)

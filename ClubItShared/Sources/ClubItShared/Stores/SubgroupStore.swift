@@ -134,7 +134,7 @@ public final class SubgroupStore {
     }
     
     @MainActor
-    public func updateSubgroup(name: String, tagLine: String, description: String, category: SubgroupCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) async throws {
+    public func updateSubgroup(name: String, tagLine: String, description: String, category: String, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) async throws {
         var logoUrl = logo
         
         // 1. Upload logo image to Supabase Storage bucket 'subgroupProfile-images' if new imageData is provided
@@ -178,7 +178,7 @@ public final class SubgroupStore {
             "name": .string(name),
             "tag_line": .string(tagLine),
             "description": .string(description),
-            "category": .string(category.rawValue),
+            "category": .string(category),
             "socials": .object(socials.mapValues { .string($0) }),
             "logo": .string(logoUrl)
         ]
@@ -202,6 +202,21 @@ public final class SubgroupStore {
         
         // 4. Refresh global list
         try? await fetchAllSubgroups()
+    }
+    
+    @MainActor
+    public func updateSubgroup(name: String, tagLine: String, description: String, category: SubgroupCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) async throws {
+        try await updateSubgroup(
+            name: name,
+            tagLine: tagLine,
+            description: description,
+            category: category.rawValue,
+            memberCount: memberCount,
+            eventCount: eventCount,
+            socials: socials,
+            logo: logo,
+            imageData: imageData
+        )
     }
     
     public func toggleFollow(for subgroupId: UUID) {

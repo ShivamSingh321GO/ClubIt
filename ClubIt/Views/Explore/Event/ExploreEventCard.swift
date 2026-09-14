@@ -96,7 +96,7 @@ struct ExploreEventCard: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         
-                        let registeredCount = event.status == .pending ? 0 : appSession.registrationStore.getRegistrations(for: event.id).count
+                        let registeredCount = event.status == .pending ? 0 : max(appSession.registrationStore.getRegistrations(for: event.id).count, event.numberOfRegistrations ?? 0)
                         let maxParticipantsText = event.maxParticipants >= 999999 ? "\(registeredCount)" : "\(registeredCount) / \(event.maxParticipants)"
                         
                         Text("\(maxParticipantsText) Registrations")

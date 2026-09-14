@@ -4,7 +4,7 @@ import Observation
 @Observable
 public final class StudentDashboardStore {
     public var searchText: String = ""
-    public var selectedCategory: SubgroupCategory? = nil
+    public var selectedCategory: String? = nil
     
     private var subgroupStore: SubgroupStore
     private var eventStore: EventStore
@@ -16,12 +16,31 @@ public final class StudentDashboardStore {
         self.eventStore = eventStore
     }
     
+    /// Dynamic categories extracted directly from all subgroups in the database
+    public var availableCategories: [String] {
+        var seen = Set<String>()
+        var categories: [String] = []
+        for subgroup in subgroupStore.allSubgroups {
+            let cat = subgroup.category.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !cat.isEmpty && !seen.contains(cat.lowercased()) {
+                seen.insert(cat.lowercased())
+                categories.append(cat)
+            }
+        }
+        return categories.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+    
     public var filteredSubgroups: [Subgroup] {
         subgroupStore.allSubgroups.filter { subgroup in
             let matchesSearch = searchText.isEmpty || 
                                 subgroup.name.localizedCaseInsensitiveContains(searchText) || 
                                 (subgroup.description ?? "").localizedCaseInsensitiveContains(searchText)
-            let matchesCategory = selectedCategory == nil || subgroup.category == selectedCategory
+            let matchesCategory: Bool
+            if let selected = selectedCategory, !selected.isEmpty {
+                matchesCategory = subgroup.category.localizedCaseInsensitiveCompare(selected) == .orderedSame
+            } else {
+                matchesCategory = true
+            }
             return matchesSearch && matchesCategory
         }
     }
@@ -34,7 +53,11 @@ public final class StudentDashboardStore {
         }.sorted { $0.startDate < $1.startDate }
     }
     
-    public func selectCategory(_ category: SubgroupCategory?) {
+    public func selectCategory(_ category: String?) {
         selectedCategory = category
+    }
+    
+    public func selectCategory(_ category: SubgroupCategory?) {
+        selectedCategory = category?.rawValue
     }
 }

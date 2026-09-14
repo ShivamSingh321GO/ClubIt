@@ -36,7 +36,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
     public var name: String
     public var tagLine: String?
     public var description: String?
-    public var category: SubgroupCategory
+    public var category: String
     public var logo: String
     public var subgroupLeadId: UUID
     public var facultyId: UUID
@@ -78,7 +78,7 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         name: String,
         tagLine: String? = nil,
         description: String? = nil,
-        category: SubgroupCategory,
+        category: String,
         logo: String,
         subgroupLeadId: UUID,
         facultyId: UUID,
@@ -113,6 +113,48 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         self.imageData = imageData
     }
 
+    public init(
+        id: UUID,
+        name: String,
+        tagLine: String? = nil,
+        description: String? = nil,
+        category: SubgroupCategory,
+        logo: String,
+        subgroupLeadId: UUID,
+        facultyId: UUID,
+        vicePresidentId: UUID? = nil,
+        instituteId: UUID,
+        groupId: UUID = UUID(),
+        parentSubgroupId: UUID? = nil,
+        status: SubgroupStatus,
+        createdAt: Date,
+        memberCount: Int? = 0,
+        eventCount: Int? = 0,
+        socials: [String: String]? = [:],
+        imageData: Data? = nil
+    ) {
+        self.init(
+            id: id,
+            name: name,
+            tagLine: tagLine,
+            description: description,
+            category: category.rawValue,
+            logo: logo,
+            subgroupLeadId: subgroupLeadId,
+            facultyId: facultyId,
+            vicePresidentId: vicePresidentId,
+            instituteId: instituteId,
+            groupId: groupId,
+            parentSubgroupId: parentSubgroupId,
+            status: status,
+            createdAt: createdAt,
+            memberCount: memberCount,
+            eventCount: eventCount,
+            socials: socials,
+            imageData: imageData
+        )
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
@@ -140,25 +182,13 @@ public struct Subgroup: Identifiable, Hashable, Codable {
         // description
         self.description = try? container.decode(String.self, forKey: .description)
         
-        // category (flexible case-insensitive decoding)
-        if let catEnum = try? container.decode(SubgroupCategory.self, forKey: .category) {
-            self.category = catEnum
-        } else if let catString = try? container.decode(String.self, forKey: .category) {
-            switch catString.lowercased() {
-            case "tech", "technical": self.category = .technical
-            case "cultural": self.category = .cultural
-            case "sports": self.category = .sports
-            case "music": self.category = .music
-            case "dance": self.category = .dance
-            case "photography": self.category = .photography
-            case "literary", "literature": self.category = .literary
-            case "entrepreneurship": self.category = .entrepreneurship
-            case "ai": self.category = .ai
-            case "wellness": self.category = .wellness
-            default: self.category = .technical
-            }
+        // category (direct string decoding, preserves whatever category was set in DB)
+        if let catString = try? container.decode(String.self, forKey: .category), !catString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            self.category = catString
+        } else if let catEnum = try? container.decode(SubgroupCategory.self, forKey: .category) {
+            self.category = catEnum.rawValue
         } else {
-            self.category = .technical
+            self.category = "Technical"
         }
         
         // logo / logo_url

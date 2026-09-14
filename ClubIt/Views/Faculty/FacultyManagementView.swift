@@ -113,7 +113,7 @@ struct FacultyExpandableSubgroupRow: View {
                         Text(subgroup.name)
                             .font(.body)
                             .bold()
-                        Text(subgroup.category.displayName)
+                        Text(subgroup.category.capitalized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
