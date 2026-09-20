@@ -277,7 +277,13 @@ public final class ChatStore {
                             .execute()
                             .value) ?? []
                         
-                        let firstNonSystem = lastMessages.first(where: { !$0.content.hasPrefix("[System]: ") })
+                        let decryptedLastMessages = lastMessages.map { msg in
+                            var copy = msg
+                            copy.content = ChatEncryptionManager.shared.decrypt(msg.content, for: chatId)
+                            return copy
+                        }
+                        
+                        let firstNonSystem = decryptedLastMessages.first(where: { !$0.content.hasPrefix("[System]: ") })
                         let lastMsgText = firstNonSystem?.content ?? ""
                         let lastMsgAt = firstNonSystem?.createdAt
                         
@@ -394,13 +400,17 @@ public final class ChatStore {
     @MainActor
     public func fetchMessages(for chatId: UUID) async {
         do {
-            let fetchedMessages: [Message] = try await client
+            var fetchedMessages: [Message] = try await client
                 .from("messages")
                 .select()
                 .eq("chat_id", value: chatId)
                 .order("created_at", ascending: true)
                 .execute()
                 .value
+            
+            for index in fetchedMessages.indices {
+                fetchedMessages[index].content = ChatEncryptionManager.shared.decrypt(fetchedMessages[index].content, for: chatId)
+            }
             
             // Merge: use fetched messages as base, then append any local-only optimistic messages
             let fetchedIds = Set(fetchedMessages.map { $0.id })
@@ -442,12 +452,13 @@ public final class ChatStore {
             chats[index].lastMessageAt = Date()
         }
         
-        // Persist to Supabase
+        // Persist to Supabase with CryptoKit Encryption
+        let encryptedContent = ChatEncryptionManager.shared.encrypt(trimmed, for: chatId)
         let payload = InsertMessage(
             id: newMessage.id,
             chat_id: chatId,
             sender_id: userId,
-            content: trimmed,
+            content: encryptedContent,
             attachment_url: nil,
             created_at: istDateString(from: newMessage.createdAt)
         )
@@ -462,12 +473,15 @@ public final class ChatStore {
                     .execute()
                     .value
                 
+                var decryptedInsertedMessage = insertedMessage
+                decryptedInsertedMessage.content = ChatEncryptionManager.shared.decrypt(insertedMessage.content, for: chatId)
+                
                 await MainActor.run {
                     if let index = self.messages[chatId]?.firstIndex(where: { $0.id == newMessage.id }) {
-                        self.messages[chatId]?[index] = insertedMessage
+                        self.messages[chatId]?[index] = decryptedInsertedMessage
                     }
                     if let index = self.chats.firstIndex(where: { $0.id == chatId }) {
-                        self.chats[index].lastMessageAt = insertedMessage.createdAt
+                        self.chats[index].lastMessageAt = decryptedInsertedMessage.createdAt
                     }
                 }
                 print("DEBUG: [ChatStore] Message sent successfully to chat \(chatId)")
@@ -481,12 +495,13 @@ public final class ChatStore {
     
     public func sendSystemMessage(_ content: String, to chatId: UUID, senderId: UUID? = nil) {
         let systemContent = "[System]: " + content
+        let encryptedSystemContent = ChatEncryptionManager.shared.encrypt(systemContent, for: chatId)
         let actualSenderId = senderId ?? userId
         let payload = InsertMessage(
             id: UUID(),
             chat_id: chatId,
             sender_id: actualSenderId,
-            content: systemContent,
+            content: encryptedSystemContent,
             attachment_url: nil,
             created_at: istDateString(from: Date())
         )
@@ -1651,7 +1666,8 @@ public final class ChatStore {
                 print("WARNING: Failed to decode date string: \(dateStr). Falling back to current date.")
                 return Date()
             }
-            let newMessage = try insertion.decodeRecord(as: Message.self, decoder: decoder)
+            var newMessage = try insertion.decodeRecord(as: Message.self, decoder: decoder)
+            newMessage.content = ChatEncryptionManager.shared.decrypt(newMessage.content, for: newMessage.chatId)
             
             // Skip if it's our own message that we already added optimistically on this device
             if messages[newMessage.chatId]?.contains(where: { $0.id == newMessage.id }) == true {

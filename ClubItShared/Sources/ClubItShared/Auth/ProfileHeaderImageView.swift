@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 public struct ProfileHeaderImageView: View {
     public var name: String
@@ -52,6 +54,7 @@ public struct ProfileHeaderImageView: View {
     
     public var body: some View {
         ZStack {
+#if canImport(UIKit)
             if let imageData, let uiImage = UIImage(data: imageData) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -93,6 +96,9 @@ public struct ProfileHeaderImageView: View {
             } else {
                 fallbackInitialsView
             }
+#else
+            fallbackInitialsView
+#endif
         }
         .frame(width: size, height: size)
     }
