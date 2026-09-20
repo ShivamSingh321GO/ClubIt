@@ -46,6 +46,65 @@ public final class ChatStore {
     private var participantSubscriptionTask: Task<Void, Never>?
     private var presenceSubscriptionTask: Task<Void, Never>?
     
+    // MARK: - Custom JSONDecoder for Supabase Date Formats
+    public static var supabaseJSONDecoder: JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateStr = try container.decode(String.self)
+            
+            let cleaned = dateStr.replacingOccurrences(of: " ", with: "T")
+            
+            let formats = [
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+                "yyyy-MM-dd'T'HH:mm:ssZ",
+                "yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ",
+                "yyyy-MM-dd HH:mm:ss.SSSSSSZ",
+                "yyyy-MM-dd HH:mm:ss.SSSZZZZZ",
+                "yyyy-MM-dd HH:mm:ss.SSSZ",
+                "yyyy-MM-dd HH:mm:ssZZZZZ",
+                "yyyy-MM-dd HH:mm:ssZ",
+                "yyyy-MM-dd HH:mm:ss.SSSSSS",
+                "yyyy-MM-dd HH:mm:ss.SSS",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS",
+                "yyyy-MM-dd'T'HH:mm:ss"
+            ]
+            
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            
+            for format in formats {
+                formatter.dateFormat = format
+                if let date = formatter.date(from: dateStr) ?? formatter.date(from: cleaned) {
+                    return date
+                }
+            }
+            
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = isoFormatter.date(from: dateStr) ?? isoFormatter.date(from: cleaned) {
+                return date
+            }
+            
+            let isoFormatterNoFrac = ISO8601DateFormatter()
+            isoFormatterNoFrac.formatOptions = [.withInternetDateTime]
+            if let date = isoFormatterNoFrac.date(from: dateStr) ?? isoFormatterNoFrac.date(from: cleaned) {
+                return date
+            }
+            
+            print("WARNING: Failed to decode date string: \(dateStr). Falling back to current date.")
+            return Date()
+        }
+        return decoder
+    }
+    
     // MARK: - Computed Properties
     
     public var totalUnreadCount: Int {
@@ -268,14 +327,15 @@ public final class ChatStore {
                     
                     group.addTask {
                         // Fetch last message for this chat (ignoring system messages for preview)
-                        let lastMessages: [Message] = (try? await self.client
+                        let response = try? await self.client
                             .from("messages")
                             .select()
                             .eq("chat_id", value: chatId)
                             .order("created_at", ascending: false)
                             .limit(10)
                             .execute()
-                            .value) ?? []
+                        
+                        let lastMessages: [Message] = (try? ChatStore.supabaseJSONDecoder.decode([Message].self, from: response?.data ?? Data())) ?? []
                         
                         let decryptedLastMessages = lastMessages.map { msg in
                             var copy = msg
@@ -400,13 +460,14 @@ public final class ChatStore {
     @MainActor
     public func fetchMessages(for chatId: UUID) async {
         do {
-            var fetchedMessages: [Message] = try await client
+            let response = try await client
                 .from("messages")
                 .select()
                 .eq("chat_id", value: chatId)
                 .order("created_at", ascending: true)
                 .execute()
-                .value
+            
+            var fetchedMessages: [Message] = (try? ChatStore.supabaseJSONDecoder.decode([Message].self, from: response.data)) ?? []
             
             for index in fetchedMessages.indices {
                 fetchedMessages[index].content = ChatEncryptionManager.shared.decrypt(fetchedMessages[index].content, for: chatId)
@@ -416,10 +477,11 @@ public final class ChatStore {
             let fetchedIds = Set(fetchedMessages.map { $0.id })
             let existingLocal = (self.messages[chatId] ?? []).filter { !fetchedIds.contains($0.id) }
             
-            self.messages[chatId] = fetchedMessages + existingLocal
-            print("DEBUG: [ChatStore] fetchMessages for \(chatId): \(fetchedMessages.count) from DB, \(existingLocal.count) local-only")
+            let combined = (fetchedMessages + existingLocal).sorted(by: { $0.createdAt < $1.createdAt })
+            self.messages[chatId] = combined
+            print("DEBUG: [ChatStore] fetchMessages for \(chatId): \(fetchedMessages.count) from DB, \(existingLocal.count) local-only, total \(combined.count)")
         } catch {
-            print("DEBUG ERROR: [ChatStore] fetchMessages failed: \(error)")
+            print("DEBUG ERROR: [ChatStore] fetchMessages failed for \(chatId): \(error)")
             // Don't clear existing messages on fetch failure
         }
     }
@@ -465,13 +527,14 @@ public final class ChatStore {
         
         Task {
             do {
-                let insertedMessage: Message = try await client
+                let response = try await client
                     .from("messages")
                     .insert(payload)
                     .select()
                     .single()
                     .execute()
-                    .value
+                
+                let insertedMessage = try ChatStore.supabaseJSONDecoder.decode(Message.self, from: response.data)
                 
                 var decryptedInsertedMessage = insertedMessage
                 decryptedInsertedMessage.content = ChatEncryptionManager.shared.decrypt(insertedMessage.content, for: chatId)
@@ -1600,73 +1663,7 @@ public final class ChatStore {
     @MainActor
     private func handleNewMessage(_ insertion: InsertAction) async {
         do {
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .custom { decoder in
-                let container = try decoder.singleValueContainer()
-                let dateStr = try container.decode(String.self)
-                
-                // Clean up string
-                let cleaned = dateStr.replacingOccurrences(of: " ", with: "T")
-                
-                // Try formatters
-                let formats = [
-                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ",
-                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ",
-                    "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
-                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
-                    "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
-                    "yyyy-MM-dd'T'HH:mm:ssZ",
-                    "yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ",
-                    "yyyy-MM-dd HH:mm:ss.SSSSSSZ",
-                    "yyyy-MM-dd HH:mm:ss.SSSZZZZZ",
-                    "yyyy-MM-dd HH:mm:ss.SSSZ",
-                    "yyyy-MM-dd HH:mm:ssZZZZZ",
-                    "yyyy-MM-dd HH:mm:ssZ",
-                    "yyyy-MM-dd HH:mm:ss.SSSSSS",
-                    "yyyy-MM-dd HH:mm:ss.SSS",
-                    "yyyy-MM-dd HH:mm:ss",
-                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
-                    "yyyy-MM-dd'T'HH:mm:ss.SSS",
-                    "yyyy-MM-dd'T'HH:mm:ss"
-                ]
-                
-                let formatter = DateFormatter()
-                formatter.locale = Locale(identifier: "en_US_POSIX")
-                formatter.timeZone = TimeZone(secondsFromGMT: 0)
-                
-                for format in formats {
-                    formatter.dateFormat = format
-                    if let date = formatter.date(from: dateStr) {
-                        return date
-                    }
-                    if let date = formatter.date(from: cleaned) {
-                        return date
-                    }
-                }
-                
-                // Fallback to ISO8601
-                let isoFormatter = ISO8601DateFormatter()
-                isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                if let date = isoFormatter.date(from: dateStr) {
-                    return date
-                }
-                if let date = isoFormatter.date(from: cleaned) {
-                    return date
-                }
-                
-                let isoFormatterNoFrac = ISO8601DateFormatter()
-                isoFormatterNoFrac.formatOptions = [.withInternetDateTime]
-                if let date = isoFormatterNoFrac.date(from: dateStr) {
-                    return date
-                }
-                if let date = isoFormatterNoFrac.date(from: cleaned) {
-                    return date
-                }
-                
-                print("WARNING: Failed to decode date string: \(dateStr). Falling back to current date.")
-                return Date()
-            }
-            var newMessage = try insertion.decodeRecord(as: Message.self, decoder: decoder)
+            var newMessage = try insertion.decodeRecord(as: Message.self, decoder: ChatStore.supabaseJSONDecoder)
             newMessage.content = ChatEncryptionManager.shared.decrypt(newMessage.content, for: newMessage.chatId)
             
             // Skip if it's our own message that we already added optimistically on this device

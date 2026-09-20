@@ -89,7 +89,7 @@ struct ChatBox: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .defaultScrollAnchor(.bottom)
-                .onChange(of: chatMessages.count) {
+                .onChange(of: chatMessages.last?.id) {
                     if let lastId = chatMessages.last?.id {
                         withAnimation(.easeOut(duration: 0.2)) {
                             proxy.scrollTo(lastId, anchor: .bottom)
@@ -97,6 +97,9 @@ struct ChatBox: View {
                     }
                 }
                 .onAppear {
+                    Task {
+                        await appSession.chatStore.fetchMessages(for: chat.id)
+                    }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         if let lastId = chatMessages.last?.id {
                             proxy.scrollTo(lastId, anchor: .bottom)
