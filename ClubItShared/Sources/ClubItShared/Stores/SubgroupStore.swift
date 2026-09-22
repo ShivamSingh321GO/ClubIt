@@ -121,7 +121,7 @@ public final class SubgroupStore {
             let dummyOrgId = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
             self.hierarchyLevels = [
                 HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 1, levelName: "Groups", isEnabled: true),
-                HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 2, levelName: "Subgroups", isEnabled: true),
+                HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 2, levelName: "Clubs", isEnabled: true),
                 HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 3, levelName: "Nested Subgroups", isEnabled: true),
                 HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 4, levelName: "Teams", isEnabled: false),
                 HierarchyLevelModel(organizationId: dummyOrgId, levelNumber: 5, levelName: "Level 5", isEnabled: false)
@@ -129,8 +129,15 @@ public final class SubgroupStore {
         }
     }
     
-    public func levelName(for levelNumber: Int, defaultName: String) -> String {
-        return hierarchyLevels.first(where: { $0.levelNumber == levelNumber })?.levelName ?? defaultName
+    public func levelName(for levelNumber: Int, defaultName: String = "Clubs") -> String {
+        if let found = hierarchyLevels.first(where: { $0.levelNumber == levelNumber }), !found.levelName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let trimmed = found.levelName.trimmingCharacters(in: .whitespacesAndNewlines)
+            if levelNumber == 2 && (trimmed.lowercased() == "subgroups" || trimmed.lowercased() == "subgroup" || trimmed.lowercased() == "level 2") {
+                return "Clubs"
+            }
+            return trimmed
+        }
+        return defaultName
     }
     
     @MainActor

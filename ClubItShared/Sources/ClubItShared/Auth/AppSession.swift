@@ -208,6 +208,7 @@ public final class AppSession {
         async let registrationsTask: Void = { try? await self.registrationStore.fetchRegistrations() }()
         async let tasksTask: Void = { try? await self.taskStore.fetchTasks() }()
         async let subgroupsTask: Void = { try? await self.subgroupStore.fetchAllSubgroups() }()
+        async let hierarchyTask: Void = { try? await self.subgroupStore.fetchHierarchyLevels() }()
         async let usersTask: Void = { try? await self.subgroupStore.fetchAllUsers() }()
         
         // If user is affiliated with a subgroup, refresh details in parallel
@@ -225,6 +226,7 @@ public final class AppSession {
         await registrationsTask
         await tasksTask
         await subgroupsTask
+        await hierarchyTask
         await usersTask
         await subgroupDetailsTask
         
