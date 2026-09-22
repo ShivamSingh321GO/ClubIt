@@ -7,14 +7,14 @@
 
 import Foundation
 
-public enum ApprovalType: String, Codable {
+public enum ApprovalType: String, Codable, Equatable, Hashable {
     case event
     case budget
     case resource
     case venue
 }
 
-public enum ApprovalStatus: String, Codable {
+public enum ApprovalStatus: String, Codable, Equatable, Hashable {
     case pending
     case approved
     case rejected
@@ -47,7 +47,7 @@ public struct Remark: Identifiable, Codable, Hashable {
 // Keep RemarkMessage as an alias for now to avoid breaking other files
 public typealias RemarkMessage = Remark
 
-public struct Approval: Identifiable, Codable {
+public struct Approval: Identifiable, Codable, Equatable {
     public var id: UUID
     
     public var type: ApprovalType
@@ -62,6 +62,10 @@ public struct Approval: Identifiable, Codable {
     
     public var createdAt: Date
     public var updatedAt: Date?
+
+    public static func == (lhs: Approval, rhs: Approval) -> Bool {
+        lhs.id == rhs.id && lhs.status == rhs.status && lhs.updatedAt == rhs.updatedAt && lhs.remarks == rhs.remarks
+    }
 
     public enum CodingKeys: String, CodingKey {
         case id
@@ -105,7 +109,7 @@ public struct Approval: Identifiable, Codable {
     }
 }
 
-public struct Budget: Identifiable, Codable {
+public struct Budget: Identifiable, Codable, Equatable {
     public var id: UUID
     
     public var eventId: UUID?
@@ -124,6 +128,10 @@ public struct Budget: Identifiable, Codable {
     public var remarks: [Remark]?
     public var createdAt: Date
     public var approvedAt: Date?
+
+    public static func == (lhs: Budget, rhs: Budget) -> Bool {
+        lhs.id == rhs.id && lhs.status == rhs.status && lhs.remarks == rhs.remarks && lhs.unitPrice == rhs.unitPrice && lhs.quantity == rhs.quantity
+    }
 
     public enum CodingKeys: String, CodingKey {
         case id

@@ -66,7 +66,7 @@ struct SubgroupSearchView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(.secondary)
                         
-                        TextField("Search subgroups...", text: Bindable(appSession.studentDashboardStore).searchText)
+                        TextField("Search \(appSession.subgroupStore.levelName(for: 2, defaultName: "clubs").lowercased())...", text: Bindable(appSession.studentDashboardStore).searchText)
                             .focused($isSearchFocused)
                             .textFieldStyle(.plain)
                         
@@ -105,7 +105,7 @@ struct SubgroupSearchView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 20)
             }
-            .navigationTitle("All Subgroups")
+            .navigationTitle("All \(appSession.subgroupStore.levelName(for: 2, defaultName: "Clubs"))")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: Subgroup.self) { subgroup in
                 SubgroupDetailView(subgroup: subgroup)

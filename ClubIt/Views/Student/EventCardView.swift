@@ -82,7 +82,7 @@ struct EventCardView: View {
                         .font(.caption)
                         .bold()
                     
-                    Text("\(appSession.registrationStore.getRegistrations(for: event.id).count)")
+                    Text("\(max(appSession.registrationStore.getRegistrations(for: event.id).count, event.numberOfRegistrations ?? 0))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     

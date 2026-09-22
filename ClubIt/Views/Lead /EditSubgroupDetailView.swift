@@ -9,7 +9,7 @@ struct EditSubgroupDetailView: View {
     @State private var name: String
     @State private var tagLine: String
     @State private var description: String
-    @State private var category: SubgroupCategory
+    @State private var category: String
     @State private var memberCount: Int
     @State private var eventCount: Int
     @State private var instagram: String
@@ -114,11 +114,7 @@ struct EditSubgroupDetailView: View {
             }
             
             Section("Category") {
-                Picker("Subgroup Category", selection: $category) {
-                    ForEach(SubgroupCategory.allCases, id: \.self) { category in
-                        Text(category.rawValue.capitalized).tag(category)
-                    }
-                }
+                TextField("Category (e.g. Technical, Cultural)", text: $category)
             }
             
             Section("Social Links") {

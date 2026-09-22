@@ -205,6 +205,7 @@ public final class AppSession {
         async let approvalsTask: Void = { try? await self.approvalStore.fetchApprovals() }()
         async let budgetsTask: Void = { try? await self.approvalStore.fetchBudgets() }()
         async let resourcesTask: Void = { try? await self.approvalStore.fetchResources() }()
+        async let registrationsTask: Void = { try? await self.registrationStore.fetchRegistrations() }()
         async let tasksTask: Void = { try? await self.taskStore.fetchTasks() }()
         async let subgroupsTask: Void = { try? await self.subgroupStore.fetchAllSubgroups() }()
         async let usersTask: Void = { try? await self.subgroupStore.fetchAllUsers() }()
@@ -221,10 +222,23 @@ public final class AppSession {
         await approvalsTask
         await budgetsTask
         await resourcesTask
+        await registrationsTask
         await tasksTask
         await subgroupsTask
         await usersTask
         await subgroupDetailsTask
+        
+        let userRegistrations = self.registrationStore.registrations.filter { $0.userId == user.id }
+        self.registeredEventIds = Set(userRegistrations.compactMap { $0.eventId })
+        self.studentDashboardStore.registeredEventIds = self.registeredEventIds
+        
+        for i in 0..<self.eventStore.events.count {
+            let evId = self.eventStore.events[i].id
+            let count = self.registrationStore.getRegistrations(for: evId).count
+            if count > 0 || (self.eventStore.events[i].numberOfRegistrations ?? 0) < count {
+                self.eventStore.events[i].numberOfRegistrations = count
+            }
+        }
         
         await chatStore.autoArchiveExpiredEventChats(events: eventStore.events)
         
@@ -341,6 +355,14 @@ public final class AppSession {
         let userRegistrations = registrationStore.registrations.filter { $0.userId == user.id }
         self.registeredEventIds = Set(userRegistrations.compactMap { $0.eventId })
         self.studentDashboardStore.registeredEventIds = self.registeredEventIds
+        
+        for i in 0..<self.eventStore.events.count {
+            let evId = self.eventStore.events[i].id
+            let count = self.registrationStore.getRegistrations(for: evId).count
+            if count > 0 || (self.eventStore.events[i].numberOfRegistrations ?? 0) < count {
+                self.eventStore.events[i].numberOfRegistrations = count
+            }
+        }
         
         print("DEBUG: Data Sync Sequence Complete")
         print("DEBUG COUNTS: approvals=\(approvalStore.approvals.count), events=\(eventStore.events.count), budgets=\(approvalStore.budgets.count), resources=\(approvalStore.resources.count), user=\(activeUser.name), role=\(activeUser.role.rawValue), activeUserId=\(activeUser.id)")
@@ -472,12 +494,13 @@ public final class AppSession {
         do {
             try await registrationStore.toggleRegistration(eventId: id, userId: userId, answers: answers)
             
+            let updatedCount = registrationStore.getRegistrations(for: id).count
+            
             // Update registration count locally for immediate UI feedback
             if let index = eventStore.events.firstIndex(where: { $0.id == id }) {
-                let currentRegistrations = eventStore.events[index].numberOfRegistrations ?? 0
+                eventStore.events[index].numberOfRegistrations = updatedCount
                 
                 if isRegistering {
-                    eventStore.events[index].numberOfRegistrations = currentRegistrations + 1
                     registeredEventIds.insert(id)
                     
                     // Add user to the event's General chat globally
@@ -488,7 +511,6 @@ public final class AppSession {
                         print("DEBUG: [AppSession] WARNING: event.subgroupId is nil, cannot add to chat")
                     }
                 } else {
-                    eventStore.events[index].numberOfRegistrations = max(0, currentRegistrations - 1)
                     registeredEventIds.remove(id)
                     
                     // Remove user from the event's General chat globally
@@ -500,6 +522,21 @@ public final class AppSession {
             }
             
             studentDashboardStore.registeredEventIds = registeredEventIds
+            
+            // Persist updated count to events and group_events table in Supabase
+            Task {
+                try? await SupabaseManager.shared.client
+                    .from("events")
+                    .update(["number_of_registrations": updatedCount])
+                    .eq("id", value: id)
+                    .execute()
+                try? await SupabaseManager.shared.client
+                    .from("group_events")
+                    .update(["number_of_registrations": updatedCount])
+                    .eq("id", value: id)
+                    .execute()
+            }
+            
             return true
         } catch {
             print("Registration toggle failed: \(error)")

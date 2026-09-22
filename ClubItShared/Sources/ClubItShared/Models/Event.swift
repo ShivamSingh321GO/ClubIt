@@ -387,12 +387,12 @@ public struct EventApproval: Identifiable, Codable {
 }
 
 
-public enum ResourceType: String, Codable {
+public enum ResourceType: String, Codable, Equatable, Hashable {
     case university
     case external
 }
 
-public enum ResourceStatus: String, Codable {
+public enum ResourceStatus: String, Codable, Equatable, Hashable {
     case pending
     case approved
     case rejected
@@ -401,7 +401,7 @@ public enum ResourceStatus: String, Codable {
 }
 
 
-public struct Resource: Identifiable, Codable {
+public struct Resource: Identifiable, Codable, Equatable {
     public var id: UUID
     public var eventId: UUID?
     
@@ -422,6 +422,10 @@ public struct Resource: Identifiable, Codable {
     public var remarks: [Remark]?
     public var createdAt: Date
     public var approvedAt: Date?
+
+    public static func == (lhs: Resource, rhs: Resource) -> Bool {
+        lhs.id == rhs.id && lhs.status == rhs.status && lhs.remarks == rhs.remarks && lhs.quantity == rhs.quantity && lhs.cost == rhs.cost
+    }
 
     public enum CodingKeys: String, CodingKey {
         case id

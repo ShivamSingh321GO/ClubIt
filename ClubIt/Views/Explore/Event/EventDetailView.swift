@@ -397,7 +397,8 @@ struct EventDetailView: View {
     
     private var registrationSection: some View {
         let registrations = appSession.registrationStore.getRegistrations(for: event.id)
-        let topText = event.maxParticipants >= 999999 ? "\(registrations.count) Registered" : "\(registrations.count) / \(event.maxParticipants)"
+        let regCount = max(registrations.count, event.numberOfRegistrations ?? 0)
+        let topText = event.maxParticipants >= 999999 ? "\(regCount) Registered" : "\(regCount) / \(event.maxParticipants)"
         let bottomText = "Registrations"
         
         return HStack(alignment: .center, spacing: 16) {

@@ -96,7 +96,7 @@ struct PresidentSubgroupBudgetCard: View {
                         .font(.headline)
                         .lineLimit(1)
                     
-                    Text(subgroup.category.rawValue)
+                    Text(subgroup.category.capitalized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
