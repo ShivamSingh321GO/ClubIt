@@ -3,8 +3,10 @@ import ClubItShared
 import PhotosUI
 
 struct EditProfileView: View {
-    @Environment(\.dismiss) var dismiss
-    @Environment(AppSession.self) var appSession
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AppSession.self) private var appSession
+    
+    let user: User
     
     @State private var name: String
     @State private var bio: String
@@ -16,7 +18,12 @@ struct EditProfileView: View {
     @State private var profileImg: String
     @State private var selectedItem: PhotosPickerItem?
     
+    @State private var isSaving = false
+    @State private var errorMessage: String? = nil
+    @State private var showErrorAlert = false
+    
     init(user: User) {
+        self.user = user
         _name = State(initialValue: user.name)
         _bio = State(initialValue: user.bio ?? "")
         _phoneNumber = State(initialValue: user.phoneNumber ?? "")
@@ -82,6 +89,11 @@ struct EditProfileView: View {
                 TextField("Name", text: $name)
                 TextField("Phone Number", text: $phoneNumber)
                     .keyboardType(.phonePad)
+                    .onChange(of: phoneNumber) { _, newValue in
+                        if newValue.count > 15 {
+                            phoneNumber = String(newValue.prefix(15))
+                        }
+                    }
                 TextField("Course", text: $course)
                 TextField("Year", text: $year)
                 TextField("Admission Number", text: $admissionNumber)
@@ -97,34 +109,54 @@ struct EditProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") {
-                    Task {
-                        do {
-                            try await appSession.updateUserProfile(
-                                name: name,
-                                bio: bio,
-                                phoneNumber: phoneNumber,
-                                course: course,
-                                year: year,
-                                admissionNumber: admissionNumber,
-                                imageData: imageData
-                            )
-                            await MainActor.run {
-                                dismiss()
-                            }
-                        } catch {
-                            print("DEBUG ERROR: Failed to save profile: \(error.localizedDescription)")
-                        }
+                Button {
+                    saveProfile()
+                } label: {
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Text("Save")
+                            .bold()
                     }
                 }
-                .bold()
-                .disabled(name.isEmpty)
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
             }
-//            ToolbarItem(placement: .topBarLeading) {
-//                Button("Cancel") {
-//                    dismiss()
-//                }
-//            }
+        }
+        .alert("Error Saving Profile", isPresented: $showErrorAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "Failed to save profile. Please check your network connection and try again.")
+        }
+    }
+    
+    private func saveProfile() {
+        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        isSaving = true
+        errorMessage = nil
+        
+        Task {
+            do {
+                try await appSession.updateUserProfile(
+                    targetUser: user,
+                    name: name,
+                    bio: bio,
+                    phoneNumber: phoneNumber,
+                    course: course,
+                    year: year,
+                    admissionNumber: admissionNumber,
+                    imageData: imageData
+                )
+                await MainActor.run {
+                    isSaving = false
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    isSaving = false
+                    errorMessage = error.localizedDescription
+                    showErrorAlert = true
+                }
+            }
         }
     }
 }

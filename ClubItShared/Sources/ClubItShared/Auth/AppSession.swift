@@ -422,8 +422,10 @@ public final class AppSession {
     }
     
     @MainActor
-    public func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, admissionNumber: String, imageData: Data?) async throws {
-        guard var user = currentUser else { return }
+    public func updateUserProfile(targetUser: User? = nil, name: String, bio: String, phoneNumber: String, course: String, year: String, admissionNumber: String, imageData: Data?) async throws {
+        guard var user = targetUser ?? currentUser else {
+            throw NSError(domain: "AppSession", code: 404, userInfo: [NSLocalizedDescriptionKey: "No user account available to update."])
+        }
         var profileImgUrl = user.profileImg ?? ""
         
         let client = SupabaseManager.shared.client
@@ -464,14 +466,17 @@ public final class AppSession {
             }
         }
         
-        // 2. Update Supabase table
+        // 2. Encrypt sensitive fields for DB storage
+        let encryptedPhone = UserEncryptionManager.shared.encrypt(phoneNumber, for: user.id) ?? phoneNumber
+        let encryptedAdmission = UserEncryptionManager.shared.encrypt(admissionNumber, for: user.id) ?? admissionNumber
+        
         let updateData: [String: AnyJSON] = [
             "name": .string(name),
             "bio": .string(bio),
-            "phone_number": .string(phoneNumber),
+            "phone_number": .string(encryptedPhone),
             "course": .string(course),
             "year": .string(year),
-            "admission_number": .string(admissionNumber),
+            "admission_number": .string(encryptedAdmission),
             "profile_img": .string(profileImgUrl)
         ]
         
@@ -490,7 +495,9 @@ public final class AppSession {
         user.admissionNumber = admissionNumber
         user.profileImg = profileImgUrl
         user.imageData = nil // Clear local imageData so the view uses the remote URL
-        currentUser = user
+        if currentUser == nil || currentUser?.id == user.id {
+            currentUser = user
+        }
         
         // Sync with global users list
         subgroupStore.updateMember(updatedUser: user)
