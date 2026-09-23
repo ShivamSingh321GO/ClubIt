@@ -6,7 +6,7 @@ struct SignInView: View {
     @State private var viewModel = SignInViewModel()
     @Environment(AppSession.self) private var appSession
     
-    @State private var showingResetPasswordAlert = false
+    @State private var showingForgotPasswordSheet = false
     @FocusState private var focusedField: Field?
     
     private enum Field {
@@ -61,7 +61,7 @@ struct SignInView: View {
                     HStack {
                         Spacer()
                         Button("Forgot Password?") {
-                            showingResetPasswordAlert = true
+                            showingForgotPasswordSheet = true
                         }
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -107,10 +107,8 @@ struct SignInView: View {
                 
             }
             .navigationTitle("Sign in")
-            .alert("Reset Password", isPresented: $showingResetPasswordAlert) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text("Reset Password functionality is not available.")
+            .sheet(isPresented: $showingForgotPasswordSheet) {
+                ForgotPasswordSheet(email: $viewModel.email)
             }
             
 //            Button {

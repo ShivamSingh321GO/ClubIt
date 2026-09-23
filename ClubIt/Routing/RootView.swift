@@ -31,5 +31,13 @@ struct RootView: View {
                 await appSession.refreshData()
             }
         }
+        .onOpenURL { url in
+            Task {
+                _ = await appSession.handleAuthURL(url)
+            }
+        }
+        .sheet(isPresented: Bindable(appSession).isPasswordResetMode) {
+            ResetPasswordView()
+        }
     }
 }

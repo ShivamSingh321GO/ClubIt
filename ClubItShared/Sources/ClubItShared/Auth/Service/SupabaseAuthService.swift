@@ -42,6 +42,14 @@ public struct SupabaseAuthService {
         try await client.auth.update(user: UserAttributes(password: newPassword))
     }
     
+    public func resetPasswordForEmail(_ email: String, redirectTo: URL? = nil) async throws {
+        try await client.auth.resetPasswordForEmail(email, redirectTo: redirectTo)
+    }
+    
+    public func handleAuthURL(_ url: URL) async throws {
+        try await client.auth.session(from: url)
+    }
+    
     public func fetchUserProfile(userId: UUID) async throws -> User {
         var user: User = try await client
             .from("users")

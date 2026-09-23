@@ -16,6 +16,7 @@ public final class AppSession {
     public var currentRole: AppRole?
     public var isLoggedIn: Bool = false
     public var isRefreshing: Bool = false
+    public var isPasswordResetMode: Bool = false
     private var lastRefreshDate: Date = .distantPast
     
     public var unreadMessageCount: Int = 0
@@ -391,6 +392,33 @@ public final class AppSession {
         let authService = SupabaseAuthService()
         try await authService.verifyCurrentPassword(email: userEmail, password: currentPassword)
         try await authService.updatePassword(newPassword: newPassword)
+    }
+    
+    @MainActor
+    public func sendPasswordResetEmail(email: String) async throws {
+        let authService = SupabaseAuthService()
+        let redirectURL = URL(string: "clubit://reset-password")
+        try await authService.resetPasswordForEmail(email, redirectTo: redirectURL)
+    }
+    
+    @MainActor
+    public func handleAuthURL(_ url: URL) async -> Bool {
+        let authService = SupabaseAuthService()
+        do {
+            try await authService.handleAuthURL(url)
+            self.isPasswordResetMode = true
+            return true
+        } catch {
+            print("DEBUG ERROR: Failed to parse auth deep link URL: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    @MainActor
+    public func completePasswordReset(newPassword: String) async throws {
+        let authService = SupabaseAuthService()
+        try await authService.updatePassword(newPassword: newPassword)
+        self.isPasswordResetMode = false
     }
     
     @MainActor
