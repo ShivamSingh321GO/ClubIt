@@ -374,6 +374,26 @@ public final class AppSession {
     }
     
     @MainActor
+    public func verifyCurrentPassword(_ currentPassword: String) async throws -> Bool {
+        guard let userEmail = currentUser?.email, !userEmail.isEmpty else {
+            throw NSError(domain: "AppSession", code: 401, userInfo: [NSLocalizedDescriptionKey: "No active user logged in."])
+        }
+        let authService = SupabaseAuthService()
+        try await authService.verifyCurrentPassword(email: userEmail, password: currentPassword)
+        return true
+    }
+    
+    @MainActor
+    public func changePassword(currentPassword: String, newPassword: String) async throws {
+        guard let userEmail = currentUser?.email, !userEmail.isEmpty else {
+            throw NSError(domain: "AppSession", code: 401, userInfo: [NSLocalizedDescriptionKey: "No active user logged in."])
+        }
+        let authService = SupabaseAuthService()
+        try await authService.verifyCurrentPassword(email: userEmail, password: currentPassword)
+        try await authService.updatePassword(newPassword: newPassword)
+    }
+    
+    @MainActor
     public func updateUserProfile(name: String, bio: String, phoneNumber: String, course: String, year: String, admissionNumber: String, imageData: Data?) async throws {
         guard var user = currentUser else { return }
         var profileImgUrl = user.profileImg ?? ""

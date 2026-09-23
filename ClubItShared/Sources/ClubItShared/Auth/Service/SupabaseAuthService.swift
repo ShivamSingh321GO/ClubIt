@@ -34,6 +34,14 @@ public struct SupabaseAuthService {
         try await client.auth.signOut()
     }
     
+    public func verifyCurrentPassword(email: String, password: String) async throws {
+        try await client.auth.signIn(email: email, password: password)
+    }
+    
+    public func updatePassword(newPassword: String) async throws {
+        try await client.auth.update(user: UserAttributes(password: newPassword))
+    }
+    
     public func fetchUserProfile(userId: UUID) async throws -> User {
         var user: User = try await client
             .from("users")

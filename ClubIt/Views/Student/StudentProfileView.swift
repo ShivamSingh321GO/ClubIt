@@ -209,7 +209,12 @@ struct StudentProfileView: View {
             VStack(spacing: 1) {
                 settingRow(icon: "bell.badge.fill", title: "Notification", color: .accentColor)
                 Divider().padding(.leading, 44).opacity(0.5)
-                settingRow(icon: "lock.rotation", title: "Change Password", color: .accentColor)
+                NavigationLink {
+                    ChangePasswordView()
+                } label: {
+                    settingRow(icon: "lock.rotation", title: "Change Password", color: .accentColor)
+                }
+                .buttonStyle(.plain)
                 Divider().padding(.leading, 44).opacity(0.5)
                 
                 Button {

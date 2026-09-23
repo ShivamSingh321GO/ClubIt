@@ -107,7 +107,7 @@ struct LeadProfileView: View {
 //                        }
                         
                         NavigationLink {
-                            Text("Change Password Screen")
+                            ChangePasswordView()
                         } label: {
                             Label("Change Password", systemImage: "arrow.triangle.2.circlepath")
                         }
