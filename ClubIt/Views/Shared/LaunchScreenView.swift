@@ -38,7 +38,7 @@ struct LaunchScreenView: View {
             
             // Text Container
             VStack(spacing: 8) {
-                Text("ClubIt")
+                Text("Loop")
                     .font(.system(size: 34, weight: .heavy))
                     .foregroundColor(.primary)
                     .opacity(appNameOpacity)

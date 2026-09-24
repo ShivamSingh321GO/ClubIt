@@ -30,7 +30,7 @@ struct AttendanceQRDisplayView: View {
                     .frame(width: 250, height: 250)
             }
             
-            Text("Ask attendees to scan this QR code using the ClubIt app to mark their attendance. The QR code changes every 15 seconds for security.")
+            Text("Ask attendees to scan this QR code using the Loop app to mark their attendance. The QR code changes every 15 seconds for security.")
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
                 .foregroundColor(.secondary)
