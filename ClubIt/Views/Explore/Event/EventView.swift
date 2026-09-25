@@ -67,7 +67,7 @@ struct EventView: View {
                                     .fontWeight(.medium)
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 7)
-                                    .background(isSelected ? Color.accentColor : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                                    .background(isSelected ? Color.accentColor : Color(.secondarySystemFill), in: Capsule())
                                     .foregroundStyle(isSelected ? .white : .primary)
                                     .clipShape(Capsule())
                             }

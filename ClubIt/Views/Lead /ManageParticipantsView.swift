@@ -45,7 +45,7 @@ struct ManageParticipantsView: View {
                                 .padding(.horizontal, 18)
                                 .padding(.vertical, 8)
                                 .frame(minWidth: 65)
-                                .background(isSelected ? Color.accentColor : Color(.tertiarySystemFill).opacity(0.5), in: Capsule())
+                                .background(isSelected ? Color.accentColor : Color(.secondarySystemFill), in: Capsule())
                                 .foregroundStyle(isSelected ? .white : .primary)
                                 .glassEffect(in: .capsule)
                                 .clipShape(Capsule())
