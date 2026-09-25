@@ -199,9 +199,9 @@ fileprivate struct ManagementFilterPill: View {
                 .bold()
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(isSelected ? Color.accent : Color.secondary.opacity(0.1))
-                .foregroundColor(isSelected ? .white : .secondary)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .background(isSelected ? Color.accentColor : Color(.secondarySystemFill))
+                .foregroundColor(isSelected ? .white : .primary)
+                .clipShape(Capsule())
         }
     }
 }

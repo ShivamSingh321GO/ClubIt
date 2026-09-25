@@ -102,7 +102,7 @@ struct VenueFilterPill: View {
                 .padding(.vertical, 8)
                 .background(
                     Capsule()
-                        .fill(isSelected ? Color.accentColor : Color.white.opacity(0.1))
+                        .fill(isSelected ? Color.accentColor : Color(.secondarySystemFill))
                 )
                 .foregroundColor(isSelected ? .white : .primary)
                 .glassEffect(in: .capsule)
