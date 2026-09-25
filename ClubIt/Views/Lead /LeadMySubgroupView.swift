@@ -8,6 +8,7 @@ import ClubItShared
 
 struct LeadMySubgroupView: View {
     @Environment(AppSession.self) var appSession
+    @State private var showEditSubgroup = false
 
     var user: User? {
         appSession.currentUser
@@ -27,15 +28,14 @@ struct LeadMySubgroupView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if appSession.currentRole == .subGroupLead {
-                        NavigationLink(
-                            destination: EditSubgroupDetailView(
-                                subgroup: appSession.subgroupStore.subgroup
-                            )
-                        ) {
-                            Text("Edit")
+                        Button("Edit") {
+                            showEditSubgroup = true
                         }
                     }
                 }
+            }
+            .navigationDestination(isPresented: $showEditSubgroup) {
+                EditSubgroupDetailView(subgroup: appSession.subgroupStore.subgroup)
             }
         }
         .sheet(item: Bindable(appSession).selectedActivity) { activity in

@@ -134,11 +134,11 @@ public final class SubgroupStore {
     }
     
     @MainActor
-    public func updateSubgroup(name: String, tagLine: String, description: String, category: SubgroupCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?) async throws {
+    public func updateSubgroup(name: String, tagLine: String, description: String, category: SubgroupCategory, memberCount: Int, eventCount: Int, socials: [String: String], logo: String, imageData: Data?, isNewImage: Bool = false) async throws {
         var logoUrl = logo
         
-        // 1. Upload logo image to Supabase Storage bucket 'subgroupProfile-images' if new imageData is provided
-        if let imageData {
+        // 1. Upload logo image to Supabase Storage bucket 'subgroupProfile-images' ONLY if a new image was picked
+        if isNewImage, let imageData {
             do {
                 // Remove older logo files in this subgroup's folder to avoid storage bloat
                 if let files = try? await client.storage.from("subgroupProfile-images").list(path: subgroup.id.uuidString) {
@@ -169,11 +169,23 @@ public final class SubgroupStore {
                 print("DEBUG: Uploaded subgroup logo to subgroupProfile-images Storage. Public URL: \(logoUrl)")
             } catch {
                 print("DEBUG ERROR: Failed to upload logo image: \(error.localizedDescription)")
-                throw error
             }
         }
         
-        // 2. Update Supabase table
+        // 2. Update local state immediately for responsive UI
+        subgroup.name = name
+        subgroup.tagLine = tagLine
+        subgroup.description = description
+        subgroup.category = category
+        subgroup.memberCount = memberCount
+        subgroup.eventCount = eventCount
+        subgroup.socials = socials
+        subgroup.logo = logoUrl
+        if let imageData {
+            subgroup.imageData = imageData
+        }
+        
+        // 3. Update Supabase table
         let updateData: [String: AnyJSON] = [
             "name": .string(name),
             "tag_line": .string(tagLine),
@@ -183,24 +195,18 @@ public final class SubgroupStore {
             "logo": .string(logoUrl)
         ]
         
-        try await client
-            .from("subgroups")
-            .update(updateData)
-            .eq("id", value: subgroup.id)
-            .execute()
-            
-        // 3. Update local state
-        subgroup.name = name
-        subgroup.tagLine = tagLine
-        subgroup.description = description
-        subgroup.category = category
-        subgroup.memberCount = memberCount
-        subgroup.eventCount = eventCount
-        subgroup.socials = socials
-        subgroup.logo = logoUrl
-        subgroup.imageData = imageData
+        do {
+            try await client
+                .from("subgroups")
+                .update(updateData)
+                .eq("id", value: subgroup.id)
+                .execute()
+            print("DEBUG: Successfully updated subgroup in Supabase")
+        } catch {
+            print("DEBUG ERROR: Failed to update subgroup in Supabase: \(error)")
+        }
         
-        // 4. Refresh global list
+        // 4. Refresh global list if available
         try? await fetchAllSubgroups()
     }
     

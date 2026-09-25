@@ -20,6 +20,8 @@ struct EditSubgroupDetailView: View {
     @State private var logo: String
     @State private var imageData: Data?
     @State private var selectedItem: PhotosPickerItem?
+    @State private var isNewImagePicked = false
+    @State private var isSaving = false
     
     init(subgroup: Subgroup) {
         _name = State(initialValue: subgroup.name)
@@ -96,6 +98,7 @@ struct EditSubgroupDetailView: View {
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self) {
                         imageData = data
+                        isNewImagePicked = true
                     }
                 }
             }
@@ -137,26 +140,25 @@ struct EditSubgroupDetailView: View {
         .navigationTitle("Edit Subgroup")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-//            ToolbarItem(placement: .navigationBarLeading) {
-//                Button {
-//                    dismiss()
-//                } label: {
-//                    Image(systemName: "xmark")
-//                }
-//            }
-            
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     saveChanges()
                 } label: {
-                    Image(systemName: "checkmark")
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Image(systemName: "checkmark")
+                    }
                 }
-                .disabled(name.isEmpty)
+                .disabled(name.isEmpty || isSaving)
             }
         }
     }
     
     private func saveChanges() {
+        guard !isSaving else { return }
+        isSaving = true
+        
         var updatedSocials: [String: String] = [:]
         if !instagram.isEmpty { updatedSocials["instagram"] = instagram }
         if !facebook.isEmpty { updatedSocials["facebook"] = facebook }
@@ -175,13 +177,14 @@ struct EditSubgroupDetailView: View {
                     eventCount: eventCount,
                     socials: updatedSocials,
                     logo: logo,
-                    imageData: imageData
+                    imageData: imageData,
+                    isNewImage: isNewImagePicked
                 )
-                await MainActor.run {
-                    dismiss()
-                }
             } catch {
                 print("DEBUG ERROR: Failed to update subgroup: \(error)")
+            }
+            await MainActor.run {
+                dismiss()
             }
         }
     }
