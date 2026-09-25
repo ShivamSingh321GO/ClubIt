@@ -70,20 +70,19 @@ struct SubChatRow: View {
         formatter.timeZone = TimeZone(identifier: "Asia/Kolkata")
         
         if calendar.isDateInToday(date) {
-            formatter.timeStyle = .short
+            formatter.dateFormat = "h:mm a"
+            return formatter.string(from: date)
         } else if calendar.isDateInYesterday(date) {
             return "Yesterday"
         } else {
-            let startOfDate = calendar.startOfDay(for: date)
-            let startOfToday = calendar.startOfDay(for: Date())
-            let components = calendar.dateComponents([.day], from: startOfDate, to: startOfToday)
-            
-            if let days = components.day, days < 7 {
-                formatter.dateFormat = "EEEE"
+            let currentYear = calendar.component(.year, from: Date())
+            let dateYear = calendar.component(.year, from: date)
+            if currentYear == dateYear {
+                formatter.dateFormat = "MMM d"
             } else {
-                formatter.dateFormat = "MM/dd/yy"
+                formatter.dateFormat = "MMM d, yyyy"
             }
+            return formatter.string(from: date)
         }
-        return formatter.string(from: date)
     }
 }

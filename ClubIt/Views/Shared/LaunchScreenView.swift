@@ -43,7 +43,7 @@ struct LaunchScreenView: View {
                     .foregroundColor(.primary)
                     .opacity(appNameOpacity)
                 
-                Text("Discover and manage campus subgroups effortlessly")
+                Text("Your Organization, All in One Loop")
                     .font(.headline)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)

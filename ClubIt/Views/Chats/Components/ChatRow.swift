@@ -107,18 +107,29 @@ struct ChatRow: View {
     }
     
     private func timeString(from date: Date) -> String {
+        var calendar = Calendar.current
+        if let istTimeZone = TimeZone(identifier: "Asia/Kolkata") {
+            calendar.timeZone = istTimeZone
+        }
+        
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone(identifier: "Asia/Kolkata")
         
-        let calendar = Calendar.current
         if calendar.isDateInToday(date) {
             formatter.dateFormat = "h:mm a"
+            return formatter.string(from: date)
         } else if calendar.isDateInYesterday(date) {
-            formatter.dateFormat = "'Yesterday', h:mm a"
+            return "Yesterday"
         } else {
-            formatter.dateFormat = "MMM d, h:mm a"
+            let currentYear = calendar.component(.year, from: Date())
+            let dateYear = calendar.component(.year, from: date)
+            if currentYear == dateYear {
+                formatter.dateFormat = "MMM d"
+            } else {
+                formatter.dateFormat = "MMM d, yyyy"
+            }
+            return formatter.string(from: date)
         }
-        return formatter.string(from: date)
     }
     
     @ViewBuilder
