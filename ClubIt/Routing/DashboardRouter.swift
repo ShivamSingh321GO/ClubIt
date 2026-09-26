@@ -13,8 +13,10 @@ struct DashboardRouter: View {
     @Environment(AppSession.self) private var appSession
 
     var body: some View {
+        let activeRole = appSession.currentRole ?? appSession.currentUser?.role
+        
         Group {
-            switch appSession.currentRole {
+            switch activeRole {
             case .admin, .superAdmin:
                 OrgAdminDashboardView()
             case .groupLead:

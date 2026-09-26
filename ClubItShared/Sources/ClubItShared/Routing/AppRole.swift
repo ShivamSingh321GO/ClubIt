@@ -23,18 +23,57 @@ public enum AppRole: String, Codable, CaseIterable, Identifiable {
     }
     
     public static func from(dbRole: String) -> AppRole {
-        switch dbRole {
-        case "superadmin", "SuperAdmin": return .superAdmin
-        case "admin", "Admin": return .admin
-        case "level_1_lead", "Group Lead": return .groupLead
-        case "level_1_sublead", "Group SubLead": return .groupSubLead
-        case "level_2_lead", "SubGroup Lead": return .subGroupLead
-        case "level_2_member", "SubGroup member": return .subGroupMember
+        let cleaned = dbRole
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "_", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "-", with: "")
+        
+        switch cleaned {
+        case "superadmin", "superadministrator":
+            return .superAdmin
+            
+        case "admin", "administrator", "orgadmin", "organizationadmin":
+            return .admin
+            
+        case "grouplead", "level1lead", "president", "level1president", "grouphead":
+            return .groupLead
+            
+        case "groupsublead", "level1sublead", "vicepresident", "vp", "groupsvicepresident", "level1vicepresident", "groupcolead", "faculty", "facultymember", "facultyresource":
+            return .groupSubLead
+            
+        case "subgrouplead", "level2lead", "clublead", "level2clublead", "subgrouphead", "clubhead":
+            return .subGroupLead
+            
+        case "subgroupmember", "level2member", "level2sublead", "clubmember", "member", "subgroupcolead":
+            return .subGroupMember
+            
+        case "guest", "student", "user", "visitor":
+            return .guest
+            
         default:
-            if dbRole.hasPrefix("level_1_lead") { return .groupLead }
-            if dbRole.hasPrefix("level_1_sublead") { return .groupSubLead }
-            if dbRole.hasPrefix("level_2_lead") { return .subGroupLead }
-            if dbRole.hasPrefix("level_2_sublead") { return .subGroupLead }
+            if cleaned.contains("groupsublead") || cleaned.contains("level1sublead") || cleaned.contains("vicepresident") {
+                return .groupSubLead
+            }
+            if cleaned.contains("grouplead") || cleaned.contains("level1lead") || cleaned.contains("president") {
+                return .groupLead
+            }
+            if cleaned.contains("subgrouplead") || cleaned.contains("level2lead") || cleaned.contains("clublead") {
+                return .subGroupLead
+            }
+            if cleaned.contains("subgroupmember") || cleaned.contains("level2member") || cleaned.contains("clubmember") {
+                return .subGroupMember
+            }
+            if cleaned.contains("level1") {
+                return .groupLead
+            }
+            if cleaned.contains("level2") {
+                return .subGroupMember
+            }
+            if cleaned.contains("admin") {
+                return .admin
+            }
             return .guest
         }
     }

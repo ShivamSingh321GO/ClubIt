@@ -277,6 +277,7 @@ public final class AppSession {
             let authService = SupabaseAuthService()
             let refreshedUser = try await authService.fetchUserProfile(userId: user.id)
             self.currentUser = refreshedUser
+            self.currentRole = refreshedUser.role
         } catch {
             print("DEBUG ERROR: Refreshed user profile failed: \(error)")
         }

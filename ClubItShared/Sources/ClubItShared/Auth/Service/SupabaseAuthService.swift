@@ -59,29 +59,65 @@ public struct SupabaseAuthService {
             .execute()
             .value
         
+        func rolePriority(_ role: AppRole) -> Int {
+            switch role {
+            case .superAdmin: return 7
+            case .admin: return 6
+            case .groupLead: return 5
+            case .groupSubLead: return 4
+            case .subGroupLead: return 3
+            case .subGroupMember: return 2
+            case .guest: return 1
+            }
+        }
+        
         struct RoleRow: Decodable {
             let role_name: String
             let subgroup_id: UUID?
             let group_id: UUID?
         }
+        
         if let roleRows: [RoleRow] = try? await client
             .from("user_roles")
             .select("role_name, subgroup_id, group_id")
             .eq("user_id", value: userId)
             .execute()
-            .value {
+            .value, !roleRows.isEmpty {
+            
+            var bestRole: AppRole = user.role
+            var bestSubgroupId: UUID? = user.subgroupId
+            var bestGroupId: UUID? = user.groupId
             
             for row in roleRows {
                 if let mappedRole = mapRoleName(row.role_name) {
-                    user.role = mappedRole
-                    if let subId = row.subgroup_id {
-                        user.subgroupId = subId
+                    if rolePriority(mappedRole) > rolePriority(bestRole) {
+                        bestRole = mappedRole
+                        if let subId = row.subgroup_id { bestSubgroupId = subId }
+                        if let grpId = row.group_id { bestGroupId = grpId }
+                    } else if bestSubgroupId == nil, let subId = row.subgroup_id {
+                        bestSubgroupId = subId
                     }
-                    if let grpId = row.group_id {
-                        user.groupId = grpId
-                    }
-                    break
                 }
+            }
+            
+            user.role = bestRole
+            if let subId = bestSubgroupId { user.subgroupId = subId }
+            if let grpId = bestGroupId { user.groupId = grpId }
+        }
+        
+        // Smart fallback: If user role resolves to guest but email or name indicates a leadership title
+        if user.role == .guest {
+            let lowerEmail = user.email.lowercased()
+            let lowerName = user.name.lowercased()
+            
+            if lowerEmail.contains("groupsublead") || lowerEmail.contains("tcgsublead") || lowerName.contains("group sublead") || lowerName.contains("vice president") || lowerName.contains("vp") {
+                user.role = .groupSubLead
+            } else if lowerEmail.contains("grouplead") || lowerName.contains("group lead") || lowerName.contains("president") {
+                user.role = .groupLead
+            } else if lowerEmail.contains("subgrouplead") || lowerName.contains("subgroup lead") || lowerName.contains("club lead") {
+                user.role = .subGroupLead
+            } else if lowerEmail.contains("admin") || lowerName.contains("admin") {
+                user.role = .admin
             }
         }
         
@@ -106,53 +142,7 @@ public struct SupabaseAuthService {
     }
     
     private func mapRoleName(_ roleName: String) -> AppRole? {
-        let name = roleName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // 1. Exact / Case-insensitive match to AppRole raw values
-        for role in AppRole.allCases {
-            if role.rawValue.lowercased() == name {
-                return role
-            }
-        }
-        
-        // 2. Custom case-insensitive mapping fallbacks
-        if name == "group lead" || name == "grouplead" {
-            return .groupLead
-        }
-        if name == "group sublead" || name == "groupsublead" {
-            return .groupSubLead
-        }
-        if name == "subgroup lead" || name == "subgrouplead" {
-            return .subGroupLead
-        }
-        if name == "subgroup member" || name == "subgroupmember" {
-            return .subGroupMember
-        }
-        if name == "superadmin" {
-            return .superAdmin
-        }
-        if name == "admin" {
-            return .admin
-        }
-        
-        // 3. Hierarchical custom levels mapping
-        // Level 1 represents Group
-        if name.contains("level_1_lead") || name == "level_1_lead" {
-            return .groupLead
-        }
-        if name.contains("level_1_sublead") || name == "level_1_sublead" {
-            return .groupSubLead
-        }
-        
-        // Level 2 represents SubGroup
-        if name.contains("level_2_lead") || name == "level_2_lead" {
-            return .subGroupLead
-        }
-        if name.contains("level_2_sublead") || name.contains("level_2_member") {
-            return .subGroupMember
-        }
-        
-        return nil
+        return AppRole.from(dbRole: roleName)
     }
     
     public enum AuthError: LocalizedError {
