@@ -30,28 +30,49 @@ public final class AnnouncementStore {
         print("DEBUG: Fetched \(announcements.count) announcements from Supabase")
     }
     
+    /// Explicit payload for inserting into the `announcements` table.
+    /// Only includes columns that actually exist in the Supabase table schema.
+    private struct InsertAnnouncementPayload: Encodable {
+        let id: UUID
+        let group_id: UUID?
+        let date: String
+        let title: String
+        let content: String
+        let url: String
+        let author_id: UUID
+        let created_at: String
+        let is_edited: Bool
+        let organization_id: UUID?
+        let is_high_priority: Bool?
+    }
+
     @MainActor
-    public func addAnnouncement(title: String, content: String, url: String, postedBy: UUID, groupId: UUID?, organizationId: UUID?, isHighPriority: Bool? = false) async throws {
-        print("DEBUG: [AnnouncementStore] Adding announcement: title='\(title)', postedBy=\(postedBy)")
-        let newAnnouncement = Announcement(
+    public func addAnnouncement(title: String, content: String, url: String, postedBy: UUID, groupId: UUID?, subgroupId: UUID?, organizationId: UUID?, isHighPriority: Bool? = false) async throws {
+        print("DEBUG: [AnnouncementStore] Adding announcement: title='\(title)', postedBy=\(postedBy), groupId=\(String(describing: groupId)), subgroupId=\(String(describing: subgroupId)), organizationId=\(String(describing: organizationId))")
+        
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let now = isoFormatter.string(from: Date())
+        
+        let payload = InsertAnnouncementPayload(
             id: UUID(),
-            groupId: groupId,
-            date: Date(),
+            group_id: groupId,
+            date: now,
             title: title,
             content: content,
             url: url,
-            postedBy: postedBy,
-            createdAt: Date(),
-            isEdited: false,
-            organizationId: organizationId,
-            isHighPriority: isHighPriority
+            author_id: postedBy,
+            created_at: now,
+            is_edited: false,
+            organization_id: organizationId,
+            is_high_priority: isHighPriority
         )
         
         // 1. Save to Supabase
         do {
             try await client
                 .from("announcements")
-                .insert(newAnnouncement)
+                .insert(payload)
                 .execute()
             print("DEBUG: [AnnouncementStore] Insert succeeded.")
         } catch {

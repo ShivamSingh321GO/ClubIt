@@ -11,6 +11,7 @@ import Foundation
 public struct Announcement: Identifiable, Codable {
     public var id: UUID
     public var groupId: UUID?
+    public var subgroupId: UUID?
     public var date: Date
     public var title: String
     public var content: String
@@ -24,6 +25,7 @@ public struct Announcement: Identifiable, Codable {
     public enum CodingKeys: String, CodingKey {
         case id
         case groupId = "group_id"
+        case subgroupId = "subgroup_id"
         case date
         case title
         case content
@@ -38,6 +40,7 @@ public struct Announcement: Identifiable, Codable {
     public init(
         id: UUID,
         groupId: UUID? = nil,
+        subgroupId: UUID? = nil,
         date: Date,
         title: String,
         content: String,
@@ -50,6 +53,7 @@ public struct Announcement: Identifiable, Codable {
     ) {
         self.id = id
         self.groupId = groupId
+        self.subgroupId = subgroupId
         self.date = date
         self.title = title
         self.content = content
