@@ -34,6 +34,9 @@ struct EventView: View {
     
     @State private var selectedCategory: EventFilterCategory = .all
     @State private var isRefreshing = false
+    @State private var eventToDelete: Event? = nil
+    @State private var showDeleteConfirmation = false
+    @State private var isDeleting = false
     
     private func triggerRefresh(action: @escaping () -> Void) {
         withAnimation(.easeIn(duration: 0.15)) {
@@ -127,9 +130,9 @@ struct EventView: View {
             }
             
             ZStack {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 16) {
-                        if filteredEvents.isEmpty {
+                Group {
+                    if filteredEvents.isEmpty {
+                        ScrollView(.vertical, showsIndicators: false) {
                             ContentUnavailableView(
                                 "No Events Found",
                                 systemImage: "calendar",
@@ -137,28 +140,66 @@ struct EventView: View {
                             )
                             .padding(.top, 40)
                             .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                        } else {
+                        }
+                        .refreshable {
+                            try? await appSession.eventStore.fetchAllEvents()
+                        }
+                    } else {
+                        List {
                             ForEach(filteredEvents) { event in
-                                NavigationLink {
-                                    EventDetailView(event: event, isMyEvent: isMyEvent(event))
-                                } label: {
+                                ZStack {
+                                    NavigationLink {
+                                        EventDetailView(event: event, isMyEvent: isMyEvent(event))
+                                    } label: {
+                                        EmptyView()
+                                    }
+                                    .opacity(0)
+                                    
                                     ExploreEventCard(
                                         event: event,
                                         isMyEvent: isMyEvent(event)
                                     )
                                 }
-                                .buttonStyle(.plain)
-                                .transition(.asymmetric(
-                                    insertion: .move(edge: .bottom).combined(with: .opacity),
-                                    removal: .move(edge: .top).combined(with: .opacity)
-                                ))
+                                .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    if canDeleteEvent(event) {
+                                        Button(role: .destructive) {
+                                            confirmDelete(event)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                                }
+                                .contextMenu {
+                                    NavigationLink {
+                                        EventDetailView(event: event, isMyEvent: isMyEvent(event))
+                                    } label: {
+                                        Label("View Details", systemImage: "info.circle")
+                                    }
+                                    
+                                    if canDeleteEvent(event) {
+                                        Divider()
+                                        Button(role: .destructive) {
+                                            confirmDelete(event)
+                                        } label: {
+                                            Label("Delete Event", systemImage: "trash")
+                                        }
+                                    }
+                                }
                             }
                         }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
+                        .scrollIndicators(.hidden)
+                        .refreshable {
+                            try? await appSession.eventStore.fetchAllEvents()
+                        }
+                        .safeAreaInset(edge: .bottom) {
+                            Color.clear.frame(height: 70)
+                        }
                     }
-                    .padding(.bottom, 12)
-                }
-                .refreshable {
-                    try? await appSession.eventStore.fetchAllEvents()
                 }
                 .opacity(isRefreshing ? 0 : 1)
                 
@@ -176,6 +217,52 @@ struct EventView: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
+        }
+        .alert("Delete Event?", isPresented: $showDeleteConfirmation, presenting: eventToDelete) { event in
+            Button("Delete", role: .destructive) {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    deleteEvent(event)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                eventToDelete = nil
+            }
+        } message: { event in
+            Text("Are you sure you want to delete \"\(event.title)\"? This action cannot be undone.")
+        }
+    }
+    
+    private func canDeleteEvent(_ event: Event) -> Bool {
+        if let currentUserId = appSession.currentUser?.id, event.createdBy == currentUserId {
+            return true
+        }
+        
+        guard let role = appSession.currentRole else {
+            return isMyEvent(event)
+        }
+        
+        switch role {
+        case .superAdmin, .admin, .groupLead, .groupSubLead, .subGroupLead:
+            return true
+        case .subGroupMember, .guest:
+            return isMyEvent(event)
+        }
+    }
+    
+    private func confirmDelete(_ event: Event) {
+        eventToDelete = event
+        showDeleteConfirmation = true
+    }
+    
+    private func deleteEvent(_ event: Event) {
+        Task {
+            isDeleting = true
+            do {
+                try await eventStore.deleteEvent(event)
+            } catch {
+                print("❌ [EventView] Error deleting event: \(error)")
+            }
+            isDeleting = false
         }
     }
     

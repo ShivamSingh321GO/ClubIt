@@ -115,7 +115,6 @@ struct ExploreEventCard: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(Color.primary.opacity(0.12), lineWidth: 1)
         )
-        .padding(.vertical, 8)
     }
     
     @ViewBuilder

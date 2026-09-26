@@ -145,4 +145,47 @@ public final class EventStore {
             events[index] = event
         }
     }
+    
+    @MainActor
+    public func deleteEvent(_ event: Event) async throws {
+        print("DEBUG: [EventStore] Deleting event id=\(event.id), title='\(event.title)'")
+        
+        // 1. Remove from events table
+        do {
+            try await client
+                .from("events")
+                .delete()
+                .eq("id", value: event.id)
+                .execute()
+            print("DEBUG: [EventStore] Successfully deleted from 'events' table")
+        } catch {
+            print("DEBUG: [EventStore] Could not delete from 'events' table: \(error)")
+        }
+        
+        // 2. Remove from group_events table
+        do {
+            try await client
+                .from("group_events")
+                .delete()
+                .eq("id", value: event.id)
+                .execute()
+            print("DEBUG: [EventStore] Successfully deleted from 'group_events' table")
+        } catch {
+            print("DEBUG: [EventStore] Could not delete from 'group_events' table: \(error)")
+        }
+        
+        // 3. Remove any related approvals
+        do {
+            try await client
+                .from("approvals")
+                .delete()
+                .eq("approval_related_id", value: event.id)
+                .execute()
+        } catch {
+            // approvals may not exist or may have cascaded
+        }
+        
+        // 4. Remove from local in-memory array
+        events.removeAll { $0.id == event.id }
+    }
 }
