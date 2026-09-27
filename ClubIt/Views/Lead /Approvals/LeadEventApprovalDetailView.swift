@@ -122,9 +122,18 @@ struct LeadEventApprovalDetailView: View {
     }
     
     private var presidentUser: User? {
-        guard let subgroup = subgroup else { return nil }
-        return appSession.subgroupStore.allUsers.first(where: { 
-            $0.role == .groupLead && $0.groupId == subgroup.groupId 
+        let allUsers = appSession.subgroupStore.allUsers
+        if let subgroup = subgroup {
+            if let match = allUsers.first(where: { $0.role == .groupLead && $0.groupId == subgroup.groupId }) {
+                return match
+            }
+        }
+        return allUsers.first(where: {
+            $0.role == .groupLead ||
+            $0.name.lowercased().contains("group lead") ||
+            $0.name.lowercased().contains("president") ||
+            $0.email.lowercased().contains("grouplead") ||
+            $0.email.lowercased().contains("president")
         })
     }
     
@@ -386,7 +395,12 @@ struct LeadEventApprovalDetailView: View {
                 .padding(.vertical)
             }
             .refreshable {
-                await appSession.refreshData()
+                try? await appSession.approvalStore.fetchApprovals()
+                try? await appSession.approvalStore.fetchBudgets(eventId: eventId)
+                try? await appSession.approvalStore.fetchResources(eventId: eventId)
+                try? await appSession.subgroupStore.fetchAllUsers()
+                try? await appSession.subgroupStore.fetchAllSubgroups()
+                
                 let relevantApprovals = appSession.approvalStore.approvals.filter { $0.eventId == eventId }
                 for approval in relevantApprovals {
                     try? await appSession.approvalStore.fetchRemarks(for: approval.id)
@@ -632,13 +646,6 @@ struct LeadEventApprovalDetailView: View {
         var isPrecedingApproved = hasVP ? (vpStepStatus == .approved) : true
         
         for category in categories {
-            let approverIds = await appSession.routingService.resolveApprovers(
-                category: category,
-                subgroupId: subgroup.id,
-                groupId: subgroup.groupId,
-                orgId: orgId
-            )
-            
             let categoryType: ApprovalType
             switch category {
             case "Events": categoryType = .event
@@ -646,19 +653,6 @@ struct LeadEventApprovalDetailView: View {
             case "Resources": categoryType = .resource
             case "Venue": categoryType = .venue
             default: continue
-            }
-            
-            // If no approvers configured, this step is skipped
-            if approverIds.isEmpty {
-                steps.append(ApprovalFlowStep(
-                    stepNumber: stepNum,
-                    title: "\(category) Approval",
-                    reviewerName: "N/A",
-                    status: .skipped,
-                    remark: nil
-                ))
-                stepNum += 1
-                continue
             }
             
             // Check if there are no items for this category (e.g. no budgets or no resources requested)
@@ -684,7 +678,52 @@ struct LeadEventApprovalDetailView: View {
                 stepNum += 1
                 continue
             }
-            if category == "Venue" && event.location.isEmpty {
+            if category == "Venue" && allSubgroupVenueApprovals.isEmpty && event.location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                steps.append(ApprovalFlowStep(
+                    stepNumber: stepNum,
+                    title: "\(category) Approval",
+                    reviewerName: "N/A",
+                    status: .skipped,
+                    remark: nil
+                ))
+                stepNum += 1
+                continue
+            }
+            
+            // Determine approver IDs:
+            // 1. Check existing approvals for this category & event first
+            let existingApprovals = appSession.approvalStore.approvals.filter {
+                $0.eventId == event.id && $0.type == categoryType
+            }
+            
+            var approverIds: [UUID] = []
+            if !existingApprovals.isEmpty {
+                for appr in existingApprovals.sorted(by: { $0.createdAt < $1.createdAt }) {
+                    if let rx = appr.receiverId, !approverIds.contains(rx) {
+                        approverIds.append(rx)
+                    }
+                }
+            }
+            
+            // 2. If no existing approval records found, try dynamic routing service
+            if approverIds.isEmpty {
+                approverIds = await appSession.routingService.resolveApprovers(
+                    category: category,
+                    subgroupId: subgroup.id,
+                    groupId: subgroup.groupId,
+                    orgId: orgId
+                )
+            }
+            
+            // 3. Fallback to default role assignees if routing returns empty but items exist
+            if approverIds.isEmpty {
+                if let fallbackId = fallbackApproverId(for: category) {
+                    approverIds.append(fallbackId)
+                }
+            }
+            
+            // If still no approvers configured or found, mark skipped
+            if approverIds.isEmpty {
                 steps.append(ApprovalFlowStep(
                     stepNumber: stepNum,
                     title: "\(category) Approval",
@@ -702,11 +741,7 @@ struct LeadEventApprovalDetailView: View {
                 let reviewerName = matchedUser?.name ?? "Approver"
                 
                 // Find approval request for this type & receiverId
-                let relevantApprovals = appSession.approvalStore.approvals.filter {
-                    $0.eventId == event.id &&
-                    $0.type == categoryType &&
-                    $0.receiverId == approverId
-                }
+                let relevantApprovals = existingApprovals.filter { $0.receiverId == approverId }
                 
                 let stepStatus: StepStatus
                 let remark: String?
@@ -745,6 +780,54 @@ struct LeadEventApprovalDetailView: View {
         }
         
         self.dynamicSteps = steps
+    }
+    
+    private func fallbackApproverId(for category: String) -> UUID? {
+        let allUsers = appSession.subgroupStore.allUsers
+        
+        switch category {
+        case "Events":
+            if let vpId = subgroup?.vicePresidentId, allUsers.contains(where: { $0.id == vpId }) {
+                return vpId
+            }
+            return allUsers.first(where: {
+                $0.role == .groupSubLead ||
+                $0.name.lowercased().contains("sublead") ||
+                $0.email.lowercased().contains("sublead")
+            })?.id
+            
+        case "Budget":
+            return presidentUser?.id
+            
+        case "Resources":
+            if let facId = subgroup?.facultyId, allUsers.contains(where: { $0.id == facId }) {
+                return facId
+            }
+            return allUsers.first(where: {
+                $0.name.lowercased().contains("admin two") ||
+                $0.name.lowercased().contains("admin 2") ||
+                $0.email.lowercased().contains("admin2") ||
+                $0.name.lowercased().contains("resource")
+            })?.id ?? allUsers.first(where: {
+                $0.role == .admin || $0.role == .superAdmin
+            })?.id
+            
+        case "Venue":
+            if let facId = subgroup?.facultyId, allUsers.contains(where: { $0.id == facId }) {
+                return facId
+            }
+            return allUsers.first(where: {
+                $0.name.lowercased().contains("admin one") ||
+                $0.name.lowercased().contains("admin 1") ||
+                $0.email.lowercased().contains("admin1") ||
+                $0.name.lowercased().contains("venue")
+            })?.id ?? allUsers.first(where: {
+                $0.role == .admin || $0.role == .superAdmin
+            })?.id
+            
+        default:
+            return nil
+        }
     }
 }
 
