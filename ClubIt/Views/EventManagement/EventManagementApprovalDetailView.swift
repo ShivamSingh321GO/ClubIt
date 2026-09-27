@@ -8,7 +8,7 @@ struct EventManagementApprovalDetailView: View {
     let subgroup: Subgroup
     let event: Event
     
-    @State private var selectedTab: String = "Venue"
+    @State private var selectedTab: String = "Resource"
     
     // Resource/Venue states
     @State private var selectedResourceForRemark: Resource?
@@ -157,8 +157,26 @@ struct EventManagementApprovalDetailView: View {
             }
         }
         .onAppear {
+            let allSubgroupResources = appSession.approvalStore.resources.filter { $0.eventId == event.id }
+            let allSubgroupVenueApprovals = appSession.approvalStore.approvals.filter { $0.eventId == event.id && $0.type == .venue }
+            let allSubgroupBudgets = appSession.approvalStore.budgets.filter { $0.eventId == event.id }
+            
+            let hasPendingResources = allSubgroupResources.contains(where: { $0.status == .pending })
+            let hasPendingVenues = allSubgroupVenueApprovals.contains(where: { $0.status == .pending })
+            let hasPendingBudgets = allSubgroupBudgets.contains(where: { $0.status == .pending })
+            
             if appSession.currentRole == .groupLead {
                 selectedTab = "Budget"
+            } else if hasPendingResources {
+                selectedTab = "Resource"
+            } else if hasPendingVenues {
+                selectedTab = "Venue"
+            } else if hasPendingBudgets {
+                selectedTab = "Budget"
+            } else if !allSubgroupResources.isEmpty {
+                selectedTab = "Resource"
+            } else if !allSubgroupVenueApprovals.isEmpty {
+                selectedTab = "Venue"
             }
         }
         .overlay {
@@ -526,8 +544,8 @@ struct EventManagementApprovalDetailView: View {
                 // MARK: - Segmented Filter (3 Segments)
                 if appSession.currentRole != .groupLead {
                     Picker("Select Category", selection: $selectedTab) {
-                        Text("Venue (\(venueApprovalsToDisplay.count))").tag("Venue")
                         Text("Resource (\(allSubgroupResources.count))").tag("Resource")
+                        Text("Venue (\(venueApprovalsToDisplay.count))").tag("Venue")
                         if appSession.currentUser?.email != "emt" {
                             Text("Budget (\(allSubgroupBudgets.count))").tag("Budget")
                         }
